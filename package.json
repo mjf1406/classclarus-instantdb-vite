@@ -24,6 +24,7 @@
         "@fontsource-variable/noto-sans": "^5.2.10",
         "@instantdb/admin": "latest",
         "@instantdb/core": "latest",
+        "@instantdb/react": "^0.22.101",
         "@tailwindcss/vite": "^4.1.18",
         "@vitejs/plugin-react": "^5.1.2",
         "class-variance-authority": "^0.7.1",

@@ -5,7 +5,8 @@
 ## Links
 
 1. [Shadcn Project](https://ui.shadcn.com/create?base=radix&style=nova&baseColor=stone&theme=emerald&iconLibrary=lucide&font=noto-sans&menuAccent=bold&menuColor=default&radius=medium&item=preview)
-2.
+2. [Polar w/ Hono](https://polar.sh/docs/integrate/sdk/adapters/hono)
+3.
 
 ## Change Log
 
