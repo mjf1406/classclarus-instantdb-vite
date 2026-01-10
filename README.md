@@ -11,6 +11,8 @@
 
 ### 2026/01/10
 
+-   UX: theme switching is very fast now and all working well
+-   UI: created the theme-switcher component
 -   DX: initialized Shadcn
 -   DX: initialized Tailwind
 -   DX: initialized InstantDB
