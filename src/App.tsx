@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/components/themes/theme-provider";
 import { ComponentExample } from "./components/component-example";
 import { ThemeSwitcher } from "./components/themes/theme-switcher";
 
-function App({ children }: { children: React.ReactNode }) {
+function App({ children }: { children?: React.ReactNode }) {
     return (
         <ThemeProvider
             defaultTheme="dark"
