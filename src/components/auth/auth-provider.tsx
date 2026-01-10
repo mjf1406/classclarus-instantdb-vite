@@ -136,6 +136,7 @@ export default function AuthProvider({
         organizations: typedOrgData?.organizations || [],
         error: orgError,
     };
+    console.log("🚀 ~ AuthProvider ~ value:", value);
 
     return (
         <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

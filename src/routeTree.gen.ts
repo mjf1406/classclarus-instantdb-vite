@@ -11,13 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
-import { Route as ClassesIndexRouteImport } from './routes/classes/index'
 import { Route as UserSettingsRouteImport } from './routes/user/settings'
 import { Route as UserProfileRouteImport } from './routes/user/profile'
 import { Route as UserBillingRouteImport } from './routes/user/billing'
-import { Route as OrganizationsOrgIdRouteImport } from './routes/organizations/$orgId'
-import { Route as ClassesClassIdRouteImport } from './routes/classes/$classId'
+import { Route as OrganizationsOrgLayoutRouteImport } from './routes/organizations/_orgLayout'
+import { Route as ClassesClassesLayoutRouteImport } from './routes/classes/_classesLayout'
+import { Route as ClassesClassesLayoutIndexRouteImport } from './routes/classes/_classesLayout/index'
+import { Route as OrganizationsOrgLayoutOrgIdRouteImport } from './routes/organizations/_orgLayout/$orgId'
+import { Route as ClassesClassesLayoutClassIdRouteImport } from './routes/classes/_classesLayout/$classId'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -27,16 +28,6 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OrganizationsIndexRoute = OrganizationsIndexRouteImport.update({
-  id: '/organizations/',
-  path: '/organizations/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClassesIndexRoute = ClassesIndexRouteImport.update({
-  id: '/classes/',
-  path: '/classes/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UserSettingsRoute = UserSettingsRouteImport.update({
@@ -54,97 +45,117 @@ const UserBillingRoute = UserBillingRouteImport.update({
   path: '/user/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrganizationsOrgIdRoute = OrganizationsOrgIdRouteImport.update({
-  id: '/organizations/$orgId',
-  path: '/organizations/$orgId',
+const OrganizationsOrgLayoutRoute = OrganizationsOrgLayoutRouteImport.update({
+  id: '/organizations/_orgLayout',
+  path: '/organizations',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ClassesClassIdRoute = ClassesClassIdRouteImport.update({
-  id: '/classes/$classId',
-  path: '/classes/$classId',
+const ClassesClassesLayoutRoute = ClassesClassesLayoutRouteImport.update({
+  id: '/classes/_classesLayout',
+  path: '/classes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClassesClassesLayoutIndexRoute =
+  ClassesClassesLayoutIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const OrganizationsOrgLayoutOrgIdRoute =
+  OrganizationsOrgLayoutOrgIdRouteImport.update({
+    id: '/$orgId',
+    path: '/$orgId',
+    getParentRoute: () => OrganizationsOrgLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdRoute =
+  ClassesClassesLayoutClassIdRouteImport.update({
+    id: '/$classId',
+    path: '/$classId',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/classes/$classId': typeof ClassesClassIdRoute
-  '/organizations/$orgId': typeof OrganizationsOrgIdRoute
+  '/classes': typeof ClassesClassesLayoutRouteWithChildren
+  '/organizations': typeof OrganizationsOrgLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
-  '/classes': typeof ClassesIndexRoute
-  '/organizations': typeof OrganizationsIndexRoute
+  '/classes/$classId': typeof ClassesClassesLayoutClassIdRoute
+  '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdRoute
+  '/classes/': typeof ClassesClassesLayoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/classes/$classId': typeof ClassesClassIdRoute
-  '/organizations/$orgId': typeof OrganizationsOrgIdRoute
+  '/organizations': typeof OrganizationsOrgLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
-  '/classes': typeof ClassesIndexRoute
-  '/organizations': typeof OrganizationsIndexRoute
+  '/classes/$classId': typeof ClassesClassesLayoutClassIdRoute
+  '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdRoute
+  '/classes': typeof ClassesClassesLayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/classes/$classId': typeof ClassesClassIdRoute
-  '/organizations/$orgId': typeof OrganizationsOrgIdRoute
+  '/classes/_classesLayout': typeof ClassesClassesLayoutRouteWithChildren
+  '/organizations/_orgLayout': typeof OrganizationsOrgLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
-  '/classes/': typeof ClassesIndexRoute
-  '/organizations/': typeof OrganizationsIndexRoute
+  '/classes/_classesLayout/$classId': typeof ClassesClassesLayoutClassIdRoute
+  '/organizations/_orgLayout/$orgId': typeof OrganizationsOrgLayoutOrgIdRoute
+  '/classes/_classesLayout/': typeof ClassesClassesLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
-    | '/classes/$classId'
-    | '/organizations/$orgId'
+    | '/classes'
+    | '/organizations'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
-    | '/classes'
-    | '/organizations'
+    | '/classes/$classId'
+    | '/organizations/$orgId'
+    | '/classes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/classes/$classId'
-    | '/organizations/$orgId'
+    | '/organizations'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
+    | '/classes/$classId'
+    | '/organizations/$orgId'
     | '/classes'
-    | '/organizations'
   id:
     | '__root__'
     | '/'
     | '/about'
-    | '/classes/$classId'
-    | '/organizations/$orgId'
+    | '/classes/_classesLayout'
+    | '/organizations/_orgLayout'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
-    | '/classes/'
-    | '/organizations/'
+    | '/classes/_classesLayout/$classId'
+    | '/organizations/_orgLayout/$orgId'
+    | '/classes/_classesLayout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ClassesClassIdRoute: typeof ClassesClassIdRoute
-  OrganizationsOrgIdRoute: typeof OrganizationsOrgIdRoute
+  ClassesClassesLayoutRoute: typeof ClassesClassesLayoutRouteWithChildren
+  OrganizationsOrgLayoutRoute: typeof OrganizationsOrgLayoutRouteWithChildren
   UserBillingRoute: typeof UserBillingRoute
   UserProfileRoute: typeof UserProfileRoute
   UserSettingsRoute: typeof UserSettingsRoute
-  ClassesIndexRoute: typeof ClassesIndexRoute
-  OrganizationsIndexRoute: typeof OrganizationsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -161,20 +172,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/organizations/': {
-      id: '/organizations/'
-      path: '/organizations'
-      fullPath: '/organizations'
-      preLoaderRoute: typeof OrganizationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/classes/': {
-      id: '/classes/'
-      path: '/classes'
-      fullPath: '/classes'
-      preLoaderRoute: typeof ClassesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/user/settings': {
@@ -198,33 +195,79 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/organizations/$orgId': {
-      id: '/organizations/$orgId'
-      path: '/organizations/$orgId'
-      fullPath: '/organizations/$orgId'
-      preLoaderRoute: typeof OrganizationsOrgIdRouteImport
+    '/organizations/_orgLayout': {
+      id: '/organizations/_orgLayout'
+      path: '/organizations'
+      fullPath: '/organizations'
+      preLoaderRoute: typeof OrganizationsOrgLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/classes/$classId': {
-      id: '/classes/$classId'
-      path: '/classes/$classId'
-      fullPath: '/classes/$classId'
-      preLoaderRoute: typeof ClassesClassIdRouteImport
+    '/classes/_classesLayout': {
+      id: '/classes/_classesLayout'
+      path: '/classes'
+      fullPath: '/classes'
+      preLoaderRoute: typeof ClassesClassesLayoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/classes/_classesLayout/': {
+      id: '/classes/_classesLayout/'
+      path: '/'
+      fullPath: '/classes/'
+      preLoaderRoute: typeof ClassesClassesLayoutIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/organizations/_orgLayout/$orgId': {
+      id: '/organizations/_orgLayout/$orgId'
+      path: '/$orgId'
+      fullPath: '/organizations/$orgId'
+      preLoaderRoute: typeof OrganizationsOrgLayoutOrgIdRouteImport
+      parentRoute: typeof OrganizationsOrgLayoutRoute
+    }
+    '/classes/_classesLayout/$classId': {
+      id: '/classes/_classesLayout/$classId'
+      path: '/$classId'
+      fullPath: '/classes/$classId'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
     }
   }
 }
 
+interface ClassesClassesLayoutRouteChildren {
+  ClassesClassesLayoutClassIdRoute: typeof ClassesClassesLayoutClassIdRoute
+  ClassesClassesLayoutIndexRoute: typeof ClassesClassesLayoutIndexRoute
+}
+
+const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
+  ClassesClassesLayoutClassIdRoute: ClassesClassesLayoutClassIdRoute,
+  ClassesClassesLayoutIndexRoute: ClassesClassesLayoutIndexRoute,
+}
+
+const ClassesClassesLayoutRouteWithChildren =
+  ClassesClassesLayoutRoute._addFileChildren(ClassesClassesLayoutRouteChildren)
+
+interface OrganizationsOrgLayoutRouteChildren {
+  OrganizationsOrgLayoutOrgIdRoute: typeof OrganizationsOrgLayoutOrgIdRoute
+}
+
+const OrganizationsOrgLayoutRouteChildren: OrganizationsOrgLayoutRouteChildren =
+  {
+    OrganizationsOrgLayoutOrgIdRoute: OrganizationsOrgLayoutOrgIdRoute,
+  }
+
+const OrganizationsOrgLayoutRouteWithChildren =
+  OrganizationsOrgLayoutRoute._addFileChildren(
+    OrganizationsOrgLayoutRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ClassesClassIdRoute: ClassesClassIdRoute,
-  OrganizationsOrgIdRoute: OrganizationsOrgIdRoute,
+  ClassesClassesLayoutRoute: ClassesClassesLayoutRouteWithChildren,
+  OrganizationsOrgLayoutRoute: OrganizationsOrgLayoutRouteWithChildren,
   UserBillingRoute: UserBillingRoute,
   UserProfileRoute: UserProfileRoute,
   UserSettingsRoute: UserSettingsRoute,
-  ClassesIndexRoute: ClassesIndexRoute,
-  OrganizationsIndexRoute: OrganizationsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
