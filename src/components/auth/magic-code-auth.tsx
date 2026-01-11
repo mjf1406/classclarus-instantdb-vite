@@ -1,7 +1,5 @@
 /** @format */
 
-"use client";
-
 import { useState, useRef, type FormEvent } from "react";
 import { Mail } from "lucide-react";
 
@@ -49,8 +47,8 @@ export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
             ) : (
                 <Button
                     onClick={() => setOpen(true)}
-                    variant="secondary"
-                    className="w-full items-center gap-2 justify-start"
+                    variant="outline"
+                    className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80"
                     size="lg"
                 >
                     <Mail className="h-5 w-5" />

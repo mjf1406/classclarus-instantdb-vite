@@ -79,9 +79,9 @@ Create [`functions/api/[[route]].ts`](functions/api/[[route]].ts) - the `[[route
 
 The handler will include:
 
--   **GET `/api/checkout`** - Redirects to Polar checkout with `productId` and optional `customerEmail` query params
--   **GET `/api/portal`** - Redirects to Polar customer portal for subscription management
--   **POST `/api/webhooks`** - Receives Polar webhooks and updates InstantDB
+- **GET `/api/checkout`** - Redirects to Polar checkout with `productId` and optional `customerEmail` query params
+- **GET `/api/portal`** - Redirects to Polar customer portal for subscription management
+- **POST `/api/webhooks`** - Receives Polar webhooks and updates InstantDB
 
 ### 3. Webhook Handler Logic
 
@@ -121,8 +121,8 @@ Configure these in Cloudflare Pages dashboard (Settings > Environment variables)
 
 In your Polar dashboard, add a webhook endpoint:
 
--   URL: `https://your-domain.pages.dev/api/webhooks`
--   Events: `subscription.created`, `subscription.updated`, `subscription.canceled`
+- URL: `https://your-domain.pages.dev/api/webhooks`
+- Events: `subscription.created`, `subscription.updated`, `subscription.canceled`
 
 ### 6. Client-Side Usage
 
@@ -172,8 +172,8 @@ Or add to package.json scripts:
 
 Your `$users` entity already has the necessary fields:
 
--   `polarCustomerId` - stores Polar customer ID
--   `polarSubscriptionId` - stores active subscription ID
--   `plan` - stores subscription plan type
+- `polarCustomerId` - stores Polar customer ID
+- `polarSubscriptionId` - stores active subscription ID
+- `plan` - stores subscription plan type
 
 The webhook handler will update these fields when subscription events occur.

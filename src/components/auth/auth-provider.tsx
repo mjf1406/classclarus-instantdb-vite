@@ -1,7 +1,5 @@
 /** @format */
 
-"use client";
-
 import React, { createContext, useContext } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -67,8 +65,11 @@ export default function AuthProvider({
 }) {
     const { user, isLoading: authLoading } = db.useAuth();
 
+    // Only query user data if we have a valid user ID
+    const hasValidUser = user?.id && user.id.trim() !== "";
+
     const { data, isLoading: dataLoading } = db.useQuery(
-        user?.id
+        hasValidUser
             ? {
                   $users: {
                       $: { where: { id: user.id } },
@@ -79,7 +80,7 @@ export default function AuthProvider({
 
     const userData = data?.$users?.[0];
 
-    const orgQuery = user
+    const orgQuery = hasValidUser
         ? {
               organizations: {
                   $: {
@@ -116,6 +117,14 @@ export default function AuthProvider({
 
     const typedOrgData = (orgData as OrgQueryResult | undefined) ?? null;
 
+    // If there's no user, we're done loading (no user = not authenticated, not loading)
+    // If there is a user, wait for all queries to complete
+    const isLoading = authLoading
+        ? true
+        : hasValidUser
+          ? dataLoading || orgLoading
+          : false;
+
     const value: AuthContextValue = {
         user: {
             created_at: userData?.created || "",
@@ -132,11 +141,10 @@ export default function AuthProvider({
             lastName: userData?.lastName || null,
             plan: userData?.plan || "free",
         },
-        isLoading: authLoading || dataLoading || orgLoading,
+        isLoading,
         organizations: typedOrgData?.organizations || [],
         error: orgError,
     };
-    console.log("🚀 ~ AuthProvider ~ value:", value);
 
     return (
         <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

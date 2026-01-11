@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OrganizationsIndexRouteImport } from './routes/organizations/index'
 import { Route as UserSettingsRouteImport } from './routes/user/settings'
 import { Route as UserProfileRouteImport } from './routes/user/profile'
 import { Route as UserBillingRouteImport } from './routes/user/billing'
@@ -28,6 +29,11 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizationsIndexRoute = OrganizationsIndexRouteImport.update({
+  id: '/organizations/',
+  path: '/organizations/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UserSettingsRoute = UserSettingsRouteImport.update({
@@ -78,7 +84,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/classes': typeof ClassesClassesLayoutRouteWithChildren
-  '/organizations': typeof OrganizationsOrgLayoutRouteWithChildren
+  '/organizations': typeof OrganizationsIndexRoute
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
@@ -89,7 +95,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/organizations': typeof OrganizationsOrgLayoutRouteWithChildren
+  '/organizations': typeof OrganizationsIndexRoute
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
@@ -106,6 +112,7 @@ export interface FileRoutesById {
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
+  '/organizations/': typeof OrganizationsIndexRoute
   '/classes/_classesLayout/$classId': typeof ClassesClassesLayoutClassIdRoute
   '/organizations/_orgLayout/$orgId': typeof OrganizationsOrgLayoutOrgIdRoute
   '/classes/_classesLayout/': typeof ClassesClassesLayoutIndexRoute
@@ -143,6 +150,7 @@ export interface FileRouteTypes {
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
+    | '/organizations/'
     | '/classes/_classesLayout/$classId'
     | '/organizations/_orgLayout/$orgId'
     | '/classes/_classesLayout/'
@@ -156,6 +164,7 @@ export interface RootRouteChildren {
   UserBillingRoute: typeof UserBillingRoute
   UserProfileRoute: typeof UserProfileRoute
   UserSettingsRoute: typeof UserSettingsRoute
+  OrganizationsIndexRoute: typeof OrganizationsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organizations/': {
+      id: '/organizations/'
+      path: '/organizations'
+      fullPath: '/organizations'
+      preLoaderRoute: typeof OrganizationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/user/settings': {
@@ -268,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   UserBillingRoute: UserBillingRoute,
   UserProfileRoute: UserProfileRoute,
   UserSettingsRoute: UserSettingsRoute,
+  OrganizationsIndexRoute: OrganizationsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

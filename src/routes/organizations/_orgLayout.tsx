@@ -1,9 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router'
+/** @format */
 
-export const Route = createFileRoute('/organizations/_orgLayout')({
-  component: RouteComponent,
-})
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/organizations/_orgLayout")({
+    component: RouteComponent,
+});
 
 function RouteComponent() {
-  return <div>Hello "/_organizationsLayouts"!</div>
+    // This is where the sidebar layout when viewing a single organization goes
+    return (
+        <div className="flex flex-col min-w-screen min-h-screen items-center justify-center gap-1">
+            <h1 className="text-2xl font-bold">Organizations</h1>
+            <Outlet />
+        </div>
+    );
 }

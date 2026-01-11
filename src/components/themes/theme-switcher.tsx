@@ -1,7 +1,5 @@
 /** @format */
 
-"use client";
-
 import * as React from "react";
 import { Sun, Moon, Sparkles } from "lucide-react";
 
@@ -36,7 +34,7 @@ export function ThemeSwitcher() {
         <RadioGroup
             value={theme}
             onValueChange={handleThemeChange}
-            className="inline-flex items-center gap-0.5 rounded-md border border-input bg-background p-0.5 shadow-sm"
+            className="inline-flex items-center gap-0.5 w-fit rounded-md border border-input bg-background p-0.5 shadow-sm"
             aria-label="Theme selection"
             role="radiogroup"
         >

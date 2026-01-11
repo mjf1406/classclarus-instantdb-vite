@@ -1,7 +1,5 @@
 /** @format */
 
-"use client";
-
 import { useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { GoogleLogin } from "@react-oauth/google";
@@ -14,7 +12,7 @@ interface GoogleJwtPayload {
     family_name?: string;
 }
 
-const GOOGLE_CLIENT_NAME = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_NAME || "";
+const GOOGLE_CLIENT_NAME = import.meta.env.VITE_GOOGLE_CLIENT_NAME || "";
 
 function handleGoogleSuccess(
     credentialResponse: { credential?: string },
@@ -123,8 +121,8 @@ export function GoogleOAuthButton() {
 
             <Button
                 onClick={handleGoogleButtonClick}
-                variant="secondary"
-                className="w-full items-center gap-2 justify-start"
+                variant="outline"
+                className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80"
                 size="lg"
                 aria-label="Sign in with Google"
             >
