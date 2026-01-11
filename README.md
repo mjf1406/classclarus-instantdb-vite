@@ -20,6 +20,10 @@ Gamify your classroom to motivate your students.
 
 ## Change Log
 
+### 2026/01/12
+
+- UI: /organizations page is good to go.
+
 ### 2026/01/11
 
 - UI: root page is good to go.

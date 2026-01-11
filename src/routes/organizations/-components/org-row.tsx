@@ -1,0 +1,135 @@
+/** @format */
+
+import { Link } from "@tanstack/react-router";
+import type { InstaQLEntity } from "@instantdb/react";
+import type { AppSchema } from "@/instant.schema";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Building2Icon } from "lucide-react";
+import { OrgActionsMenu } from "./org-actions-menu";
+import { useAuthContext } from "@/components/auth/auth-provider";
+import {
+    OwnerIcon,
+    AdminIcon,
+    TeacherIcon,
+    StudentIcon,
+    ParentIcon,
+} from "@/components/icons/role-icons";
+
+type Organization = InstaQLEntity<
+    AppSchema,
+    "organizations",
+    {
+        classes: {};
+        owner: {};
+        admins: {};
+        orgTeachers: {};
+        orgStudents: {};
+        orgParents: {};
+    }
+>;
+
+interface OrgRowProps {
+    organization: Organization;
+}
+
+export function OrgRow({ organization }: OrgRowProps) {
+    const { user } = useAuthContext();
+    const classCount = organization.classes?.length || 0;
+    const icon = organization.icon || "🏢";
+    const description = organization.description || "No description";
+
+    // Determine user's role in the organization (priority: Owner > Admin > Teacher > Student > Parent)
+    const userId = user?.id;
+    const isOwner = userId && organization.owner?.id === userId;
+    const isAdmin =
+        userId &&
+        !isOwner &&
+        organization.admins?.some((admin) => admin.id === userId);
+    const isTeacher =
+        userId &&
+        !isOwner &&
+        !isAdmin &&
+        organization.orgTeachers?.some((teacher) => teacher.id === userId);
+    const isStudent =
+        userId &&
+        !isOwner &&
+        !isAdmin &&
+        !isTeacher &&
+        organization.orgStudents?.some((student) => student.id === userId);
+    const isParent =
+        userId &&
+        !isOwner &&
+        !isAdmin &&
+        !isTeacher &&
+        !isStudent &&
+        organization.orgParents?.some((parent) => parent.id === userId);
+
+    // Get the appropriate role icon
+    const RoleIcon = isOwner
+        ? OwnerIcon
+        : isAdmin
+          ? AdminIcon
+          : isTeacher
+            ? TeacherIcon
+            : isStudent
+              ? StudentIcon
+              : isParent
+                ? ParentIcon
+                : null;
+
+    return (
+        <Card className="group/card hover:ring-foreground/20 transition-all">
+            <CardContent className="py-3">
+                <div className="flex items-center gap-4">
+                    <div
+                        className="text-2xl shrink-0"
+                        aria-hidden="true"
+                    >
+                        {icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3">
+                            <Link
+                                to="/organizations/$orgId"
+                                params={{ orgId: organization.id }}
+                                className="font-medium hover:underline line-clamp-1"
+                            >
+                                {organization.name}
+                            </Link>
+                            {RoleIcon && (
+                                <Badge
+                                    variant="outline"
+                                    className="gap-1"
+                                >
+                                    <RoleIcon className="size-3" />
+                                    {isOwner
+                                        ? "Owner"
+                                        : isAdmin
+                                          ? "Admin"
+                                          : isTeacher
+                                            ? "Teacher"
+                                            : isStudent
+                                              ? "Student"
+                                              : "Parent"}
+                                </Badge>
+                            )}
+                            <Badge
+                                variant="secondary"
+                                className="gap-1"
+                            >
+                                <Building2Icon className="size-3" />
+                                {classCount}{" "}
+                                {classCount === 1 ? "class" : "classes"}
+                            </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                            {description}
+                        </p>
+                    </div>
+                    <OrgActionsMenu organization={organization} />
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
