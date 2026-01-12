@@ -42,7 +42,7 @@ function RouteComponent() {
     }
     // This is where the sidebar layout when viewing a single organization goes
     return (
-        <SidebarProvider defaultOpen={false}>
+        <SidebarProvider defaultOpen={isIndexRoute ? false : true}>
             <OrgSidebar />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -77,14 +77,14 @@ function RouteComponent() {
                                 ) : (
                                     <>
                                         <BreadcrumbItem className="hidden md:block">
-                                            <BreadcrumbLink href="#">
+                                            <BreadcrumbLink href="/organizations">
                                                 Organizations
                                             </BreadcrumbLink>
                                         </BreadcrumbItem>
                                         <BreadcrumbSeparator className="hidden md:block" />
                                         <BreadcrumbItem>
                                             <BreadcrumbPage>
-                                                Data Fetching
+                                                {params.orgId}
                                             </BreadcrumbPage>
                                         </BreadcrumbItem>
                                     </>
