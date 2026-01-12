@@ -27,7 +27,6 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarRail,
-    useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuthContext } from "@/components/auth/auth-provider";
 
@@ -163,10 +162,8 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams({ strict: false });
-    const { state } = useSidebar();
     const { user: authUser } = useAuthContext();
     const isIndexRoute = !params.orgId;
-    const isExpanded = state === "expanded";
 
     // Transform auth user data to match NavUser component's expected format
     const userData = {
