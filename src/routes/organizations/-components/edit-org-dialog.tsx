@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { EditIcon } from "lucide-react";
+import { OrgIconSelector } from "@/components/ui/org-icon-selector";
 
 type Organization = InstaQLEntity<AppSchema, "organizations">;
 
@@ -44,7 +45,7 @@ export function EditOrgDialog({
     const [description, setDescription] = useState(
         organization.description || ""
     );
-    const [icon, setIcon] = useState(organization.icon || "");
+    const [icon, setIcon] = useState(organization.icon);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,7 +55,7 @@ export function EditOrgDialog({
         if (newOpen) {
             setName(organization.name);
             setDescription(organization.description || "");
-            setIcon(organization.icon || "");
+            setIcon(organization.icon);
             setError(null);
         }
     };
@@ -77,7 +78,7 @@ export function EditOrgDialog({
                 db.tx.organizations[organization.id].update({
                     name: name.trim(),
                     description: description.trim() || undefined,
-                    icon: icon.trim() || undefined,
+                    icon: icon || undefined,
                     updated: now,
                 }),
             ]);
@@ -173,23 +174,13 @@ export function EditOrgDialog({
                                 </Field>
 
                                 <Field>
-                                    <FieldLabel htmlFor="edit-org-icon">
-                                        Icon
-                                    </FieldLabel>
+                                    <FieldLabel>Icon</FieldLabel>
                                     <FieldContent>
-                                        <Input
-                                            id="edit-org-icon"
+                                        <OrgIconSelector
                                             value={icon}
-                                            onChange={(e) =>
-                                                setIcon(e.target.value)
-                                            }
-                                            placeholder="🏢"
-                                            maxLength={2}
+                                            onChange={setIcon}
                                             disabled={isSubmitting}
                                         />
-                                        <FieldDescription>
-                                            Optional emoji icon (1-2 characters)
-                                        </FieldDescription>
                                     </FieldContent>
                                 </Field>
 
@@ -285,23 +276,13 @@ export function EditOrgDialog({
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="edit-org-icon">
-                                    Icon
-                                </FieldLabel>
+                                <FieldLabel>Icon</FieldLabel>
                                 <FieldContent>
-                                    <Input
-                                        id="edit-org-icon"
+                                    <OrgIconSelector
                                         value={icon}
-                                        onChange={(e) =>
-                                            setIcon(e.target.value)
-                                        }
-                                        placeholder="🏢"
-                                        maxLength={2}
+                                        onChange={setIcon}
                                         disabled={isSubmitting}
                                     />
-                                    <FieldDescription>
-                                        Optional emoji icon (1-2 characters)
-                                    </FieldDescription>
                                 </FieldContent>
                             </Field>
 

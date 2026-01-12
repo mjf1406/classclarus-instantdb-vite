@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { OrgIconSelector } from "@/components/ui/org-icon-selector";
 
 interface CreateOrgDialogProps {
     children: React.ReactNode;
@@ -26,7 +27,7 @@ export function CreateOrgDialog({ children }: CreateOrgDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
-    const [icon, setIcon] = useState("");
+    const [icon, setIcon] = useState<string | undefined>(undefined);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuthContext();
@@ -55,7 +56,7 @@ export function CreateOrgDialog({ children }: CreateOrgDialogProps) {
                 db.tx.organizations[orgId].create({
                     name: name.trim(),
                     description: description.trim() || undefined,
-                    icon: icon.trim() || undefined,
+                    icon: icon || undefined,
                     created: now,
                     updated: now,
                 }).link({ owner: user.id }),
@@ -64,7 +65,7 @@ export function CreateOrgDialog({ children }: CreateOrgDialogProps) {
             // Reset form and close dialog
             setName("");
             setDescription("");
-            setIcon("");
+            setIcon(undefined);
             setOpen(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to create organization");
@@ -120,19 +121,13 @@ export function CreateOrgDialog({ children }: CreateOrgDialogProps) {
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="org-icon">Icon</FieldLabel>
+                            <FieldLabel>Icon</FieldLabel>
                             <FieldContent>
-                                <Input
-                                    id="org-icon"
+                                <OrgIconSelector
                                     value={icon}
-                                    onChange={(e) => setIcon(e.target.value)}
-                                    placeholder="🏢"
-                                    maxLength={2}
+                                    onChange={setIcon}
                                     disabled={isSubmitting}
                                 />
-                                <FieldDescription>
-                                    Optional emoji icon (1-2 characters)
-                                </FieldDescription>
                             </FieldContent>
                         </Field>
 

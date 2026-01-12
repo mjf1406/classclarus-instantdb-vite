@@ -2,6 +2,8 @@
 
 import { Crown, GraduationCap, Heart, Shield, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge, badgeVariants } from "@/components/ui/badge";
+import type { VariantProps } from "class-variance-authority";
 
 export function OwnerIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -54,5 +56,111 @@ export function StudentIcon(props: React.SVGProps<SVGSVGElement>) {
                 props.className
             )}
         />
+    );
+}
+
+// Role Badge Components
+interface RoleBadgeProps extends Omit<React.ComponentProps<"span">, "variant"> {
+    variant?: VariantProps<typeof badgeVariants>["variant"];
+    className?: string;
+}
+
+export function OwnerBadge({
+    className,
+    variant = "outline",
+    ...props
+}: RoleBadgeProps) {
+    return (
+        <Badge
+            variant={variant}
+            className={cn(
+                "gap-1 border-amber-600 dark:border-amber-400 text-amber-600 dark:text-amber-400",
+                className
+            )}
+            {...props}
+        >
+            <OwnerIcon className="size-3" />
+            Owner
+        </Badge>
+    );
+}
+
+export function AdminBadge({
+    className,
+    variant = "outline",
+    ...props
+}: RoleBadgeProps) {
+    return (
+        <Badge
+            variant={variant}
+            className={cn(
+                "gap-1 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400",
+                className
+            )}
+            {...props}
+        >
+            <AdminIcon className="size-3" />
+            Admin
+        </Badge>
+    );
+}
+
+export function TeacherBadge({
+    className,
+    variant = "outline",
+    ...props
+}: RoleBadgeProps) {
+    return (
+        <Badge
+            variant={variant}
+            className={cn(
+                "gap-1 border-purple-600 dark:border-purple-400 text-purple-600 dark:text-purple-400",
+                className
+            )}
+            {...props}
+        >
+            <TeacherIcon className="size-3" />
+            Teacher
+        </Badge>
+    );
+}
+
+export function StudentBadge({
+    className,
+    variant = "outline",
+    ...props
+}: RoleBadgeProps) {
+    return (
+        <Badge
+            variant={variant}
+            className={cn(
+                "gap-1 border-green-600 dark:border-green-400 text-green-600 dark:text-green-400",
+                className
+            )}
+            {...props}
+        >
+            <StudentIcon className="size-3" />
+            Student
+        </Badge>
+    );
+}
+
+export function ParentBadge({
+    className,
+    variant = "outline",
+    ...props
+}: RoleBadgeProps) {
+    return (
+        <Badge
+            variant={variant}
+            className={cn(
+                "gap-1 border-pink-600 dark:border-pink-400 text-pink-600 dark:text-pink-400",
+                className
+            )}
+            {...props}
+        >
+            <ParentIcon className="size-3" />
+            Parent
+        </Badge>
     );
 }

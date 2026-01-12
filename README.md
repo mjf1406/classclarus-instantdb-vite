@@ -22,6 +22,7 @@ Gamify your classroom to motivate your students.
 
 ### 2026/01/12
 
+- UI: org icon can be emoji, image, or icon.
 - UI: /organizations page is good to go.
 
 ### 2026/01/11

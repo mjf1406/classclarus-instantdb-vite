@@ -9,12 +9,13 @@ import { Building2Icon } from "lucide-react";
 import { OrgActionsMenu } from "./org-actions-menu";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
-    OwnerIcon,
-    AdminIcon,
-    TeacherIcon,
-    StudentIcon,
-    ParentIcon,
+    OwnerBadge,
+    AdminBadge,
+    TeacherBadge,
+    StudentBadge,
+    ParentBadge,
 } from "@/components/icons/role-icons";
+import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 
 type Organization = InstaQLEntity<
     AppSchema,
@@ -36,7 +37,6 @@ interface OrgRowProps {
 export function OrgRow({ organization }: OrgRowProps) {
     const { user } = useAuthContext();
     const classCount = organization.classes?.length || 0;
-    const icon = organization.icon || "🏢";
     const description = organization.description || "No description";
 
     // Determine user's role in the organization (priority: Owner > Admin > Teacher > Student > Parent)
@@ -65,29 +65,28 @@ export function OrgRow({ organization }: OrgRowProps) {
         !isStudent &&
         organization.orgParents?.some((parent) => parent.id === userId);
 
-    // Get the appropriate role icon
-    const RoleIcon = isOwner
-        ? OwnerIcon
+    // Get the appropriate role badge
+    const RoleBadge = isOwner
+        ? OwnerBadge
         : isAdmin
-          ? AdminIcon
+          ? AdminBadge
           : isTeacher
-            ? TeacherIcon
+            ? TeacherBadge
             : isStudent
-              ? StudentIcon
+              ? StudentBadge
               : isParent
-                ? ParentIcon
+                ? ParentBadge
                 : null;
 
     return (
         <Card className="group/card hover:ring-foreground/20 transition-all">
             <CardContent className="py-3">
                 <div className="flex items-center gap-4">
-                    <div
-                        className="text-2xl shrink-0"
-                        aria-hidden="true"
-                    >
-                        {icon}
-                    </div>
+                    <OrgIconDisplay
+                        icon={organization.icon}
+                        size="sm"
+                        className="shrink-0"
+                    />
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3">
                             <Link
@@ -97,23 +96,7 @@ export function OrgRow({ organization }: OrgRowProps) {
                             >
                                 {organization.name}
                             </Link>
-                            {RoleIcon && (
-                                <Badge
-                                    variant="outline"
-                                    className="gap-1"
-                                >
-                                    <RoleIcon className="size-3" />
-                                    {isOwner
-                                        ? "Owner"
-                                        : isAdmin
-                                          ? "Admin"
-                                          : isTeacher
-                                            ? "Teacher"
-                                            : isStudent
-                                              ? "Student"
-                                              : "Parent"}
-                                </Badge>
-                            )}
+                            {RoleBadge && <RoleBadge />}
                             <Badge
                                 variant="secondary"
                                 className="gap-1"

@@ -16,12 +16,13 @@ import { Building2Icon } from "lucide-react";
 import { OrgActionsMenu } from "./org-actions-menu";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
-    OwnerIcon,
-    AdminIcon,
-    TeacherIcon,
-    StudentIcon,
-    ParentIcon,
+    OwnerBadge,
+    AdminBadge,
+    TeacherBadge,
+    StudentBadge,
+    ParentBadge,
 } from "@/components/icons/role-icons";
+import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 
 type Organization = InstaQLEntity<
     AppSchema,
@@ -43,7 +44,6 @@ interface OrgCardProps {
 export function OrgCard({ organization }: OrgCardProps) {
     const { user } = useAuthContext();
     const classCount = organization.classes?.length || 0;
-    const icon = organization.icon || "🏢";
     const description = organization.description || "No description";
 
     // Determine user's role in the organization (priority: Owner > Admin > Teacher > Student > Parent)
@@ -72,17 +72,17 @@ export function OrgCard({ organization }: OrgCardProps) {
         !isStudent &&
         organization.orgParents?.some((parent) => parent.id === userId);
 
-    // Get the appropriate role icon
-    const RoleIcon = isOwner
-        ? OwnerIcon
+    // Get the appropriate role badge
+    const RoleBadge = isOwner
+        ? OwnerBadge
         : isAdmin
-          ? AdminIcon
+          ? AdminBadge
           : isTeacher
-            ? TeacherIcon
+            ? TeacherBadge
             : isStudent
-              ? StudentIcon
+              ? StudentBadge
               : isParent
-                ? ParentIcon
+                ? ParentBadge
                 : null;
 
     return (
@@ -90,14 +90,13 @@ export function OrgCard({ organization }: OrgCardProps) {
             <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div
-                            className="text-3xl shrink-0"
-                            aria-hidden="true"
-                        >
-                            {icon}
-                        </div>
+                        <OrgIconDisplay
+                            icon={organization.icon}
+                            size="md"
+                            className="shrink-0"
+                        />
                         <div className="flex-1 min-w-0">
-                            <CardTitle className="line-clamp-1">
+                            <CardTitle className="line-clamp-1 flex items-center gap-2">
                                 <Link
                                     to="/organizations/$orgId"
                                     params={{ orgId: organization.id }}
@@ -105,6 +104,7 @@ export function OrgCard({ organization }: OrgCardProps) {
                                 >
                                     {organization.name}
                                 </Link>
+                                {RoleBadge && <RoleBadge />}
                             </CardTitle>
                             <CardDescription className="line-clamp-2 mt-1">
                                 {description}
@@ -118,23 +118,6 @@ export function OrgCard({ organization }: OrgCardProps) {
             </CardHeader>
             <CardContent>
                 <div className="flex items-center gap-2">
-                    {RoleIcon && (
-                        <Badge
-                            variant="outline"
-                            className="gap-1"
-                        >
-                            <RoleIcon className="size-3" />
-                            {isOwner
-                                ? "Owner"
-                                : isAdmin
-                                  ? "Admin"
-                                  : isTeacher
-                                    ? "Teacher"
-                                    : isStudent
-                                      ? "Student"
-                                      : "Parent"}
-                        </Badge>
-                    )}
                     <Badge
                         variant="secondary"
                         className="gap-1"
