@@ -24,70 +24,24 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks(id) {
-                    // Vendor chunks for better caching and parallel loading
-                    if (id.includes("node_modules")) {
-                        // React and React-DOM
-                        if (
-                            id.includes("react/") ||
-                            id.includes("react-dom/") ||
-                            id.includes("scheduler/")
-                        ) {
-                            return "vendor-react";
-                        }
-
-                        // TanStack Router
-                        if (id.includes("@tanstack/react-router")) {
-                            return "vendor-router";
-                        }
-
-                        // InstantDB packages
-                        if (id.includes("@instantdb/")) {
-                            return "vendor-instantdb";
-                        }
-
-                        // Icon libraries
-                        if (id.includes("lucide-react")) {
-                            return "vendor-icons";
-                        }
-
-                        // OAuth packages
-                        if (id.includes("@react-oauth/")) {
-                            return "vendor-oauth";
-                        }
-
-                        // UI component libraries
-                        if (
-                            id.includes("@radix-ui/") ||
-                            id.includes("shadcn/") ||
-                            id.includes("class-variance-authority") ||
-                            id.includes("tailwind-merge")
-                        ) {
-                            return "vendor-ui";
-                        }
-
-                        // Utility libraries
-                        if (
-                            id.includes("date-fns") ||
-                            id.includes("fuse.js") ||
-                            id.includes("jwt-decode") ||
-                            id.includes("clsx") ||
-                            id.includes("usehooks-ts") ||
-                            id.includes("vaul") ||
-                            id.includes("input-otp")
-                        ) {
-                            return "vendor-utils";
-                        }
-
-                        // Other node_modules dependencies go into a default vendor chunk
-                        // This prevents too many small chunks
-                        return "vendor-misc";
-                    }
-
-                    // icons-data.ts should be in its own chunk (already dynamically imported)
-                    if (id.includes("icons-data")) {
-                        return "icons-data";
-                    }
+                manualChunks: {
+                    // Core React
+                    "vendor-react": ["react", "react-dom"],
+                    // InstantDB (typically large)
+                    "vendor-instant": ["@instantdb/react", "@instantdb/core"],
+                    // Router
+                    "vendor-router": ["@tanstack/react-router"],
+                    // UI libraries
+                    "vendor-ui": [
+                        "@radix-ui/react-avatar",
+                        "@radix-ui/react-dialog",
+                        "vaul",
+                        "class-variance-authority",
+                        "clsx",
+                        "tailwind-merge",
+                    ],
+                    // Icons (often large due to tree-shaking limits)
+                    "vendor-icons": ["lucide-react"],
                 },
             },
         },

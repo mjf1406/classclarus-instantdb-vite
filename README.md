@@ -22,6 +22,7 @@ Gamify your classroom to motivate your students.
 
 ### 2026/01/12
 
+- UX: icons for org icon causing too large of a bundle size so removed
 - UX: added created and updated to `org-card.tsx` and `org-row.tsx`
 - UI: org icon can be emoji, image, or icon.
 - UI: /organizations page is good to go.

@@ -9,12 +9,11 @@ import {
     FieldDescription,
     FieldLabel,
 } from "@/components/ui/field";
-import { IconPicker, Icon, type IconName } from "@/components/ui/icon-picker";
 import { useUploadedFile } from "@/hooks/files/use-uploaded-file";
 import { UploadIcon, XIcon, ImageIcon, SmileIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type IconType = "emoji" | "image" | "icon";
+type IconType = "emoji" | "image";
 
 interface OrgIconSelectorProps {
     value?: string;
@@ -25,7 +24,8 @@ interface OrgIconSelectorProps {
 // Helper functions to determine and parse icon type
 function getIconType(value?: string): IconType {
     if (!value) return "emoji";
-    if (value.startsWith("icon:")) return "icon";
+    // Legacy icon: prefix values are treated as emoji (fallback)
+    if (value.startsWith("icon:")) return "emoji";
     if (
         value.startsWith("http://") ||
         value.startsWith("https://") ||
@@ -39,14 +39,10 @@ function parseIconValue(value?: string): {
     type: IconType;
     emoji?: string;
     imageUrl?: string;
-    iconName?: IconName;
 } {
     const type = getIconType(value);
     if (!value) return { type: "emoji" };
 
-    if (type === "icon") {
-        return { type, iconName: value.replace("icon:", "") as IconName };
-    }
     if (type === "image") {
         return { type, imageUrl: value };
     }
@@ -63,9 +59,6 @@ export function OrgIconSelector({
     const [imageUrl, setImageUrl] = useState(
         parseIconValue(value).imageUrl || ""
     );
-    const [iconName, setIconName] = useState<IconName | undefined>(
-        parseIconValue(value).iconName
-    );
     const fileInputRef = useRef<HTMLInputElement>(null);
     const {
         uploadFile,
@@ -76,10 +69,15 @@ export function OrgIconSelector({
     // Update local state when value prop changes
     useEffect(() => {
         const currentValue = parseIconValue(value);
-        setActiveTab(currentValue.type);
-        setEmoji(currentValue.emoji || "");
-        setImageUrl(currentValue.imageUrl || "");
-        setIconName(currentValue.iconName);
+        // If the value is an icon type (icon: prefix), treat it as emoji as fallback
+        if (value?.startsWith("icon:")) {
+            setActiveTab("emoji");
+            setEmoji("🏢");
+        } else {
+            setActiveTab(currentValue.type);
+            setEmoji(currentValue.emoji || "");
+            setImageUrl(currentValue.imageUrl || "");
+        }
     }, [value]);
 
     const handleEmojiChange = (newEmoji: string) => {
@@ -122,11 +120,6 @@ export function OrgIconSelector({
         }
     };
 
-    const handleIconChange = (newIcon: IconName) => {
-        setIconName(newIcon);
-        onChange?.(`icon:${newIcon}`);
-    };
-
     const handleRemoveImage = () => {
         setImageUrl("");
         onChange?.(undefined);
@@ -163,20 +156,6 @@ export function OrgIconSelector({
                 >
                     <ImageIcon className="size-3.5" />
                     Image
-                </Button>
-                <Button
-                    type="button"
-                    variant={activeTab === "icon" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => handleTabChange("icon")}
-                    disabled={disabled}
-                    className="gap-1.5 flex-1"
-                >
-                    <Icon
-                        name="building-2"
-                        className="size-3.5"
-                    />
-                    Icon
                 </Button>
             </div>
 
@@ -266,23 +245,6 @@ export function OrgIconSelector({
                     </FieldContent>
                 </Field>
             )}
-
-            {activeTab === "icon" && (
-                <Field>
-                    <FieldLabel>Icon</FieldLabel>
-                    <FieldContent>
-                        <IconPicker
-                            value={iconName}
-                            onValueChange={handleIconChange}
-                            disabled={disabled}
-                            triggerPlaceholder="Select an icon"
-                        />
-                        <FieldDescription>
-                            Choose an icon from the library
-                        </FieldDescription>
-                    </FieldContent>
-                </Field>
-            )}
         </div>
     );
 }
@@ -324,24 +286,21 @@ export function OrgIconDisplay({
         lg: "size-16",
     };
 
-    if (type === "icon") {
-        const iconName = icon.replace("icon:", "") as IconName;
+    // If icon type (icon: prefix), show fallback emoji
+    if (icon?.startsWith("icon:")) {
         return (
             <div
                 className={cn(
-                    "shrink-0 flex items-center justify-center",
+                    "shrink-0 flex items-center justify-center bg-muted rounded",
                     className,
-                    sizeClasses[size]
+                    {
+                        "size-8 text-xl": size === "sm",
+                        "size-12 text-2xl": size === "md",
+                        "size-16 text-3xl": size === "lg",
+                    }
                 )}
             >
-                <Icon
-                    name={iconName}
-                    className={cn({
-                        "size-4": size === "sm",
-                        "size-6": size === "md",
-                        "size-8": size === "lg",
-                    })}
-                />
+                🏢
             </div>
         );
     }
