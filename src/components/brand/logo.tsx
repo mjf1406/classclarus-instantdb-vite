@@ -1,7 +1,7 @@
 /** @format */
 
-import logo from "/brand/classclarus-logo.webp";
-import icon from "/brand/classclarus-icon.webp";
+import logo from "/brand/icon-left-of-text-different-sizes-removebg-preview.webp";
+import icon from "/brand/icon.webp";
 import { ImageSkeleton } from "../ui/image-skeleton";
 
 export function LogoBig() {
@@ -9,8 +9,8 @@ export function LogoBig() {
         <ImageSkeleton
             src={logo}
             alt="ClassClarus Logo"
-            width={434}
-            height={106}
+            width={399}
+            height={125}
         />
     );
 }

@@ -11,6 +11,7 @@ import { PlusIcon, Grid3x3Icon, ListIcon } from "lucide-react";
 import { OrgGrid } from "./-components/org-grid";
 import { OrgLists } from "./-components/org-lists";
 import { CreateOrgDialog } from "./-components/create-org-dialog";
+import LoginPage from "@/components/auth/login-page";
 
 type Organization = InstaQLEntity<
     AppSchema,
@@ -68,6 +69,10 @@ function RouteComponent() {
     const organizations: Organization[] =
         ((data as any)?.organizations as Organization[] | undefined) || [];
     const isLoading = authLoading || dataLoading;
+
+    if (!user || !user.id) {
+        return <LoginPage />;
+    }
 
     return (
         <div className="container mx-auto py-6 space-y-6">
