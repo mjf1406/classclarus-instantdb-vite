@@ -10,9 +10,10 @@ import {
     CardTitle,
     CardDescription,
     CardAction,
+    CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2Icon } from "lucide-react";
+import { Building2Icon, CalendarPlus, RefreshCw } from "lucide-react";
 import { OrgActionsMenu } from "./org-actions-menu";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
@@ -23,6 +24,7 @@ import {
     ParentBadge,
 } from "@/components/icons/role-icons";
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
+import { format, formatDistanceToNow } from "date-fns";
 
 type Organization = InstaQLEntity<
     AppSchema,
@@ -127,6 +129,25 @@ export function OrgCard({ organization }: OrgCardProps) {
                     </Badge>
                 </div>
             </CardContent>
+            <CardFooter className="flex items-center justify-between text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                    <CalendarPlus className="size-3" />
+                    {organization.created
+                        ? format(
+                              new Date(organization.created),
+                              "MMM d, yyyy 'at' h:mm a"
+                          )
+                        : "N/A"}
+                </span>
+                <span className="flex items-center gap-1.5">
+                    <RefreshCw className="size-3" />
+                    {organization.updated
+                        ? formatDistanceToNow(new Date(organization.updated), {
+                              addSuffix: true,
+                          })
+                        : "N/A"}
+                </span>
+            </CardFooter>
         </Card>
     );
 }
