@@ -1,8 +1,8 @@
 /** @format */
 
 import logo from "/brand/icon-left-of-text-different-sizes-removebg-preview.webp";
-import icon from "/brand/icon.webp";
-import textLogo from "/brand/text.webp";
+import icon from "/brand/icon-removebg.webp";
+import textLogo from "/brand/text-removebg-preview.webp";
 import { ImageSkeleton } from "../ui/image-skeleton";
 
 export function LogoBig() {

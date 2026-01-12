@@ -18,12 +18,12 @@ export function OrgSidebarHeader() {
             <SidebarMenuItem>
                 <SidebarMenuButton
                     size="lg"
-                    className="data-[state=open]:bg-sidebar! data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar! relative"
+                    className="data-[state=open]:bg-transparent! data-[state=open]:text-sidebar-accent-foreground hover:bg-transparent! relative"
                 >
                     {/* Icon container with absolute positioning when expanded */}
                     <div
                         className={cn(
-                            "bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square shrink-0 items-center justify-center rounded-lg transition-all duration-200 ease-linear",
+                            "bg-transparent text-sidebar-primary-foreground flex aspect-square shrink-0 items-center justify-center rounded-lg transition-all duration-200 ease-linear",
                             isExpanded ? "size-14 absolute left-2" : "size-8"
                         )}
                     >
