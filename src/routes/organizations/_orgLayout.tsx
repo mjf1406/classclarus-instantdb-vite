@@ -2,9 +2,13 @@
 
 import { useAuthContext } from "@/components/auth/auth-provider";
 import LoginPage from "@/components/auth/login-page";
-import { createFileRoute, Link, Outlet, useParams } from "@tanstack/react-router";
+import {
+    createFileRoute,
+    Link,
+    Outlet,
+    useParams,
+} from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { AppSidebar } from "@/components/app-sidebar";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -19,6 +23,7 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { OrgSidebar } from "./-components/sidebar/org-sidebar";
 
 export const Route = createFileRoute("/organizations/_orgLayout")({
     component: RouteComponent,
@@ -38,7 +43,7 @@ function RouteComponent() {
     // This is where the sidebar layout when viewing a single organization goes
     return (
         <SidebarProvider defaultOpen={false}>
-            <AppSidebar />
+            <OrgSidebar />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
                     <div className="flex items-center gap-2 px-4">

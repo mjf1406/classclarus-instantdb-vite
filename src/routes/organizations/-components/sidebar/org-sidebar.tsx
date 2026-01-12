@@ -20,7 +20,7 @@ import { useParams } from "@tanstack/react-router";
 import { NavMain } from "./org-main";
 import { NavProjects } from "./org-projects";
 import { NavUser } from "@/components/navigation/nav-user";
-import { OrgSwitcher } from "./org-switcher";
+import { OrgSidebarHeader } from "./org-sidebar-header";
 import {
     Sidebar,
     SidebarContent,
@@ -28,7 +28,6 @@ import {
     SidebarHeader,
     SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuthContext } from "@/components/auth/auth-provider";
 
 // This is sample data.
 const data = {
@@ -160,23 +159,9 @@ const data = {
     ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams({ strict: false });
-    const { user: authUser } = useAuthContext();
     const isIndexRoute = !params.orgId;
-
-    // Transform auth user data to match NavUser component's expected format
-    const userData = {
-        name:
-            authUser?.firstName && authUser?.lastName
-                ? `${authUser.firstName} ${authUser.lastName}`
-                : authUser?.firstName ||
-                  authUser?.lastName ||
-                  authUser?.email ||
-                  "User",
-        email: authUser?.email || "",
-        avatar: authUser?.avatarURL || authUser?.imageURL || "",
-    };
 
     return (
         <Sidebar
@@ -185,7 +170,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         >
             <>
                 <SidebarHeader>
-                    {isIndexRoute ? null : <OrgSwitcher teams={data.teams} />}
+                    {isIndexRoute ? null : <OrgSidebarHeader />}
                 </SidebarHeader>
                 <SidebarContent>
                     {isIndexRoute ? null : <NavMain items={data.navMain} />}
@@ -194,7 +179,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     )}
                 </SidebarContent>
                 <SidebarFooter>
-                    <NavUser user={userData} />
+                    <NavUser />
                 </SidebarFooter>
                 <SidebarRail />
             </>

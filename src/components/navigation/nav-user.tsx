@@ -4,12 +4,12 @@
 
 import {
     BadgeCheck,
-    Bell,
     ChevronsUpDown,
     CreditCard,
     LogOut,
-    Sparkles,
+    Settings,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -27,17 +27,14 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar";
+import { ThemeSwitcher } from "@/components/themes/theme-switcher";
+import { useAuthContext } from "../auth/auth-provider";
 
-export function NavUser({
-    user,
-}: {
-    user: {
-        name: string;
-        email: string;
-        avatar: string;
-    };
-}) {
+export function NavUser() {
     const { isMobile } = useSidebar();
+    const { user } = useAuthContext();
+    const initials =
+        user.firstName?.charAt(0) + (user.lastName?.charAt(0) || "");
 
     return (
         <SidebarMenu>
@@ -50,19 +47,19 @@ export function NavUser({
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
                                 <AvatarImage
-                                    src={user.avatar}
-                                    alt={user.name}
+                                    src={user.avatarURL || user.imageURL || ""}
+                                    alt={initials || ""}
                                 />
                                 <AvatarFallback className="rounded-lg">
-                                    CN
+                                    {initials}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">
-                                    {user.name}
+                                    {user.firstName} {user.lastName || "User"}
                                 </span>
-                                <span className="truncate text-xs">
-                                    {user.email}
+                                <span className="truncate text-xs text-muted-foreground">
+                                    {user.plan || "Free"}
                                 </span>
                             </div>
                             <ChevronsUpDown className="ml-auto size-4" />
@@ -78,43 +75,67 @@ export function NavUser({
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <Avatar className="h-8 w-8 rounded-lg">
                                     <AvatarImage
-                                        src={user.avatar}
-                                        alt={user.name}
+                                        src={
+                                            user.avatarURL ||
+                                            user.imageURL ||
+                                            ""
+                                        }
+                                        alt={initials || ""}
                                     />
                                     <AvatarFallback className="rounded-lg">
-                                        CN
+                                        {initials}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-medium">
-                                        {user.name}
+                                        {user.firstName}{" "}
+                                        {user.lastName || "User"}
                                     </span>
-                                    <span className="truncate text-xs">
-                                        {user.email}
+                                    <span className="truncate text-xs text-muted-foreground">
+                                        {user.plan || "Free"}
                                     </span>
                                 </div>
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <Sparkles />
-                                Upgrade to Pro
-                            </DropdownMenuItem>
+                            <div className="px-2 py-1.5">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs text-muted-foreground">
+                                        Theme
+                                    </span>
+                                    <ThemeSwitcher />
+                                </div>
+                            </div>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <BadgeCheck />
-                                Account
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    to="/user/profile"
+                                    className="text-foreground! hover:text-background!"
+                                >
+                                    <BadgeCheck />
+                                    Profile
+                                </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <CreditCard />
-                                Billing
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    to="/user/billing"
+                                    className="text-foreground! hover:text-background!"
+                                >
+                                    <CreditCard />
+                                    Billing
+                                </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Bell />
-                                Notifications
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    to="/user/settings"
+                                    className="text-foreground! hover:text-background!"
+                                >
+                                    <Settings />
+                                    Settings
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
