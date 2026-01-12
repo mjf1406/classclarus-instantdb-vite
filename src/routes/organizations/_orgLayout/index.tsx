@@ -8,9 +8,9 @@ import { useAuthContext } from "@/components/auth/auth-provider";
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Grid3x3Icon, ListIcon } from "lucide-react";
-import { OrgGrid } from "./-components/org-grid";
-import { OrgLists } from "./-components/org-lists";
-import { CreateOrgDialog } from "./-components/create-org-dialog";
+import { OrgGrid } from "../-components/org-grid";
+import { OrgLists } from "../-components/org-lists";
+import { CreateOrgDialog } from "../-components/create-org-dialog";
 import LoginPage from "@/components/auth/login-page";
 
 type Organization = InstaQLEntity<
@@ -26,7 +26,7 @@ type Organization = InstaQLEntity<
     }
 >;
 
-export const Route = createFileRoute("/organizations/")({
+export const Route = createFileRoute("/organizations/_orgLayout/")({
     component: RouteComponent,
 });
 
