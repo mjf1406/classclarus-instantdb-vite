@@ -16,7 +16,7 @@ const RootLayout = () => (
                 <Outlet />
             </AuthProvider>
         </ThemeProvider>
-        <TanStackRouterDevtools />
+        <TanStackRouterDevtools position="top-right" />
     </GoogleOAuthProvider>
 );
 

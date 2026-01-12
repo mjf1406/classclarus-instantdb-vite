@@ -15,6 +15,7 @@ import {
     Settings2,
     SquareTerminal,
 } from "lucide-react";
+import { useParams } from "@tanstack/react-router";
 
 import { NavMain } from "./org-main";
 import { NavProjects } from "./org-projects";
@@ -26,7 +27,9 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarRail,
+    useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuthContext } from "@/components/auth/auth-provider";
 
 // This is sample data.
 const data = {
@@ -159,22 +162,45 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const params = useParams({ strict: false });
+    const { state } = useSidebar();
+    const { user: authUser } = useAuthContext();
+    const isIndexRoute = !params.orgId;
+    const isExpanded = state === "expanded";
+
+    // Transform auth user data to match NavUser component's expected format
+    const userData = {
+        name:
+            authUser?.firstName && authUser?.lastName
+                ? `${authUser.firstName} ${authUser.lastName}`
+                : authUser?.firstName ||
+                  authUser?.lastName ||
+                  authUser?.email ||
+                  "User",
+        email: authUser?.email || "",
+        avatar: authUser?.avatarURL || authUser?.imageURL || "",
+    };
+
     return (
         <Sidebar
             collapsible="icon"
             {...props}
         >
-            <SidebarHeader>
-                <OrgSwitcher teams={data.teams} />
-            </SidebarHeader>
-            <SidebarContent>
-                <NavMain items={data.navMain} />
-                <NavProjects projects={data.projects} />
-            </SidebarContent>
-            <SidebarFooter>
-                <NavUser user={data.user} />
-            </SidebarFooter>
-            <SidebarRail />
+            <>
+                <SidebarHeader>
+                    {isIndexRoute ? null : <OrgSwitcher teams={data.teams} />}
+                </SidebarHeader>
+                <SidebarContent>
+                    {isIndexRoute ? null : <NavMain items={data.navMain} />}
+                    {isIndexRoute ? null : (
+                        <NavProjects projects={data.projects} />
+                    )}
+                </SidebarContent>
+                <SidebarFooter>
+                    <NavUser user={userData} />
+                </SidebarFooter>
+                <SidebarRail />
+            </>
         </Sidebar>
     );
 }
