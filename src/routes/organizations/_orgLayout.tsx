@@ -77,8 +77,10 @@ function RouteComponent() {
                                 ) : (
                                     <>
                                         <BreadcrumbItem className="hidden md:block">
-                                            <BreadcrumbLink href="/organizations">
-                                                Organizations
+                                            <BreadcrumbLink asChild>
+                                                <Link to="/organizations">
+                                                    Organizations
+                                                </Link>
                                             </BreadcrumbLink>
                                         </BreadcrumbItem>
                                         <BreadcrumbSeparator className="hidden md:block" />
