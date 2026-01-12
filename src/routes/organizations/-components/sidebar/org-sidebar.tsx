@@ -27,7 +27,9 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarRail,
+    useSidebar,
 } from "@/components/ui/sidebar";
+import { useEffect } from "react";
 
 // This is sample data.
 const data = {
@@ -162,6 +164,11 @@ const data = {
 export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams({ strict: false });
     const isIndexRoute = !params.orgId;
+    const { setOpen } = useSidebar();
+
+    useEffect(() => {
+        setOpen(!isIndexRoute);
+    }, [isIndexRoute, setOpen]);
 
     return (
         <Sidebar
