@@ -25,9 +25,10 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OrgSidebar } from "./-components/sidebar/org-sidebar";
-import { useOrganizationById } from "@/hooks/use-organgization-hooks";
+import { useOrganizationById } from "@/hooks/use-organization-hooks";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { RenderLogo } from "@/components/icons/render-logo";
 
 export const Route = createFileRoute("/organizations/_orgLayout")({
     component: RouteComponent,
@@ -93,10 +94,13 @@ function RouteComponent() {
                                             <BreadcrumbSeparator className="" />
                                             <BreadcrumbItem>
                                                 <BreadcrumbPage>
-                                                    {orgLoading
-                                                        ? "Loading..."
-                                                        : organization?.name ||
-                                                          "Organization"}
+                                                    {orgLoading ? (
+                                                        "Loading..."
+                                                    ) : (
+                                                        <span className="truncate max-w-[100px] inline-block">
+                                                            {organization.name}
+                                                        </span>
+                                                    )}
                                                 </BreadcrumbPage>
                                             </BreadcrumbItem>
                                         </>
@@ -107,6 +111,25 @@ function RouteComponent() {
                     </div>
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                    {organization?.name && (
+                        <div className="flex items-center gap-2 -mb-2">
+                            <RenderLogo
+                                icon={organization?.icon}
+                                size="size-12"
+                                rounded="full"
+                                alt={organization?.name}
+                            />
+                            {organization.name.length > 10 ? (
+                                <span className="text-2xl w-full font-medium mx-auto truncate">
+                                    {organization.name}
+                                </span>
+                            ) : (
+                                <span className="text-2xl w-full font-medium mx-auto">
+                                    {organization.name}
+                                </span>
+                            )}
+                        </div>
+                    )}
                     <Outlet />
                 </div>
             </SidebarInset>

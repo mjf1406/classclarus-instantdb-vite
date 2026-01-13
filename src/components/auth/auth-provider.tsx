@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext } from "react";
 import { db } from "@/lib/db/db";
-import type { OrganizationWithRelations } from "@/hooks/use-organgization-hooks";
-import { useOrganizationsByUserId } from "@/hooks/use-organgization-hooks";
+import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
+import { useOrganizationsByUserId } from "@/hooks/use-organization-hooks";
 
 interface AuthContextValue {
     user: {

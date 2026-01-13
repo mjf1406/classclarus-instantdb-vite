@@ -29,7 +29,8 @@ import {
     SidebarRail,
     useSidebar,
 } from "@/components/ui/sidebar";
-import { useEffect } from "react";
+import { Separator } from "@/components/ui/separator";
+import { useEffect, useRef } from "react";
 
 const data = {
     user: {
@@ -160,18 +161,65 @@ const data = {
     ],
 };
 
+const STORAGE_KEY_PREFIX = "org-sidebar-preference-";
+
+function getStorageKey(route: string) {
+    return `${STORAGE_KEY_PREFIX}${route}`;
+}
+
 export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams({ strict: false });
     const isIndexRoute = !params.orgId;
+    const currentRoute = params.orgId || "index";
     const { open, setOpen } = useSidebar();
+    const lastRouteRef = useRef<string>(currentRoute);
+    const programmaticStateRef = useRef<boolean | null>(open);
+    const isAdjustingRef = useRef(false);
 
     useEffect(() => {
-        if (!isIndexRoute && !open) {
-            setOpen(true);
-        } else if (isIndexRoute && open) {
-            setOpen(false);
+        if (lastRouteRef.current !== currentRoute) {
+            lastRouteRef.current = currentRoute;
+            programmaticStateRef.current = null;
         }
-    }, [isIndexRoute, open, setOpen]);
+    }, [currentRoute]);
+
+    useEffect(() => {
+        const storageKey = getStorageKey(currentRoute);
+        const userPreference = localStorage.getItem(storageKey);
+
+        let targetState: boolean;
+        if (userPreference !== null) {
+            targetState = userPreference === "true";
+        } else {
+            targetState = !isIndexRoute;
+        }
+
+        if (open !== targetState) {
+            isAdjustingRef.current = true;
+            setOpen(targetState);
+            programmaticStateRef.current = targetState;
+
+            const timeoutId = setTimeout(() => {
+                isAdjustingRef.current = false;
+            }, 100);
+            return () => clearTimeout(timeoutId);
+        } else {
+            if (programmaticStateRef.current === null) {
+                programmaticStateRef.current = open;
+            }
+        }
+    }, [isIndexRoute, currentRoute]);
+
+    useEffect(() => {
+        if (
+            !isAdjustingRef.current &&
+            programmaticStateRef.current !== null &&
+            open !== programmaticStateRef.current
+        ) {
+            localStorage.setItem(getStorageKey(currentRoute), String(open));
+            programmaticStateRef.current = open;
+        }
+    }, [open, currentRoute]);
 
     return (
         <Sidebar
@@ -181,6 +229,10 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <>
                 <SidebarHeader>
                     <OrgSidebarHeader />
+                    <Separator
+                        orientation="horizontal"
+                        className="h-6"
+                    />
                 </SidebarHeader>
                 <SidebarContent>
                     {isIndexRoute ? null : <NavMain items={data.navMain} />}

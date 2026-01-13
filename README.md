@@ -26,6 +26,7 @@ Gamify your classroom to motivate your students.
 
 ### 2026/01/13
 
+- BUG: sidebar bugs are not redonk now. all good
 - DX: added AssistantTeacher icon and badge
 - Page: /join UI is up, still need BE logic to join an organization/class
 - BUG: fixed magic-code-auth UI issues with buttons and spacing
