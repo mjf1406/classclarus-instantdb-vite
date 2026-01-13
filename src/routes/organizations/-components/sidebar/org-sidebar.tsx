@@ -21,7 +21,6 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarRail,
     useSidebar,
     SidebarGroup,
     SidebarGroupLabel,
