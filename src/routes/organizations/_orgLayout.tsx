@@ -8,7 +8,7 @@ import {
     Outlet,
     useParams,
 } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Home, Loader2 } from "lucide-react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -64,40 +64,35 @@ function RouteComponent() {
                         )}
                         <Breadcrumb>
                             <BreadcrumbList>
-                                {isIndexRoute ? (
-                                    <>
-                                        <BreadcrumbItem>
-                                            <BreadcrumbLink asChild>
-                                                <Link to="/">Home</Link>
-                                            </BreadcrumbLink>
-                                        </BreadcrumbItem>
-                                        <BreadcrumbSeparator />
-                                        <BreadcrumbItem>
-                                            <BreadcrumbPage>
+                                <>
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink asChild>
+                                            <Link to="/">
+                                                <Home className="h-4 w-4" />
+                                                <span className="sr-only">
+                                                    Home
+                                                </span>
+                                            </Link>
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem className="">
+                                        <BreadcrumbLink asChild>
+                                            <Link to="/organizations">
                                                 Organizations
-                                            </BreadcrumbPage>
-                                        </BreadcrumbItem>
-                                    </>
-                                ) : (
-                                    <>
-                                        <BreadcrumbItem className="">
-                                            <BreadcrumbLink asChild>
-                                                <Link to="/organizations">
-                                                    Organizations
-                                                </Link>
-                                            </BreadcrumbLink>
-                                        </BreadcrumbItem>
-                                        <BreadcrumbSeparator className="" />
-                                        <BreadcrumbItem>
-                                            <BreadcrumbPage>
-                                                {orgLoading
-                                                    ? "Loading..."
-                                                    : organization?.name ||
-                                                      "Organization"}
-                                            </BreadcrumbPage>
-                                        </BreadcrumbItem>
-                                    </>
-                                )}
+                                            </Link>
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator className="" />
+                                    <BreadcrumbItem>
+                                        <BreadcrumbPage>
+                                            {orgLoading
+                                                ? "Loading..."
+                                                : organization?.name ||
+                                                  "Organization"}
+                                        </BreadcrumbPage>
+                                    </BreadcrumbItem>
+                                </>
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>

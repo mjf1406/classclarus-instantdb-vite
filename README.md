@@ -22,6 +22,7 @@ Gamify your classroom to motivate your students.
 
 ### 2026/01/13
 
+- UI: more mobile UI improvements
 - DX: added useOrganizationById hook
 - DX: added useOrganizationsByUserId hook
 - UX: improved mobile UI
