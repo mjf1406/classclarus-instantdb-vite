@@ -35,7 +35,8 @@ export function NavUser() {
     const { isMobile } = useSidebar();
     const { user } = useAuthContext();
     const initials =
-        user.firstName?.charAt(0) + (user.lastName?.charAt(0) || "");
+        (user.firstName?.charAt(0) || "") + (user.lastName?.charAt(0) || "") ||
+        "GU";
 
     return (
         <SidebarMenu>
@@ -56,12 +57,13 @@ export function NavUser() {
                                     alt={initials || ""}
                                 />
                                 <AvatarFallback className="rounded-lg">
-                                    {initials || "U"}
+                                    {initials}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">
-                                    {user.firstName} {user.lastName || "User"}
+                                    {user.firstName || "Guest"}{" "}
+                                    {user.lastName || "User"}
                                 </span>
                                 <span className="truncate text-xs text-muted-foreground">
                                     {user.plan || "Free"}
@@ -88,12 +90,12 @@ export function NavUser() {
                                         alt={initials || ""}
                                     />
                                     <AvatarFallback className="rounded-lg">
-                                        {initials || "U"}
+                                        {initials}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-medium">
-                                        {user.firstName}{" "}
+                                        {user.firstName || "Guest"}{" "}
                                         {user.lastName || "User"}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground">
