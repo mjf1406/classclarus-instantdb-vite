@@ -3,24 +3,19 @@
 "use client";
 
 import * as React from "react";
-import {
-    AudioWaveform,
-    BookOpen,
-    Bot,
-    Command,
-    Frame,
-    GalleryVerticalEnd,
-    Map,
-    PieChart,
-    Settings2,
-    SquareTerminal,
-} from "lucide-react";
-import { useParams } from "@tanstack/react-router";
+import { Home, LayoutDashboard, UserPlus, BookOpen, Users } from "lucide-react";
+import { useParams, Link } from "@tanstack/react-router";
 
 import { NavMain } from "./org-main";
-import { NavProjects } from "./org-projects";
 import { NavUser } from "@/components/navigation/nav-user";
 import { OrgSidebarHeader } from "./org-sidebar-header";
+import {
+    AdminIcon,
+    TeacherIcon,
+    AssistantTeacherIcon,
+    ParentIcon,
+    StudentIcon,
+} from "@/components/icons/role-icons";
 import {
     Sidebar,
     SidebarContent,
@@ -28,138 +23,14 @@ import {
     SidebarHeader,
     SidebarRail,
     useSidebar,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useRef } from "react";
-
-const data = {
-    user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
-    },
-    teams: [
-        {
-            name: "Acme Inc",
-            logo: GalleryVerticalEnd,
-            plan: "Enterprise",
-        },
-        {
-            name: "Acme Corp.",
-            logo: AudioWaveform,
-            plan: "Startup",
-        },
-        {
-            name: "Evil Corp.",
-            logo: Command,
-            plan: "Free",
-        },
-    ],
-    navMain: [
-        {
-            title: "Playground",
-            url: "#",
-            icon: SquareTerminal,
-            isActive: true,
-            items: [
-                {
-                    title: "History",
-                    url: "#",
-                },
-                {
-                    title: "Starred",
-                    url: "#",
-                },
-                {
-                    title: "Settings",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Models",
-            url: "#",
-            icon: Bot,
-            items: [
-                {
-                    title: "Genesis",
-                    url: "#",
-                },
-                {
-                    title: "Explorer",
-                    url: "#",
-                },
-                {
-                    title: "Quantum",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Documentation",
-            url: "#",
-            icon: BookOpen,
-            items: [
-                {
-                    title: "Introduction",
-                    url: "#",
-                },
-                {
-                    title: "Get Started",
-                    url: "#",
-                },
-                {
-                    title: "Tutorials",
-                    url: "#",
-                },
-                {
-                    title: "Changelog",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Settings",
-            url: "#",
-            icon: Settings2,
-            items: [
-                {
-                    title: "General",
-                    url: "#",
-                },
-                {
-                    title: "Team",
-                    url: "#",
-                },
-                {
-                    title: "Billing",
-                    url: "#",
-                },
-                {
-                    title: "Limits",
-                    url: "#",
-                },
-            ],
-        },
-    ],
-    projects: [
-        {
-            name: "Design Engineering",
-            url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
-        },
-    ],
-};
 
 const STORAGE_KEY_PREFIX = "org-sidebar-preference-";
 
@@ -171,10 +42,17 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams({ strict: false });
     const isIndexRoute = !params.orgId;
     const currentRoute = params.orgId || "index";
-    const { open, setOpen } = useSidebar();
+    const { open, setOpen, setOpenMobile, isMobile } = useSidebar();
     const lastRouteRef = useRef<string>(currentRoute);
     const programmaticStateRef = useRef<boolean | null>(open);
     const isAdjustingRef = useRef(false);
+
+    // Close sidebar on mobile when a link is clicked
+    const handleLinkClick = React.useCallback(() => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    }, [isMobile, setOpenMobile]);
 
     useEffect(() => {
         if (lastRouteRef.current !== currentRoute) {
@@ -235,9 +113,136 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     />
                 </SidebarHeader>
                 <SidebarContent>
-                    {isIndexRoute ? null : <NavMain items={data.navMain} />}
                     {isIndexRoute ? null : (
-                        <NavProjects projects={data.projects} />
+                        <>
+                            <NavMain
+                                items={[
+                                    {
+                                        title: "Home",
+                                        url: `/organizations/${params.orgId}` as any,
+                                        icon: Home,
+                                    },
+                                    {
+                                        title: "Dashboard",
+                                        url: `/organizations/${params.orgId}/main/dashboard` as any,
+                                        icon: LayoutDashboard,
+                                    },
+                                    {
+                                        title: "Join Org Code",
+                                        url: `/organizations/${params.orgId}/main/join-org-code` as any,
+                                        icon: UserPlus,
+                                    },
+                                    {
+                                        title: "Classes",
+                                        url: `/organizations/${params.orgId}/main/classes` as any,
+                                        icon: BookOpen,
+                                    },
+                                ]}
+                                showLabel={false}
+                                onLinkClick={handleLinkClick}
+                            />
+                            <SidebarGroup>
+                                <SidebarGroupLabel>Members</SidebarGroupLabel>
+                                <SidebarMenu>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="All"
+                                        >
+                                            <Link
+                                                to={
+                                                    `/organizations/${params.orgId}/members` as any
+                                                }
+                                                onClick={handleLinkClick}
+                                            >
+                                                <Users />
+                                                <span>All</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Admins"
+                                        >
+                                            <Link
+                                                to={
+                                                    `/organizations/${params.orgId}/members/admins` as any
+                                                }
+                                                onClick={handleLinkClick}
+                                            >
+                                                <AdminIcon />
+                                                <span>Admins</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Teachers"
+                                        >
+                                            <Link
+                                                to={
+                                                    `/organizations/${params.orgId}/members/teachers` as any
+                                                }
+                                                onClick={handleLinkClick}
+                                            >
+                                                <TeacherIcon />
+                                                <span>Teachers</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Assistant Teachers"
+                                        >
+                                            <Link
+                                                to={
+                                                    `/organizations/${params.orgId}/members/assistant-teachers` as any
+                                                }
+                                                onClick={handleLinkClick}
+                                            >
+                                                <AssistantTeacherIcon />
+                                                <span>Assistant Teachers</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Parents"
+                                        >
+                                            <Link
+                                                to={
+                                                    `/organizations/${params.orgId}/members/parents` as any
+                                                }
+                                                onClick={handleLinkClick}
+                                            >
+                                                <ParentIcon />
+                                                <span>Parents</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Students"
+                                        >
+                                            <Link
+                                                to={
+                                                    `/organizations/${params.orgId}/members/students` as any
+                                                }
+                                                onClick={handleLinkClick}
+                                            >
+                                                <StudentIcon />
+                                                <span>Students</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                </SidebarMenu>
+                            </SidebarGroup>
+                        </>
                     )}
                 </SidebarContent>
                 <SidebarFooter>

@@ -26,9 +26,12 @@ Gamify your classroom to motivate your students.
 
 ### 2026/01/13
 
-- BUG: sidebar bugs are not redonk now. all good
+- UX: sidebar auto close on mobile when a link is clicked
+- DX: auto generated breadcrumbs for org-layout
+- UI: added links and route structure for /$orgId
+- BUG: sidebar bugs should all be solved now
 - DX: added AssistantTeacher icon and badge
-- Page: /join UI is up, still need BE logic to join an organization/class
+- Page: /join UI is up, **still need BE logic to join an organization/class**
 - BUG: fixed magic-code-auth UI issues with buttons and spacing
 - DX: moved no orgs state to its own component
 - Page: / is totally done

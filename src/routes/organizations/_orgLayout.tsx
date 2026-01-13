@@ -8,8 +8,10 @@ import {
     Link,
     Outlet,
     useParams,
+    useLocation,
 } from "@tanstack/react-router";
 import { Home } from "lucide-react";
+import React from "react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -37,11 +39,81 @@ export const Route = createFileRoute("/organizations/_orgLayout")({
 function RouteComponent() {
     const { user, isLoading: authLoading } = useAuthContext();
     const params = useParams({ strict: false });
+    const location = useLocation();
     const isIndexRoute = !params.orgId;
     const isMobile = useIsMobile();
     const { organization, isLoading: orgLoading } = useOrganizationById(
         params.orgId
     );
+
+    // Build breadcrumb segments based on current route
+    const getBreadcrumbSegments = () => {
+        if (!params.orgId) {
+            return [];
+        }
+
+        const pathname = location.pathname;
+        const segments: Array<{ label: string; href?: string }> = [];
+
+        // Parse the path to determine breadcrumb segments
+        // Example: /organizations/123/main/dashboard
+        // Should show: Home > Organizations > [Org Name] > Main > Dashboard
+
+        const pathParts = pathname.split("/").filter(Boolean);
+        const orgIndex = pathParts.indexOf("organizations");
+
+        if (orgIndex === -1) {
+            return segments;
+        }
+
+        // Check if we're in a subroute
+        const orgIdIndex = orgIndex + 1;
+        if (pathParts.length > orgIdIndex + 1) {
+            const subroute = pathParts[orgIdIndex + 1];
+
+            if (subroute === "main") {
+                // Check for specific main subroutes
+                if (pathParts.length > orgIdIndex + 2) {
+                    const mainSubroute = pathParts[orgIdIndex + 2];
+                    const mainSubrouteLabels: Record<string, string> = {
+                        dashboard: "Dashboard",
+                        classes: "Classes",
+                        "join-org-code": "Join Org Code",
+                    };
+
+                    if (mainSubrouteLabels[mainSubroute]) {
+                        // Just show the specific subroute, skip "Main"
+                        segments.push({
+                            label: mainSubrouteLabels[mainSubroute],
+                        });
+                    }
+                }
+            } else if (subroute === "members") {
+                // Check for specific member subroutes
+                if (pathParts.length > orgIdIndex + 2) {
+                    const memberSubroute = pathParts[orgIdIndex + 2];
+                    const memberSubrouteLabels: Record<string, string> = {
+                        admins: "Admins",
+                        teachers: "Teachers",
+                        "assistant-teachers": "Asst Teachers",
+                        parents: "Parents",
+                        students: "Students",
+                    };
+
+                    if (memberSubrouteLabels[memberSubroute]) {
+                        // Just show the specific subroute, skip "Members"
+                        segments.push({
+                            label: memberSubrouteLabels[memberSubroute],
+                        });
+                    }
+                }
+            }
+        }
+
+        return segments;
+    };
+
+    const breadcrumbSegments = getBreadcrumbSegments();
 
     if (!user || !user.id) {
         return <LoginPage />;
@@ -93,18 +165,64 @@ function RouteComponent() {
                                         <>
                                             <BreadcrumbSeparator className="" />
                                             <BreadcrumbItem>
-                                                <BreadcrumbPage>
-                                                    {orgLoading ? (
-                                                        "Loading..."
-                                                    ) : (
-                                                        <span className="truncate max-w-[100px] inline-block">
-                                                            {organization.name}
-                                                        </span>
-                                                    )}
-                                                </BreadcrumbPage>
+                                                <BreadcrumbLink asChild>
+                                                    <Link
+                                                        to={
+                                                            `/organizations/${params.orgId}` as any
+                                                        }
+                                                    >
+                                                        {orgLoading ? (
+                                                            "Loading..."
+                                                        ) : (
+                                                            <span className="inline-block mt-1 max-w-[100px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
+                                                                {
+                                                                    organization.name
+                                                                }
+                                                            </span>
+                                                        )}
+                                                    </Link>
+                                                </BreadcrumbLink>
                                             </BreadcrumbItem>
                                         </>
                                     )}
+                                    {breadcrumbSegments.map(
+                                        (segment, index) => (
+                                            <React.Fragment key={index}>
+                                                <BreadcrumbSeparator />
+                                                <BreadcrumbItem>
+                                                    {segment.href &&
+                                                    index <
+                                                        breadcrumbSegments.length -
+                                                            1 ? (
+                                                        <BreadcrumbLink asChild>
+                                                            <Link
+                                                                to={
+                                                                    segment.href as any
+                                                                }
+                                                            >
+                                                                {segment.label}
+                                                            </Link>
+                                                        </BreadcrumbLink>
+                                                    ) : (
+                                                        <BreadcrumbPage>
+                                                            {segment.label}
+                                                        </BreadcrumbPage>
+                                                    )}
+                                                </BreadcrumbItem>
+                                            </React.Fragment>
+                                        )
+                                    )}
+                                    {breadcrumbSegments.length === 0 &&
+                                        organization && (
+                                            <>
+                                                <BreadcrumbSeparator />
+                                                <BreadcrumbItem>
+                                                    <BreadcrumbPage>
+                                                        Home
+                                                    </BreadcrumbPage>
+                                                </BreadcrumbItem>
+                                            </>
+                                        )}
                                 </>
                             </BreadcrumbList>
                         </Breadcrumb>
