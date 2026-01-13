@@ -24,6 +24,7 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { OrgSidebar } from "./-components/sidebar/org-sidebar";
+import { useOrganizationById } from "@/hooks/use-organgization-hooks";
 
 export const Route = createFileRoute("/organizations/_orgLayout")({
     component: RouteComponent,
@@ -33,6 +34,9 @@ function RouteComponent() {
     const { user, isLoading: authLoading } = useAuthContext();
     const params = useParams({ strict: false });
     const isIndexRoute = !params.orgId;
+    const { organization, isLoading: orgLoading } = useOrganizationById(
+        params.orgId
+    );
 
     if (!user || !user.id) {
         return <LoginPage />;
@@ -76,17 +80,20 @@ function RouteComponent() {
                                     </>
                                 ) : (
                                     <>
-                                        <BreadcrumbItem className="hidden md:block">
+                                        <BreadcrumbItem className="">
                                             <BreadcrumbLink asChild>
                                                 <Link to="/organizations">
                                                     Organizations
                                                 </Link>
                                             </BreadcrumbLink>
                                         </BreadcrumbItem>
-                                        <BreadcrumbSeparator className="hidden md:block" />
+                                        <BreadcrumbSeparator className="" />
                                         <BreadcrumbItem>
                                             <BreadcrumbPage>
-                                                {params.orgId}
+                                                {orgLoading
+                                                    ? "Loading..."
+                                                    : organization?.name ||
+                                                      "Organization"}
                                             </BreadcrumbPage>
                                         </BreadcrumbItem>
                                     </>

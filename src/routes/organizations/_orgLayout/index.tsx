@@ -78,8 +78,10 @@ function RouteComponent() {
         <div className="container mx-auto py-6 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">My Organizations</h1>
-                    <p className="text-muted-foreground mt-1">
+                    <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                        My Organizations
+                    </h1>
+                    <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
                         Manage your organizations
                     </p>
                 </div>
@@ -105,7 +107,9 @@ function RouteComponent() {
                     <CreateOrgDialog>
                         <Button>
                             <PlusIcon />
-                            Create Organization
+                            <span className="hidden md:block">
+                                Create Organization
+                            </span>
                         </Button>
                     </CreateOrgDialog>
                 </div>

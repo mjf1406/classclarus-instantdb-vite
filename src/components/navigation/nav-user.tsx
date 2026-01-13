@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ThemeSwitcher } from "@/components/themes/theme-switcher";
 import { useAuthContext } from "../auth/auth-provider";
+import { db } from "@/lib/db/db";
 
 export function NavUser() {
     const { isMobile } = useSidebar();
@@ -47,11 +48,15 @@ export function NavUser() {
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
                                 <AvatarImage
-                                    src={user.avatarURL || user.imageURL || ""}
+                                    src={
+                                        user.avatarURL ||
+                                        user.imageURL ||
+                                        undefined
+                                    }
                                     alt={initials || ""}
                                 />
                                 <AvatarFallback className="rounded-lg">
-                                    {initials}
+                                    {initials || "U"}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -78,12 +83,12 @@ export function NavUser() {
                                         src={
                                             user.avatarURL ||
                                             user.imageURL ||
-                                            ""
+                                            undefined
                                         }
                                         alt={initials || ""}
                                     />
                                     <AvatarFallback className="rounded-lg">
-                                        {initials}
+                                        {initials || "U"}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -139,7 +144,7 @@ export function NavUser() {
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => db.auth.signOut()}>
                             <LogOut />
                             Log out
                         </DropdownMenuItem>

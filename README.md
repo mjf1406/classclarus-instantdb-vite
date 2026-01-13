@@ -20,6 +20,12 @@ Gamify your classroom to motivate your students.
 
 ## Change Log
 
+### 2026/01/13
+
+- DX: added useOrganizationById hook
+- DX: added useOrganizationsByUserId hook
+- UX: improved mobile UI
+
 ### 2026/01/12
 
 - UX: icons for org icon causing too large of a bundle size so removed

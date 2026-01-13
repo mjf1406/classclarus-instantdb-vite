@@ -1,31 +1,9 @@
 /** @format */
 
 import React, { createContext, useContext } from "react";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
 import { db } from "@/lib/db/db";
-
-type OrganizationWithRelations = InstaQLEntity<
-    AppSchema,
-    "organizations",
-    {
-        owner: {};
-        orgStudents: {};
-        orgTeachers: {};
-        orgParents: {};
-        admins: {};
-        joinCodeEntity: {};
-        classes: {
-            owner: {};
-            classAdmins: {};
-            classTeachers: {};
-        };
-    }
->;
-
-type OrgQueryResult = {
-    organizations: OrganizationWithRelations[];
-};
+import type { OrganizationWithRelations } from "@/hooks/use-organgization-hooks";
+import { useOrganizationsByUserId } from "@/hooks/use-organgization-hooks";
 
 interface AuthContextValue {
     user: {
@@ -80,42 +58,11 @@ export default function AuthProvider({
 
     const userData = data?.$users?.[0];
 
-    const orgQuery = hasValidUser
-        ? {
-              organizations: {
-                  $: {
-                      where: {
-                          or: [
-                              { "owner.id": user.id },
-                              { "admins.id": user.id },
-                              { "orgStudents.id": user.id },
-                              { "orgTeachers.id": user.id },
-                              { "orgParents.id": user.id },
-                          ],
-                      },
-                  },
-                  owner: {},
-                  orgStudents: {},
-                  orgTeachers: {},
-                  orgParents: {},
-                  admins: {},
-                  joinCodeEntity: {},
-                  classes: {
-                      owner: {},
-                      classAdmins: {},
-                      classTeachers: {},
-                  },
-              },
-          }
-        : null;
-
     const {
-        data: orgData,
+        organizations,
         isLoading: orgLoading,
         error: orgError,
-    } = db.useQuery(orgQuery);
-
-    const typedOrgData = (orgData as OrgQueryResult | undefined) ?? null;
+    } = useOrganizationsByUserId(user?.id);
 
     // If there's no user, we're done loading (no user = not authenticated, not loading)
     // If there is a user, wait for all queries to complete
@@ -142,7 +89,7 @@ export default function AuthProvider({
             plan: userData?.plan || "free",
         },
         isLoading,
-        organizations: typedOrgData?.organizations || [],
+        organizations,
         error: orgError,
     };
 
