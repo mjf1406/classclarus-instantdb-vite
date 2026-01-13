@@ -29,18 +29,24 @@ const dataBind = [
     // User is still a teacher in a class
     "isStillTeacher",
     "auth.id in newData.ref('classTeachers.id')",
+    // User is an assistant teacher in a class
+    "isAssistantTeacher",
+    "auth.id in data.ref('classAssistantTeachers.id')",
+    // User is still an assistant teacher in a class
+    "isStillAssistantTeacher",
+    "auth.id in newData.ref('classAssistantTeachers.id')",
     // User is a member of the org
     "isOrgMember",
-    "auth.id in data.ref('orgStudents.id') || auth.id in data.ref('orgTeachers.id') || auth.id in data.ref('orgParents.id')",
+    "auth.id in data.ref('orgStudents.id') || auth.id in data.ref('orgTeachers.id') || auth.id in data.ref('orgAssistantTeachers.id') || auth.id in data.ref('orgParents.id')",
     // User is still a member of the org
     "isStillOrgMember",
-    "auth.id in newData.ref('orgStudents.id') || auth.id in newData.ref('orgTeachers.id') || auth.id in newData.ref('orgParents.id')",
+    "auth.id in newData.ref('orgStudents.id') || auth.id in newData.ref('orgTeachers.id') || auth.id in newData.ref('orgAssistantTeachers.id') || auth.id in newData.ref('orgParents.id')",
     // User is a class member
     "isClassMember",
-    "auth.id in data.ref('classStudents.id') || auth.id in data.ref('classTeachers.id') || auth.id in data.ref('classParents.id')",
+    "auth.id in data.ref('classStudents.id') || auth.id in data.ref('classTeachers.id') || auth.id in data.ref('classAssistantTeachers.id') || auth.id in data.ref('classParents.id')",
     // User is still a class member
     "isStillClassMember",
-    "auth.id in newData.ref('classStudents.id') || auth.id in newData.ref('classTeachers.id') || auth.id in newData.ref('classParents.id')",
+    "auth.id in newData.ref('classStudents.id') || auth.id in newData.ref('classTeachers.id') || auth.id in newData.ref('classAssistantTeachers.id') || auth.id in newData.ref('classParents.id')",
     // User is a class parent
     "isClassParent",
     "auth.id in data.ref('classParents.id')",
@@ -82,7 +88,7 @@ const rules = {
             create: "false",
             // Allow users to update their own records, OR allow class/org admins to update users
             // who are members of classes/organizations where the admin has permissions
-            update: "isAuthenticated && ((isOwner && isStillOwner) || (auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('parentClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('studentOrganizations.admins.id') || auth.id in data.ref('parentOrganizations.admins.id') || auth.id in data.ref('teacherOrganizations.admins.id')))",
+            update: "isAuthenticated && ((isOwner && isStillOwner) || (auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('parentClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('assistantTeacherClasses.classAdmins.id') || auth.id in data.ref('studentOrganizations.admins.id') || auth.id in data.ref('parentOrganizations.admins.id') || auth.id in data.ref('teacherOrganizations.admins.id') || auth.id in data.ref('assistantTeacherOrganizations.admins.id')))",
             delete: "false",
         },
         bind: dataBind,
@@ -117,7 +123,7 @@ const rules = {
     classJoinCodes: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated && (auth.id in data.ref('class.owner.id') || auth.id in data.ref('class.classAdmins.id') || auth.id in data.ref('class.organization.owner.id') || auth.id in data.ref('class.organization.admins.id') || auth.id in data.ref('class.classTeachers.id'))",
+            view: "isAuthenticated && (auth.id in data.ref('class.owner.id') || auth.id in data.ref('class.classAdmins.id') || auth.id in data.ref('class.organization.owner.id') || auth.id in data.ref('class.organization.admins.id') || auth.id in data.ref('class.classTeachers.id') || auth.id in data.ref('class.classAssistantTeachers.id'))",
             update: "isAuthenticated && (auth.id in data.ref('class.owner.id') || auth.id in data.ref('class.classAdmins.id') || auth.id in data.ref('class.organization.owner.id') || auth.id in data.ref('class.organization.admins.id'))",
             delete: "isAuthenticated && (auth.id in data.ref('class.owner.id') || auth.id in data.ref('class.classAdmins.id') || auth.id in data.ref('class.organization.owner.id') || auth.id in data.ref('class.organization.admins.id'))",
         },

@@ -18,12 +18,16 @@ Gamify your classroom to motivate your students.
 3. [TanStack Router File Naming](https://tanstack.com/router/latest/docs/framework/react/routing/file-naming-conventions)
 4. [TanStack Router Directory Routes](https://tanstack.com/router/latest/docs/framework/react/routing/file-naming-conventions)
 
+## Bugs
+
+- BUG: fixed login buttons not working after logging out on mobile
+
 ## Change Log
 
 ### 2026/01/13
 
-- BUG: fixed Google OAuth button not working in prod...
-- BUG: fixed org sidebar trigger visibility on root, mobile, and non-root routes
+- DX: added AssistantTeacher icon and badge
+- Page: /join UI is up, still need BE logic to join an organization/class
 - BUG: fixed magic-code-auth UI issues with buttons and spacing
 - DX: moved no orgs state to its own component
 - Page: / is totally done

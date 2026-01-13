@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserSettingsRouteImport } from './routes/user/settings'
@@ -21,6 +22,11 @@ import { Route as ClassesClassesLayoutIndexRouteImport } from './routes/classes/
 import { Route as OrganizationsOrgLayoutOrgIdRouteImport } from './routes/organizations/_orgLayout/$orgId'
 import { Route as ClassesClassesLayoutClassIdRouteImport } from './routes/classes/_classesLayout/$classId'
 
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -84,6 +90,7 @@ const ClassesClassesLayoutClassIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/join': typeof JoinRoute
   '/classes': typeof ClassesClassesLayoutRouteWithChildren
   '/organizations': typeof OrganizationsOrgLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/join': typeof JoinRoute
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/join': typeof JoinRoute
   '/classes/_classesLayout': typeof ClassesClassesLayoutRouteWithChildren
   '/organizations/_orgLayout': typeof OrganizationsOrgLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/join'
     | '/classes'
     | '/organizations'
     | '/user/billing'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/join'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/join'
     | '/classes/_classesLayout'
     | '/organizations/_orgLayout'
     | '/user/billing'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  JoinRoute: typeof JoinRoute
   ClassesClassesLayoutRoute: typeof ClassesClassesLayoutRouteWithChildren
   OrganizationsOrgLayoutRoute: typeof OrganizationsOrgLayoutRouteWithChildren
   UserBillingRoute: typeof UserBillingRoute
@@ -171,6 +184,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -283,6 +303,7 @@ const OrganizationsOrgLayoutRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  JoinRoute: JoinRoute,
   ClassesClassesLayoutRoute: ClassesClassesLayoutRouteWithChildren,
   OrganizationsOrgLayoutRoute: OrganizationsOrgLayoutRouteWithChildren,
   UserBillingRoute: UserBillingRoute,

@@ -1,13 +1,19 @@
 /** @format */
 
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Grid3x3Icon, ListIcon, Building2Icon } from "lucide-react";
+import {
+    PlusIcon,
+    Grid3x3Icon,
+    ListIcon,
+    Building2Icon,
+    UserPlus,
+} from "lucide-react";
 import { OrgGrid } from "../-components/org-grid";
 import { OrgLists } from "../-components/org-lists";
 import { OrgNoOrgs } from "../-components/org-no-orgs";
@@ -109,11 +115,23 @@ function RouteComponent() {
                     <CreateOrgDialog>
                         <Button size="lg">
                             <PlusIcon />
+                            <span className="sr-only">Create Organization</span>
                             <span className="hidden md:block">
                                 Create Organization
                             </span>
                         </Button>
                     </CreateOrgDialog>
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        asChild
+                    >
+                        <Link to="/join">
+                            <UserPlus />
+                            <span className="sr-only">Join</span>
+                            <span className="hidden md:block">Join</span>
+                        </Link>
+                    </Button>
                 </div>
             </div>
 

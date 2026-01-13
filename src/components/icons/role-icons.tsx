@@ -1,6 +1,13 @@
 /** @format */
 
-import { Crown, GraduationCap, Heart, Shield, User } from "lucide-react";
+import {
+    Crown,
+    GraduationCap,
+    Heart,
+    Shield,
+    User,
+    UserCheck,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { VariantProps } from "class-variance-authority";
@@ -34,6 +41,15 @@ export function TeacherIcon(props: React.SVGProps<SVGSVGElement>) {
                 "text-purple-600 dark:text-purple-400",
                 props.className
             )}
+        />
+    );
+}
+
+export function AssistantTeacherIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <UserCheck
+            {...props}
+            className={cn("text-cyan-600 dark:text-cyan-400", props.className)}
         />
     );
 }
@@ -121,6 +137,26 @@ export function TeacherBadge({
         >
             <TeacherIcon className="size-3" />
             Teacher
+        </Badge>
+    );
+}
+
+export function AssistantTeacherBadge({
+    className,
+    variant = "outline",
+    ...props
+}: RoleBadgeProps) {
+    return (
+        <Badge
+            variant={variant}
+            className={cn(
+                "gap-1 border-cyan-600 dark:border-cyan-400 text-cyan-600 dark:text-cyan-400",
+                className
+            )}
+            {...props}
+        >
+            <AssistantTeacherIcon className="size-3" />
+            Assistant Teacher
         </Badge>
     );
 }

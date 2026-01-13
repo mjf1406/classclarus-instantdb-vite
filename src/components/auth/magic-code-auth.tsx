@@ -184,6 +184,14 @@ function CodeStep({
     setIsLoading: (loading: boolean) => void;
 }) {
     const [code, setCode] = useState("");
+    const formRef = useRef<HTMLFormElement>(null);
+
+    // Auto-submit when code is complete
+    useEffect(() => {
+        if (code.length === 6 && formRef.current && !isLoading) {
+            formRef.current.requestSubmit();
+        }
+    }, [code, isLoading]);
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -226,6 +234,7 @@ function CodeStep({
 
     return (
         <form
+            ref={formRef}
             onSubmit={handleSubmit}
             className="space-y-4"
         >
