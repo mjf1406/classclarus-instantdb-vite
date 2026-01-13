@@ -18,7 +18,7 @@ import GuestLimitations from "@/components/guest/guest-limitations-section";
 export function LoginCard() {
     return (
         <Card className="w-full max-w-md">
-            <CardHeader className="text-center space-y-4">
+            <CardHeader className="text-center space-y-3">
                 <div className="flex justify-center">
                     <LogoBig />
                 </div>
@@ -31,7 +31,7 @@ export function LoginCard() {
                     </CardDescription>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
                 <GoogleOAuthButton />
                 <MagicCodeAuth />
                 <div className="flex items-center gap-4 py-2">

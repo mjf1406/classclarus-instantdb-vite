@@ -1,12 +1,11 @@
 /** @format */
 
-import { useState, useRef, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { Mail } from "lucide-react";
 
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasteButton } from "@/components/ui/paste-button";
 import {
     InputOTP,
     InputOTPGroup,
@@ -20,6 +19,7 @@ import {
     CredenzaHeader,
     CredenzaTitle,
 } from "@/components/ui/credenza";
+import { cn } from "@/lib/utils";
 
 interface MagicCodeAuthProps {
     trigger?: React.ReactNode;
@@ -47,6 +47,7 @@ export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
             ) : (
                 <Button
                     onClick={() => setOpen(true)}
+                    onTouchStart={() => setOpen(true)}
                     variant="outline"
                     className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80"
                     size="lg"
@@ -59,7 +60,12 @@ export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
                 open={open}
                 onOpenChange={handleOpenChange}
             >
-                <CredenzaContent className="sm:max-w-md">
+                <CredenzaContent
+                    className={cn(
+                        "sm:max-w-md",
+                        !sentEmail ? "pb-4 md:pb-4" : "pb-4 md:pb-4"
+                    )}
+                >
                     <CredenzaHeader>
                         <CredenzaTitle>
                             {!sentEmail
@@ -72,7 +78,7 @@ export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
                                 : `We sent an email to ${sentEmail}. Check your email, and paste the code you see.`}
                         </CredenzaDescription>
                     </CredenzaHeader>
-                    <CredenzaBody>
+                    <CredenzaBody className={!sentEmail ? "pb-0" : ""}>
                         {!sentEmail ? (
                             <EmailStep
                                 onSendEmail={(email) => {
@@ -110,6 +116,14 @@ function EmailStep({
     setIsLoading: (loading: boolean) => void;
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        // Focus the input when the dialog opens
+        const timer = setTimeout(() => {
+            inputRef.current?.focus();
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -235,31 +249,18 @@ function CodeStep({
                     </InputOTPGroup>
                 </InputOTP>
             </div>
-            <PasteButton
-                onPasteSuccess={(text) => {
-                    // Extract only numeric characters and limit to 6 digits
-                    const numericCode = text.replace(/\D/g, "").slice(0, 6);
-                    if (numericCode.length === 6) {
-                        setCode(numericCode);
-                    }
-                }}
-                disabled={isLoading}
-                size="icon"
-                variant="ghost"
-            />
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 my-auto mx-auto">
                 <Button
-                    type="button"
                     variant="outline"
+                    size="lg"
                     onClick={onBack}
-                    className="flex-1"
                     disabled={isLoading}
                 >
                     Back
                 </Button>
                 <Button
                     type="submit"
-                    className="flex-1"
+                    size="lg"
                     disabled={isLoading || code.length < 6}
                 >
                     {isLoading ? "Verifying..." : "Verify Code"}

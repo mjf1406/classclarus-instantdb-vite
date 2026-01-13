@@ -1,11 +1,12 @@
 /** @format */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { Button } from "../ui/button";
 import { db } from "@/lib/db/db";
+import { useAuthContext } from "./auth-provider";
 
 interface GoogleJwtPayload {
     given_name?: string;
@@ -90,39 +91,31 @@ function handleGoogleError() {
 }
 
 export function GoogleOAuthButton() {
+    const { user } = useAuthContext();
     const googleButtonRef = useRef<HTMLDivElement>(null);
     const [nonce] = useState(() => uuidv4());
+    // Force remount when auth state changes - use timestamp to ensure fresh mount
+    const mountKey = user?.id ? `user-${user.id}` : `logged-out-${Date.now()}`;
 
-    const handleGoogleButtonClick = () => {
-        const googleButton = googleButtonRef.current?.querySelector(
+    const handleGoogleButtonClick = useCallback(() => {
+        // Fallback: try to trigger the GoogleLogin button if iframe doesn't work
+        const button = googleButtonRef.current?.querySelector(
             'div[role="button"], button'
         ) as HTMLElement;
-        if (googleButton) {
-            googleButton.click();
+
+        if (button) {
+            button.click();
         }
-    };
+    }, []);
 
     return (
-        <>
-            <div
-                ref={googleButtonRef}
-                className="hidden"
-            >
-                <GoogleLogin
-                    onSuccess={(credentialResponse) =>
-                        handleGoogleSuccess(credentialResponse, nonce)
-                    }
-                    onError={handleGoogleError}
-                    nonce={nonce}
-                    useOneTap={false}
-                    auto_select={false}
-                />
-            </div>
-
+        <div className="relative w-full">
+            {/* Visible custom button - positioned behind iframe */}
             <Button
                 onClick={handleGoogleButtonClick}
+                onTouchStart={handleGoogleButtonClick}
                 variant="outline"
-                className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80"
+                className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80 relative z-0"
                 size="lg"
                 aria-label="Sign in with Google"
             >
@@ -151,7 +144,24 @@ export function GoogleOAuthButton() {
                 </svg>
                 Sign in with Google
             </Button>
-        </>
+
+            {/* Google Login iframe overlay - positioned on top */}
+            <div
+                ref={googleButtonRef}
+                className="absolute inset-0 z-10 pointer-events-none [&_iframe]:absolute [&_iframe]:inset-0 [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:min-h-11 [&_iframe]:pointer-events-auto [&>div]:opacity-0 [&>div]:pointer-events-none"
+            >
+                <GoogleLogin
+                    key={mountKey}
+                    onSuccess={(credentialResponse) =>
+                        handleGoogleSuccess(credentialResponse, nonce)
+                    }
+                    onError={handleGoogleError}
+                    nonce={nonce}
+                    useOneTap={false}
+                    auto_select={false}
+                />
+            </div>
+        </div>
     );
 }
 

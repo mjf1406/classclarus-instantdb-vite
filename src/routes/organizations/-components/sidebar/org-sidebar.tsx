@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useEffect } from "react";
 
-// This is sample data.
 const data = {
     user: {
         name: "shadcn",
@@ -164,11 +163,15 @@ const data = {
 export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams({ strict: false });
     const isIndexRoute = !params.orgId;
-    const { setOpen } = useSidebar();
+    const { open, setOpen } = useSidebar();
 
     useEffect(() => {
-        setOpen(!isIndexRoute);
-    }, [isIndexRoute, setOpen]);
+        if (!isIndexRoute && !open) {
+            setOpen(true);
+        } else if (isIndexRoute && open) {
+            setOpen(false);
+        }
+    }, [isIndexRoute, open, setOpen]);
 
     return (
         <Sidebar
@@ -177,7 +180,7 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         >
             <>
                 <SidebarHeader>
-                    {isIndexRoute ? null : <OrgSidebarHeader />}
+                    <OrgSidebarHeader />
                 </SidebarHeader>
                 <SidebarContent>
                     {isIndexRoute ? null : <NavMain items={data.navMain} />}

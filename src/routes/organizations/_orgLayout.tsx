@@ -2,13 +2,14 @@
 
 import { useAuthContext } from "@/components/auth/auth-provider";
 import LoginPage from "@/components/auth/login-page";
+import LoadingPage from "@/components/auth/loading-page";
 import {
     createFileRoute,
     Link,
     Outlet,
     useParams,
 } from "@tanstack/react-router";
-import { Home, Loader2 } from "lucide-react";
+import { Home } from "lucide-react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -25,6 +26,8 @@ import {
 } from "@/components/ui/sidebar";
 import { OrgSidebar } from "./-components/sidebar/org-sidebar";
 import { useOrganizationById } from "@/hooks/use-organgization-hooks";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/organizations/_orgLayout")({
     component: RouteComponent,
@@ -34,6 +37,7 @@ function RouteComponent() {
     const { user, isLoading: authLoading } = useAuthContext();
     const params = useParams({ strict: false });
     const isIndexRoute = !params.orgId;
+    const isMobile = useIsMobile();
     const { organization, isLoading: orgLoading } = useOrganizationById(
         params.orgId
     );
@@ -42,7 +46,7 @@ function RouteComponent() {
         return <LoginPage />;
     }
     if (authLoading) {
-        return <Loader2 className="h-16 w-16 animate-spin text-foreground" />;
+        return <LoadingPage />;
     }
     // This is where the sidebar layout when viewing a single organization goes
     return (
@@ -51,17 +55,18 @@ function RouteComponent() {
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
                     <div className="flex items-center gap-2 px-4">
-                        {isIndexRoute ? (
-                            <div className="w-9" />
-                        ) : (
-                            <>
-                                <SidebarTrigger className="-ml-1" />
-                                <Separator
-                                    orientation="vertical"
-                                    className="mr-2 data-[orientation=vertical]:h-4"
-                                />
-                            </>
-                        )}
+                        <>
+                            <SidebarTrigger
+                                className={cn(
+                                    "-ml-1",
+                                    isIndexRoute && !isMobile && "invisible"
+                                )}
+                            />
+                            <Separator
+                                orientation="vertical"
+                                className="mr-2 data-[orientation=vertical]:h-6"
+                            />
+                        </>
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <>
@@ -83,15 +88,19 @@ function RouteComponent() {
                                             </Link>
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
-                                    <BreadcrumbSeparator className="" />
-                                    <BreadcrumbItem>
-                                        <BreadcrumbPage>
-                                            {orgLoading
-                                                ? "Loading..."
-                                                : organization?.name ||
-                                                  "Organization"}
-                                        </BreadcrumbPage>
-                                    </BreadcrumbItem>
+                                    {organization && (
+                                        <>
+                                            <BreadcrumbSeparator className="" />
+                                            <BreadcrumbItem>
+                                                <BreadcrumbPage>
+                                                    {orgLoading
+                                                        ? "Loading..."
+                                                        : organization?.name ||
+                                                          "Organization"}
+                                                </BreadcrumbPage>
+                                            </BreadcrumbItem>
+                                        </>
+                                    )}
                                 </>
                             </BreadcrumbList>
                         </Breadcrumb>

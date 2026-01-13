@@ -2,12 +2,9 @@
 
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Building2Icon, PlusIcon } from "lucide-react";
 import { OrgRow } from "./org-row";
-import { CreateOrgDialog } from "./create-org-dialog";
 
 type Organization = InstaQLEntity<
     AppSchema,
@@ -58,27 +55,7 @@ export function OrgLists({ organizations, isLoading }: OrgListsProps) {
     }
 
     if (organizations.length === 0) {
-        return (
-            <Card className="border-dashed">
-                <CardHeader className="text-center">
-                    <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-muted">
-                        <Building2Icon className="size-6 text-muted-foreground" />
-                    </div>
-                    <CardTitle>No organizations yet</CardTitle>
-                    <CardDescription>
-                        Create your first organization to get started managing classes and students.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-center">
-                    <CreateOrgDialog>
-                        <Button>
-                            <PlusIcon />
-                            Create Organization
-                        </Button>
-                    </CreateOrgDialog>
-                </CardContent>
-            </Card>
-        );
+        return null;
     }
 
     return (

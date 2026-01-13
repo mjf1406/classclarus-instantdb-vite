@@ -7,9 +7,10 @@ import type { AppSchema } from "@/instant.schema";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Grid3x3Icon, ListIcon } from "lucide-react";
+import { PlusIcon, Grid3x3Icon, ListIcon, Building2Icon } from "lucide-react";
 import { OrgGrid } from "../-components/org-grid";
 import { OrgLists } from "../-components/org-lists";
+import { OrgNoOrgs } from "../-components/org-no-orgs";
 import { CreateOrgDialog } from "../-components/create-org-dialog";
 import LoginPage from "@/components/auth/login-page";
 
@@ -34,7 +35,6 @@ function RouteComponent() {
     const { user, isLoading: authLoading } = useAuthContext();
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-    // Query organizations where user has any role
     const hasValidUser = user?.id && user.id.trim() !== "";
 
     const query = hasValidUser
@@ -61,7 +61,6 @@ function RouteComponent() {
           }
         : { organizations: {} };
 
-    // Type assertion needed due to TypeScript limitations with nested field references in queries
     const { data, isLoading: dataLoading } = db.useQuery(
         query as unknown as Parameters<typeof db.useQuery>[0]
     );
@@ -77,13 +76,16 @@ function RouteComponent() {
     return (
         <div className="container mx-auto md:py-12 space-y-6">
             <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                        My Organizations
-                    </h1>
-                    <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                        Manage your organizations
-                    </p>
+                <div className="flex items-center gap-2">
+                    <Building2Icon className="size-12 md:size-16 text-primary" />
+                    <div>
+                        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                            My Organizations
+                        </h1>
+                        <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
+                            Manage your organizations
+                        </p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1 border rounded-lg p-1">
@@ -115,7 +117,9 @@ function RouteComponent() {
                 </div>
             </div>
 
-            {viewMode === "grid" ? (
+            {organizations.length === 0 && !isLoading ? (
+                <OrgNoOrgs />
+            ) : viewMode === "grid" ? (
                 <OrgGrid
                     organizations={organizations}
                     isLoading={isLoading}

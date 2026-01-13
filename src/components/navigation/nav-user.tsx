@@ -9,7 +9,7 @@ import {
     LogOut,
     Settings,
 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -34,6 +34,7 @@ import { db } from "@/lib/db/db";
 export function NavUser() {
     const { isMobile } = useSidebar();
     const { user } = useAuthContext();
+    const navigate = useNavigate();
     const initials =
         (user.firstName?.charAt(0) || "") + (user.lastName?.charAt(0) || "") ||
         "GU";
@@ -146,7 +147,12 @@ export function NavUser() {
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => db.auth.signOut()}>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                db.auth.signOut();
+                                navigate({ to: "/" });
+                            }}
+                        >
                             <LogOut />
                             Log out
                         </DropdownMenuItem>

@@ -12,9 +12,9 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
 import { db } from "@/lib/db/db";
 import { ThemeSwitcher } from "@/components/themes/theme-switcher";
+import LoadingPage from "@/components/auth/loading-page";
 
 export const Route = createFileRoute("/")({
     component: Index,
@@ -32,6 +32,13 @@ function Index() {
         }
     }, [isLoading, user]);
 
+    // Reset ref when user logs out
+    useEffect(() => {
+        if (!isLoading && !user?.id && wasLoggedOutRef.current === false) {
+            wasLoggedOutRef.current = null;
+        }
+    }, [isLoading, user]);
+
     // Redirect to /organizations when user logs in (but not if they were already logged in)
     useEffect(() => {
         if (wasLoggedOutRef.current && user?.id && !isLoading) {
@@ -40,14 +47,7 @@ function Index() {
     }, [user, isLoading, navigate]);
 
     if (isLoading) {
-        return (
-            <div className="flex flex-col min-w-screen min-h-screen items-center justify-center gap-1">
-                <Loader2 className="h-16 w-16 animate-spin text-foreground" />
-                <span className="text-muted-foreground text-lg">
-                    Loading...
-                </span>
-            </div>
-        );
+        return <LoadingPage />;
     }
 
     // User is logged in - show greeting and link to organizations
@@ -88,7 +88,10 @@ function Index() {
                             variant="outline"
                             className="w-full"
                             size="lg"
-                            onClick={() => db.auth.signOut()}
+                            onClick={() => {
+                                db.auth.signOut();
+                                navigate({ to: "/" });
+                            }}
                         >
                             Logout
                         </Button>
@@ -99,12 +102,14 @@ function Index() {
     }
 
     // User is not logged in - show login options
+    // Use key based on user state to force remount when auth state changes
+    const loginCardKey = user?.id || "logged-out";
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
             <div className="absolute top-4 right-4">
                 <ThemeSwitcher />
             </div>
-            <LoginCard />
+            <LoginCard key={loginCardKey} />
         </div>
     );
 }

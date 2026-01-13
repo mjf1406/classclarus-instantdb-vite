@@ -30,6 +30,7 @@ export default function TryAsGuestButton() {
     return (
         <Button
             onClick={handleGuestSignIn}
+            onTouchStart={handleGuestSignIn}
             variant="outline"
             className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80"
             size="lg"
