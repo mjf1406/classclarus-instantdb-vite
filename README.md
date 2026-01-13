@@ -22,6 +22,7 @@ Gamify your classroom to motivate your students.
 
 ### 2026/01/13
 
+- BUG: fixed Google OAuth button not working in prod...
 - BUG: fixed org sidebar trigger visibility on root, mobile, and non-root routes
 - BUG: fixed magic-code-auth UI issues with buttons and spacing
 - DX: moved no orgs state to its own component
