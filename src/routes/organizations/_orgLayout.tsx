@@ -174,7 +174,7 @@ function RouteComponent() {
                                                         {orgLoading ? (
                                                             "Loading..."
                                                         ) : (
-                                                            <span className="inline-block mt-1 max-w-[100px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
+                                                            <span className="inline-block mt-1 md:mt-0 max-w-[100px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
                                                                 {
                                                                     organization.name
                                                                 }
