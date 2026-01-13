@@ -248,7 +248,6 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarFooter>
                     <NavUser />
                 </SidebarFooter>
-                <SidebarRail />
             </>
         </Sidebar>
     );
