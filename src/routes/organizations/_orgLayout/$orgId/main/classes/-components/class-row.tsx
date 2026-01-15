@@ -19,10 +19,10 @@ import {
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
 import { useClassRole } from "./use-class-role";
-import type { ClassWithRelations } from "@/hooks/use-class-hooks";
+import type { ClassByRole } from "@/hooks/use-class-hooks";
 
 interface ClassRowProps {
-    classEntity: ClassWithRelations;
+    classEntity: ClassByRole;
 }
 
 export function ClassRow({ classEntity }: ClassRowProps) {

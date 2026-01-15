@@ -12,7 +12,7 @@ import {
 import { ClassGrid } from "./-components/class-grid";
 import { ClassList } from "./-components/class-list";
 import { ClassNoClasses } from "./-components/class-no-classes";
-import { useClassesByOrgId } from "@/hooks/use-class-hooks";
+import { useClassesByRole } from "@/hooks/use-class-hooks";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/main/classes/"
@@ -22,7 +22,7 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
     const { orgId } = useParams({ strict: false });
-    const { classes, isLoading } = useClassesByOrgId(orgId);
+    const { classes, isLoading } = useClassesByRole(orgId);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     return (

@@ -3,10 +3,10 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClassCard } from "./class-card";
-import type { ClassWithRelations } from "@/hooks/use-class-hooks";
+import type { ClassByRole } from "@/hooks/use-class-hooks";
 
 interface ClassGridProps {
-    classes: ClassWithRelations[];
+    classes: ClassByRole[];
     isLoading?: boolean;
 }
 

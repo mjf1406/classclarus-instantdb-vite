@@ -67,6 +67,80 @@ const dataBind = [
     "auth.id in newData.ref('classAdmins.id')",
 ];
 
+// ============================================================
+//                  BASIC USER RELATIONSHIPS
+// ============================================================
+const userBasicRelationshipBind = [
+    "isMyself",
+    "auth.id == data.id",
+    "isMyChild",
+    "auth.id in data.ref('parents.id')",
+    "isMyParent",
+    "auth.id in data.ref('children.id')",
+];
+// ============================================================
+//                  CLASS USER RELATIONSHIPS
+// ============================================================
+const userClassOwnerBind = [
+    "isStudentInMyClassAsOwner",
+    "auth.id in data.ref('studentClasses.owner.id')",
+    "isTeacherInMyClassAsOwner",
+    "auth.id in data.ref('teacherClasses.owner.id')",
+    "isAssistantTeacherInMyClassAsOwner",
+    "auth.id in data.ref('assistantTeacherClasses.owner.id')",
+    "isParentInMyClassAsOwner",
+    "auth.id in data.ref('parentClasses.owner.id')",
+    "isAdminInMyClassAsOwner",
+    "auth.id in data.ref('adminClasses.owner.id')",
+];
+const userClassAdminBind = [
+    "isStudentInMyClassAsAdmin",
+    "auth.id in data.ref('studentClasses.classAdmins.id')",
+    "isTeacherInMyClassAsAdmin",
+    "auth.id in data.ref('teacherClasses.classAdmins.id')",
+    "isAssistantTeacherInMyClassAsAdmin",
+    "auth.id in data.ref('assistantTeacherClasses.classAdmins.id')",
+    "isParentInMyClassAsAdmin",
+    "auth.id in data.ref('parentClasses.classAdmins.id')",
+    "isAdminInMyClassAsAdmin",
+    "auth.id in data.ref('adminClasses.classAdmins.id')",
+];
+const userClassTeacherBind = [
+    "isStudentInMyClassAsTeacher",
+    "auth.id in data.ref('studentClasses.classTeachers.id')",
+    "isTeacherInMyClassAsTeacher",
+    "auth.id in data.ref('teacherClasses.classTeachers.id')",
+    "isAssistantTeacherInMyClassAsTeacher",
+    "auth.id in data.ref('assistantTeacherClasses.classTeachers.id')",
+    "isParentInMyClassAsTeacher",
+    "auth.id in data.ref('parentClasses.classTeachers.id')",
+];
+const userClassParentBind = [
+    "isStudentInMyClassAsParent",
+    "auth.id in data.ref('studentClasses.classParents.id')",
+    "isTeacherInMyClassAsParent",
+    "auth.id in data.ref('teacherClasses.classParents.id')",
+    "isAssistantTeacherInMyClassAsParent",
+    "auth.id in data.ref('assistantTeacherClasses.classParents.id')",
+];
+const userClassStudentBind = [
+    "isTeacherInMyClassAsStudent",
+    "auth.id in data.ref('teacherClasses.classStudents.id')",
+    "isAssistantTeacherInMyClassAsStudent",
+    "auth.id in data.ref('assistantTeacherClasses.classStudents.id')",
+    "isParentInMyClassAsStudent",
+    "auth.id in data.ref('parentClasses.classStudents.id')",
+];
+// ============================================================
+//                ORGANIZATION USER RELATIONSHIPS
+// ============================================================
+const userOrgRelationshipBind = [
+    "isStudentInMyOrgAsAdmin",
+    "auth.id in data.ref('studentOrganizations.admins.id')",
+    "isStudentInMyOrgAsOwner",
+    "auth.id in data.ref('studentOrganizations.owner.id')",
+];
+
 const rules = {
     attrs: {
         allow: {
@@ -84,14 +158,23 @@ const rules = {
     },
     $users: {
         allow: {
-            view: "isAuthenticated",
+            view: "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
             create: "false",
             // Allow users to update their own records, OR allow class/org admins to update users
             // who are members of classes/organizations where the admin has permissions
             update: "isAuthenticated && ((isOwner && isStillOwner) || (auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('parentClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('assistantTeacherClasses.classAdmins.id') || auth.id in data.ref('studentOrganizations.admins.id') || auth.id in data.ref('parentOrganizations.admins.id') || auth.id in data.ref('teacherOrganizations.admins.id') || auth.id in data.ref('assistantTeacherOrganizations.admins.id')))",
             delete: "false",
         },
-        bind: dataBind,
+        bind: [
+            ...dataBind,
+            ...userBasicRelationshipBind,
+            ...userClassOwnerBind,
+            ...userClassAdminBind,
+            ...userClassTeacherBind,
+            ...userClassParentBind,
+            ...userClassStudentBind,
+            ...userOrgRelationshipBind,
+        ],
     },
     organizations: {
         allow: {

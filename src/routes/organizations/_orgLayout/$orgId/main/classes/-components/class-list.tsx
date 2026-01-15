@@ -3,10 +3,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClassRow } from "./class-row";
-import type { ClassWithRelations } from "@/hooks/use-class-hooks";
+import type { ClassByRole } from "@/hooks/use-class-hooks";
 
 interface ClassListProps {
-    classes: ClassWithRelations[];
+    classes: ClassByRole[];
     isLoading?: boolean;
 }
 

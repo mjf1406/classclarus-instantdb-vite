@@ -1,7 +1,7 @@
 /** @format */
 
 import { useAuthContext } from "@/components/auth/auth-provider";
-import type { ClassWithRelations } from "@/hooks/use-class-hooks";
+import type { ClassByRole } from "@/hooks/use-class-hooks";
 
 export type ClassRole =
     | "owner"
@@ -23,7 +23,7 @@ export interface ClassRoleInfo {
 }
 
 export function useClassRole(
-    classEntity: ClassWithRelations | undefined
+    classEntity: ClassByRole | undefined
 ): ClassRoleInfo {
     const { user } = useAuthContext();
     const userId = user?.id;
