@@ -3,7 +3,7 @@
 "use client";
 
 import * as React from "react";
-import { useParams, Link } from "@tanstack/react-router";
+import { useParams, Link, useLocation } from "@tanstack/react-router";
 
 import { NavMain } from "./org-main";
 import { NavUser } from "@/components/navigation/nav-user";
@@ -25,6 +25,7 @@ import { useEffect, useRef } from "react";
 import { useRoleBasedNavigation } from "../navigation/role-based-navigation";
 import type { LucideIcon } from "lucide-react";
 import { Home, BookOpen, Book } from "lucide-react";
+import { cn, isRouteActive } from "@/lib/utils";
 
 const STORAGE_KEY_PREFIX = "org-sidebar-preference-";
 
@@ -34,13 +35,15 @@ function getStorageKey(route: string) {
 
 export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const params = useParams({ strict: false });
+    const location = useLocation();
     const isIndexRoute = !params.orgId;
     const currentRoute = params.orgId || "index";
     const { open, setOpen, setOpenMobile, isMobile } = useSidebar();
     const lastRouteRef = useRef<string>(currentRoute);
     const programmaticStateRef = useRef<boolean | null>(open);
     const isAdjustingRef = useRef(false);
-    const { mainItems, memberItems, settingsItem, isLoading } = useRoleBasedNavigation();
+    const { mainItems, memberItems, settingsItem, isLoading } =
+        useRoleBasedNavigation();
 
     // Close sidebar on mobile when a link is clicked
     const handleLinkClick = React.useCallback(() => {
@@ -118,6 +121,10 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                 title: item.title,
                                                 url: item.url as any,
                                                 icon: item.icon as LucideIcon,
+                                                isActive: isRouteActive(
+                                                    location.pathname,
+                                                    item.url
+                                                ),
                                             })),
                                             ...(settingsItem
                                                 ? [
@@ -125,6 +132,11 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                           title: settingsItem.title,
                                                           url: settingsItem.url as any,
                                                           icon: settingsItem.icon as LucideIcon,
+                                                          isActive:
+                                                              isRouteActive(
+                                                                  location.pathname,
+                                                                  settingsItem.url
+                                                              ),
                                                       },
                                                   ]
                                                 : []),
@@ -136,22 +148,42 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 )}
                                 {memberItems.length > 0 && (
                                     <SidebarGroup>
-                                        <SidebarGroupLabel>Organization Members</SidebarGroupLabel>
+                                        <SidebarGroupLabel>
+                                            Organization Members
+                                        </SidebarGroupLabel>
                                         <SidebarMenu>
                                             {memberItems.map((item) => {
-                                                const Icon = item.icon as LucideIcon;
+                                                const Icon =
+                                                    item.icon as LucideIcon;
+                                                const isActive = isRouteActive(
+                                                    location.pathname,
+                                                    item.url
+                                                );
                                                 return (
-                                                    <SidebarMenuItem key={item.url}>
+                                                    <SidebarMenuItem
+                                                        key={item.url}
+                                                    >
                                                         <SidebarMenuButton
                                                             asChild
                                                             tooltip={item.title}
+                                                            isActive={isActive}
+                                                            className={cn(
+                                                                isActive &&
+                                                                    "bg-primary/70! text-white!"
+                                                            )}
                                                         >
                                                             <Link
-                                                                to={item.url as any}
-                                                                onClick={handleLinkClick}
+                                                                to={
+                                                                    item.url as any
+                                                                }
+                                                                onClick={
+                                                                    handleLinkClick
+                                                                }
                                                             >
                                                                 <Icon />
-                                                                <span>{item.title}</span>
+                                                                <span>
+                                                                    {item.title}
+                                                                </span>
                                                             </Link>
                                                         </SidebarMenuButton>
                                                     </SidebarMenuItem>
@@ -162,7 +194,9 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 )}
                             </div>
                             <SidebarGroup className="mt-auto">
-                                <SidebarGroupLabel>ClassClarus</SidebarGroupLabel>
+                                <SidebarGroupLabel>
+                                    ClassClarus
+                                </SidebarGroupLabel>
                                 <SidebarMenu>
                                     <SidebarMenuItem>
                                         <SidebarMenuButton

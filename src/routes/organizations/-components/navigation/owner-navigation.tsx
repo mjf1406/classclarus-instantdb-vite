@@ -1,6 +1,12 @@
 /** @format */
 
-import { Home, LayoutDashboard, UserPlus, BookOpen, Settings } from "lucide-react";
+import {
+    Home,
+    LayoutDashboard,
+    UserPlus,
+    BookOpen,
+    Settings,
+} from "lucide-react";
 import {
     AdminIcon,
     TeacherIcon,
@@ -39,7 +45,7 @@ export function getOwnerNavigation(orgId: string): {
                 icon: LayoutDashboard,
             },
             {
-                title: "Join Org Code",
+                title: "Invite Members",
                 description:
                     "Generate or view the code for others to join this organization",
                 url: `/organizations/${orgId}/main/join-org-code`,

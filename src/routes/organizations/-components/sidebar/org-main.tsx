@@ -12,6 +12,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export function NavMain({
     items,
@@ -31,12 +32,24 @@ export function NavMain({
 }) {
     return (
         <SidebarGroup>
-            {showLabel && label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+            {showLabel && label && (
+                <SidebarGroupLabel>{label}</SidebarGroupLabel>
+            )}
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive}>
-                            <Link to={item.url} onClick={onLinkClick}>
+                        <SidebarMenuButton
+                            asChild
+                            tooltip={item.title}
+                            isActive={item.isActive}
+                            className={cn(
+                                item.isActive && "bg-primary/70! text-white!"
+                            )}
+                        >
+                            <Link
+                                to={item.url}
+                                onClick={onLinkClick}
+                            >
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>
                             </Link>

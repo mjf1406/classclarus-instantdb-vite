@@ -99,7 +99,7 @@ function RouteComponent() {
                     const mainSubrouteLabels: Record<string, string> = {
                         dashboard: "Dashboard",
                         classes: "Classes",
-                        "join-org-code": "Join Org Code",
+                        "join-org-code": "Invite Members",
                     };
 
                     if (mainSubrouteLabels[mainSubroute]) {
