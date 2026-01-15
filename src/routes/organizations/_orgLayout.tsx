@@ -39,8 +39,20 @@ import {
     StudentBadge,
     ParentBadge,
 } from "@/components/icons/role-icons";
+import { requireAuth, requireOrgAccess } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/organizations/_orgLayout")({
+    beforeLoad: ({ context, location, params }) => {
+        // First ensure user is authenticated
+        requireAuth(context, location);
+
+        // If there's an orgId param, check org access
+        // (The index route doesn't have an orgId, so we skip the check)
+        const orgId = (params as { orgId?: string }).orgId;
+        if (orgId) {
+            requireOrgAccess(orgId, context, location);
+        }
+    },
     component: RouteComponent,
 });
 
@@ -151,7 +163,10 @@ function RouteComponent() {
                                 <>
                                     <BreadcrumbItem>
                                         <BreadcrumbLink asChild>
-                                            <Link to="/" search={{ redirect: undefined }}>
+                                            <Link
+                                                to="/"
+                                                search={{ redirect: undefined }}
+                                            >
                                                 <Home className="h-4 w-4" />
                                                 <span className="sr-only">
                                                     Home

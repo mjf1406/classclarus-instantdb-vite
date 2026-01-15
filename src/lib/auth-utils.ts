@@ -1,5 +1,6 @@
 /** @format */
 
+import { redirect } from "@tanstack/react-router";
 import type { AuthContextValue } from "@/components/auth/auth-provider";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 
@@ -114,4 +115,79 @@ export async function isAuthorizedForRoute(
     // For all other routes, if user is authenticated, they are authorized
     // (unless specific route-level checks are needed)
     return true;
+}
+
+/**
+ * Require authentication - throws redirect if user is not authenticated
+ * Use this in beforeLoad for routes that require authentication
+ */
+export function requireAuth(
+    context: { auth: AuthContextValue | undefined },
+    location: { href: string }
+): void {
+    // Check if user is authenticated
+    if (!context.auth || !context.auth.user?.id) {
+        // User is not authenticated - redirect to login page
+        throw redirect({
+            to: "/",
+            search: {
+                // Use the current location to power a redirect after login
+                redirect: location.href,
+            },
+        });
+    }
+
+    // Wait for auth to finish loading
+    if (context.auth.isLoading) {
+        // If still loading, we can't make authorization decisions yet
+        // In practice, this should be rare, but we'll allow it to proceed
+        // The component will handle the loading state
+        return;
+    }
+}
+
+/**
+ * Require organization access - throws redirect if user doesn't have access
+ * Use this in beforeLoad for organization-scoped routes
+ */
+export function requireOrgAccess(
+    orgId: string,
+    context: { auth: AuthContextValue | undefined },
+    location: { href: string }
+): void {
+    // First ensure user is authenticated
+    requireAuth(context, location);
+
+    // Check if user has access to this organization
+    const hasAccess = checkOrgAccess(orgId, context.auth!.organizations);
+
+    if (!hasAccess) {
+        // User is authenticated but not authorized - redirect to blocked page
+        throw redirect({
+            to: "/blocked",
+        });
+    }
+}
+
+/**
+ * Require class access - throws redirect if user doesn't have access
+ * Use this in beforeLoad for class-scoped routes
+ */
+export function requireClassAccess(
+    classId: string,
+    context: { auth: AuthContextValue | undefined },
+    location: { href: string }
+): void {
+    // First ensure user is authenticated
+    requireAuth(context, location);
+
+    // Check if user has access to this class
+    const hasAccess = checkClassAccess(classId, context.auth!.organizations);
+
+    if (!hasAccess) {
+        // User is authenticated but not authorized - redirect to blocked page
+        throw redirect({
+            to: "/blocked",
+        });
+    }
 }

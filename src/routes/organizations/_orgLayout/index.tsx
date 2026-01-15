@@ -16,7 +16,12 @@ import { OrgLists } from "../-components/org-lists";
 import { OrgNoOrgs } from "../-components/org-no-orgs";
 import { CreateOrgDialog } from "../-components/create-org-dialog";
 
+import { requireAuth } from "@/lib/auth-utils";
+
 export const Route = createFileRoute("/organizations/_orgLayout/")({
+    beforeLoad: ({ context, location }) => {
+        requireAuth(context, location);
+    },
     component: RouteComponent,
 });
 
