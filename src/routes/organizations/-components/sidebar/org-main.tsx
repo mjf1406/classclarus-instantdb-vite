@@ -43,7 +43,7 @@ export function NavMain({
                             tooltip={item.title}
                             isActive={item.isActive}
                             className={cn(
-                                item.isActive && "bg-primary/70! text-white!"
+                                item.isActive && "bg-primary/30! text-black!"
                             )}
                         >
                             <Link

@@ -169,7 +169,7 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                             isActive={isActive}
                                                             className={cn(
                                                                 isActive &&
-                                                                    "bg-primary/70! text-white!"
+                                                                    "bg-primary/30! text-black!"
                                                             )}
                                                         >
                                                             <Link
