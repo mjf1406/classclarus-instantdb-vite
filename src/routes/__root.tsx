@@ -13,17 +13,19 @@ import type { MyRouterContext } from "@/main";
 import { isPublicRoute, isAuthorizedForRoute } from "@/lib/auth-utils";
 import LoadingPage from "@/components/loading/loading-page";
 
-const RootLayout = () => (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
-        <ThemeProvider
-            storageKey="vite-ui-theme"
-            defaultTheme="classclarus"
-        >
-            <Outlet />
-        </ThemeProvider>
-        <TanStackRouterDevtools position="bottom-right" />
-    </GoogleOAuthProvider>
-);
+const RootLayout = () => {
+    return (
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
+            <ThemeProvider
+                storageKey="vite-ui-theme"
+                defaultTheme="classclarus"
+            >
+                <Outlet />
+            </ThemeProvider>
+            <TanStackRouterDevtools position="bottom-right" />
+        </GoogleOAuthProvider>
+    );
+};
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
     beforeLoad: async ({ location, context }) => {
@@ -82,4 +84,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     },
     component: RootLayout,
     pendingComponent: LoadingPage,
+    pendingMs: 50, // Show pending component after 50ms (instead of default 1000ms)
+    pendingMinMs: 300, // Keep pending component visible for at least 300ms
 });
