@@ -47,7 +47,9 @@ export type ClassForAssistantTeacher = InstaQLEntity<
     {
         owner: {};
         organization: {};
+        classAdmins: {};
         classTeachers: {};
+        classAssistantTeachers: {};
         classStudents: {};
         classParents: {};
     }
@@ -59,6 +61,7 @@ export type ClassForParent = InstaQLEntity<
     {
         owner: {};
         organization: {};
+        classAdmins: {};
         classTeachers: {};
         classAssistantTeachers: {};
         classStudents: {};
@@ -72,6 +75,7 @@ export type ClassForStudent = InstaQLEntity<
     {
         owner: {};
         organization: {};
+        classAdmins: {};
         classTeachers: {};
         classAssistantTeachers: {};
         classParents: {};
@@ -309,7 +313,9 @@ export function useClassesForAssistantTeacher(orgId: string | undefined) {
                       },
                       owner: {},
                       organization: {},
+                      classAdmins: {},
                       classTeachers: {},
+                      classAssistantTeachers: {},
                       classStudents: {},
                       classParents: {},
                   },
@@ -376,6 +382,7 @@ export function useClassesForParent(orgId: string | undefined) {
                       },
                       owner: {},
                       organization: {},
+                      classAdmins: {},
                       classTeachers: {},
                       classAssistantTeachers: {},
                       classStudents: {},
@@ -426,6 +433,7 @@ export function useClassesForStudent(orgId: string | undefined) {
                       },
                       owner: {},
                       organization: {},
+                      classAdmins: {},
                       classTeachers: {},
                       classAssistantTeachers: {},
                       classParents: {},

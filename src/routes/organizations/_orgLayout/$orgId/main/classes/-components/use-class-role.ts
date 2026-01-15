@@ -2,6 +2,10 @@
 
 import { useAuthContext } from "@/components/auth/auth-provider";
 import type { ClassByRole } from "@/hooks/use-class-hooks";
+import type { InstaQLEntity } from "@instantdb/react";
+import type { AppSchema } from "@/instant.schema";
+
+type UserEntity = InstaQLEntity<AppSchema, "$users", {}>;
 
 export type ClassRole =
     | "owner"
@@ -46,14 +50,14 @@ export function useClassRole(
         !!(
             userId &&
             !isOwner &&
-            classEntity.classAdmins?.some((admin) => admin.id === userId)
+            classEntity.classAdmins?.some((admin: UserEntity) => admin.id === userId)
         );
     const isTeacher =
         !!(
             userId &&
             !isOwner &&
             !isAdmin &&
-            classEntity.classTeachers?.some((teacher) => teacher.id === userId)
+            classEntity.classTeachers?.some((teacher: UserEntity) => teacher.id === userId)
         );
     const isAssistantTeacher =
         !!(
@@ -62,7 +66,7 @@ export function useClassRole(
             !isAdmin &&
             !isTeacher &&
             classEntity.classAssistantTeachers?.some(
-                (assistantTeacher) => assistantTeacher.id === userId
+                (assistantTeacher: UserEntity) => assistantTeacher.id === userId
             )
         );
     const isStudent =
@@ -72,7 +76,7 @@ export function useClassRole(
             !isAdmin &&
             !isTeacher &&
             !isAssistantTeacher &&
-            classEntity.classStudents?.some((student) => student.id === userId)
+            classEntity.classStudents?.some((student: UserEntity) => student.id === userId)
         );
     const isParent =
         !!(
@@ -82,7 +86,7 @@ export function useClassRole(
             !isTeacher &&
             !isAssistantTeacher &&
             !isStudent &&
-            classEntity.classParents?.some((parent) => parent.id === userId)
+            classEntity.classParents?.some((parent: UserEntity) => parent.id === userId)
         );
 
     const role: ClassRole = isOwner
