@@ -150,7 +150,7 @@ export function NavUser() {
                         <DropdownMenuItem
                             onClick={() => {
                                 db.auth.signOut();
-                                navigate({ to: "/" });
+                                navigate({ to: "/", search: { redirect: undefined } });
                             }}
                         >
                             <LogOut />

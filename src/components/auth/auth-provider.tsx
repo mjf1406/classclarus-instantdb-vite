@@ -5,7 +5,7 @@ import { db } from "@/lib/db/db";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 import { useOrganizationsByUserId } from "@/hooks/use-organization-hooks";
 
-interface AuthContextValue {
+export interface AuthContextValue {
     user: {
         created_at: Date | null | string;
         email: string;

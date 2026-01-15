@@ -151,7 +151,7 @@ function RouteComponent() {
                                 <>
                                     <BreadcrumbItem>
                                         <BreadcrumbLink asChild>
-                                            <Link to="/">
+                                            <Link to="/" search={{ redirect: undefined }}>
                                                 <Home className="h-4 w-4" />
                                                 <span className="sr-only">
                                                     Home

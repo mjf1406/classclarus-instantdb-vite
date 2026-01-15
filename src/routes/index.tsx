@@ -1,88 +1,52 @@
 /** @format */
 
 import { useEffect } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useAuthContext } from "@/components/auth/auth-provider";
-import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { db } from "@/lib/db/db";
 import { ThemeSwitcher } from "@/components/themes/theme-switcher";
 import LoadingPage from "@/components/loading/loading-page";
+import { LoginCard } from "@/routes/login/-components/login-card";
 
 export const Route = createFileRoute("/")({
     component: Index,
+    validateSearch: (search: Record<string, unknown>) => {
+        return {
+            redirect: (search.redirect as string) || undefined,
+        };
+    },
 });
 
 function Index() {
     const { user, isLoading } = useAuthContext();
     const navigate = useNavigate();
+    const search = useSearch({ from: "/" });
 
-    // Redirect unauthenticated users to /login
+    // If user is authenticated and there's a redirect param, navigate to it
     useEffect(() => {
-        if (!isLoading && !user?.id) {
-            navigate({ to: "/login" });
+        if (!isLoading && user?.id && search.redirect) {
+            navigate({ to: search.redirect as string });
+        } else if (!isLoading && user?.id && !search.redirect) {
+            // If authenticated and no redirect, go to organizations
+            navigate({ to: "/organizations" });
         }
-    }, [user, isLoading, navigate]);
+    }, [user, isLoading, search.redirect, navigate]);
 
     if (isLoading) {
         return <LoadingPage />;
     }
 
-    // If user is not authenticated, don't render anything (redirect will happen)
-    if (!user?.id) {
+    // If user is authenticated, don't render login (redirect will happen)
+    if (user?.id) {
         return null;
     }
 
-    // User is logged in - show greeting and link to organizations
-    const displayName = user.firstName || user.email?.split("@")[0] || "there";
-
+    // User is not logged in - show login page
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
             <div className="absolute top-4 right-4">
                 <ThemeSwitcher />
             </div>
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">
-                        Hey {displayName}!
-                    </CardTitle>
-                    <CardDescription>
-                        You're all set. Click below to go to your organizations.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    <Button
-                        asChild
-                        variant="default"
-                        className="w-full"
-                        size="lg"
-                    >
-                        <Link
-                            to="/organizations"
-                            className="text-background!"
-                        >
-                            Go to Organizations
-                        </Link>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="w-full"
-                        size="lg"
-                        onClick={() => {
-                            db.auth.signOut();
-                            navigate({ to: "/login" });
-                        }}
-                    >
-                        Logout
-                    </Button>
-                </CardContent>
-            </Card>
+            <LoginCard />
         </div>
     );
 }

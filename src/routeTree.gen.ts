@@ -9,9 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as JoinIndexRouteImport } from './routes/join/index'
+import { Route as BlockedIndexRouteImport } from './routes/blocked/index'
 import { Route as UserSettingsRouteImport } from './routes/user/settings'
 import { Route as UserProfileRouteImport } from './routes/user/profile'
 import { Route as UserBillingRouteImport } from './routes/user/billing'
@@ -33,19 +34,24 @@ import { Route as OrganizationsOrgLayoutOrgIdMainJoinOrgCodeRouteImport } from '
 import { Route as OrganizationsOrgLayoutOrgIdMainDashboardRouteImport } from './routes/organizations/_orgLayout/$orgId/main/dashboard'
 import { Route as OrganizationsOrgLayoutOrgIdMainClassesRouteImport } from './routes/organizations/_orgLayout/$orgId/main/classes'
 
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginIndexRoute = LoginIndexRouteImport.update({
-  id: '/login/',
-  path: '/login/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const JoinIndexRoute = JoinIndexRouteImport.update({
   id: '/join/',
   path: '/join/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlockedIndexRoute = BlockedIndexRouteImport.update({
+  id: '/blocked/',
+  path: '/blocked/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UserSettingsRoute = UserSettingsRouteImport.update({
@@ -166,13 +172,14 @@ const OrganizationsOrgLayoutOrgIdMainClassesRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/classes': typeof ClassesClassesLayoutRouteWithChildren
   '/organizations': typeof OrganizationsOrgLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
+  '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
-  '/login': typeof LoginIndexRoute
   '/classes/$classId': typeof ClassesClassesLayoutClassIdRoute
   '/classes/': typeof ClassesClassesLayoutIndexRoute
   '/organizations/': typeof OrganizationsOrgLayoutIndexRoute
@@ -191,11 +198,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
+  '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
-  '/login': typeof LoginIndexRoute
   '/classes/$classId': typeof ClassesClassesLayoutClassIdRoute
   '/classes': typeof ClassesClassesLayoutIndexRoute
   '/organizations': typeof OrganizationsOrgLayoutIndexRoute
@@ -215,13 +223,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/classes/_classesLayout': typeof ClassesClassesLayoutRouteWithChildren
   '/organizations/_orgLayout': typeof OrganizationsOrgLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
+  '/blocked/': typeof BlockedIndexRoute
   '/join/': typeof JoinIndexRoute
-  '/login/': typeof LoginIndexRoute
   '/classes/_classesLayout/$classId': typeof ClassesClassesLayoutClassIdRoute
   '/classes/_classesLayout/': typeof ClassesClassesLayoutIndexRoute
   '/organizations/_orgLayout/': typeof OrganizationsOrgLayoutIndexRoute
@@ -242,13 +251,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
     | '/classes'
     | '/organizations'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
+    | '/blocked'
     | '/join'
-    | '/login'
     | '/classes/$classId'
     | '/classes/'
     | '/organizations/'
@@ -267,11 +277,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
+    | '/blocked'
     | '/join'
-    | '/login'
     | '/classes/$classId'
     | '/classes'
     | '/organizations'
@@ -290,13 +301,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$'
     | '/classes/_classesLayout'
     | '/organizations/_orgLayout'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
+    | '/blocked/'
     | '/join/'
-    | '/login/'
     | '/classes/_classesLayout/$classId'
     | '/classes/_classesLayout/'
     | '/organizations/_orgLayout/'
@@ -316,17 +328,25 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
   ClassesClassesLayoutRoute: typeof ClassesClassesLayoutRouteWithChildren
   OrganizationsOrgLayoutRoute: typeof OrganizationsOrgLayoutRouteWithChildren
   UserBillingRoute: typeof UserBillingRoute
   UserProfileRoute: typeof UserProfileRoute
   UserSettingsRoute: typeof UserSettingsRoute
+  BlockedIndexRoute: typeof BlockedIndexRoute
   JoinIndexRoute: typeof JoinIndexRoute
-  LoginIndexRoute: typeof LoginIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -334,18 +354,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login/': {
-      id: '/login/'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/join/': {
       id: '/join/'
       path: '/join'
       fullPath: '/join'
       preLoaderRoute: typeof JoinIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blocked/': {
+      id: '/blocked/'
+      path: '/blocked'
+      fullPath: '/blocked'
+      preLoaderRoute: typeof BlockedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/user/settings': {
@@ -556,13 +576,14 @@ const OrganizationsOrgLayoutRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
   ClassesClassesLayoutRoute: ClassesClassesLayoutRouteWithChildren,
   OrganizationsOrgLayoutRoute: OrganizationsOrgLayoutRouteWithChildren,
   UserBillingRoute: UserBillingRoute,
   UserProfileRoute: UserProfileRoute,
   UserSettingsRoute: UserSettingsRoute,
+  BlockedIndexRoute: BlockedIndexRoute,
   JoinIndexRoute: JoinIndexRoute,
-  LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -26,6 +26,9 @@ Gamify your classroom to motivate your students.
 
 ### 2026/01/15
 
+- DX: removed /login and moved it to /
+- UX: added /blocked page for unauthorized access
+- UX: added not-found route at `$.tsx`
 - UX: org index now only shows nav elements that the user has access to
 
 ### 2026/01/13
