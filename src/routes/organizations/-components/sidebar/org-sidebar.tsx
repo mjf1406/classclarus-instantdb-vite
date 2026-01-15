@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { useEffect, useRef } from "react";
 import { useRoleBasedNavigation } from "../navigation/role-based-navigation";
 import type { LucideIcon } from "lucide-react";
+import { Home, BookOpen, Book } from "lucide-react";
 
 const STORAGE_KEY_PREFIX = "org-sidebar-preference-";
 
@@ -106,59 +107,113 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         className="h-6"
                     />
                 </SidebarHeader>
-                <SidebarContent>
+                <SidebarContent className="flex flex-col">
                     {isIndexRoute || isLoading ? null : (
                         <>
-                            {mainItems.length > 0 && (
-                                <NavMain
-                                    items={mainItems.map((item) => ({
-                                        title: item.title,
-                                        url: item.url as any,
-                                        icon: item.icon as LucideIcon,
-                                    }))}
-                                    showLabel={false}
-                                    onLinkClick={handleLinkClick}
-                                />
-                            )}
-                            {settingsItem && (
-                                <NavMain
-                                    items={[
-                                        {
-                                            title: settingsItem.title,
-                                            url: settingsItem.url as any,
-                                            icon: settingsItem.icon as LucideIcon,
-                                        },
-                                    ]}
-                                    showLabel={false}
-                                    onLinkClick={handleLinkClick}
-                                />
-                            )}
-                            {memberItems.length > 0 && (
-                                <SidebarGroup>
-                                    <SidebarGroupLabel>Members</SidebarGroupLabel>
-                                    <SidebarMenu>
-                                        {memberItems.map((item) => {
-                                            const Icon = item.icon as LucideIcon;
-                                            return (
-                                                <SidebarMenuItem key={item.url}>
-                                                    <SidebarMenuButton
-                                                        asChild
-                                                        tooltip={item.title}
-                                                    >
-                                                        <Link
-                                                            to={item.url as any}
-                                                            onClick={handleLinkClick}
+                            <div className="flex flex-col">
+                                {(mainItems.length > 0 || settingsItem) && (
+                                    <NavMain
+                                        items={[
+                                            ...mainItems.map((item) => ({
+                                                title: item.title,
+                                                url: item.url as any,
+                                                icon: item.icon as LucideIcon,
+                                            })),
+                                            ...(settingsItem
+                                                ? [
+                                                      {
+                                                          title: settingsItem.title,
+                                                          url: settingsItem.url as any,
+                                                          icon: settingsItem.icon as LucideIcon,
+                                                      },
+                                                  ]
+                                                : []),
+                                        ]}
+                                        showLabel={true}
+                                        label="Organization"
+                                        onLinkClick={handleLinkClick}
+                                    />
+                                )}
+                                {memberItems.length > 0 && (
+                                    <SidebarGroup>
+                                        <SidebarGroupLabel>Organization Members</SidebarGroupLabel>
+                                        <SidebarMenu>
+                                            {memberItems.map((item) => {
+                                                const Icon = item.icon as LucideIcon;
+                                                return (
+                                                    <SidebarMenuItem key={item.url}>
+                                                        <SidebarMenuButton
+                                                            asChild
+                                                            tooltip={item.title}
                                                         >
-                                                            <Icon />
-                                                            <span>{item.title}</span>
-                                                        </Link>
-                                                    </SidebarMenuButton>
-                                                </SidebarMenuItem>
-                                            );
-                                        })}
-                                    </SidebarMenu>
-                                </SidebarGroup>
-                            )}
+                                                            <Link
+                                                                to={item.url as any}
+                                                                onClick={handleLinkClick}
+                                                            >
+                                                                <Icon />
+                                                                <span>{item.title}</span>
+                                                            </Link>
+                                                        </SidebarMenuButton>
+                                                    </SidebarMenuItem>
+                                                );
+                                            })}
+                                        </SidebarMenu>
+                                    </SidebarGroup>
+                                )}
+                            </div>
+                            <SidebarGroup className="mt-auto">
+                                <SidebarGroupLabel>ClassClarus</SidebarGroupLabel>
+                                <SidebarMenu>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Home"
+                                        >
+                                            <a
+                                                href="https://www.classclarus.com"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={handleLinkClick}
+                                            >
+                                                <Home />
+                                                <span>Home</span>
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Blog"
+                                        >
+                                            <a
+                                                href="https://blog.classclarus.com"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={handleLinkClick}
+                                            >
+                                                <BookOpen />
+                                                <span>Blog</span>
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                    <SidebarMenuItem>
+                                        <SidebarMenuButton
+                                            asChild
+                                            tooltip="Wiki"
+                                        >
+                                            <a
+                                                href="https://wiki.classclarus.com"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={handleLinkClick}
+                                            >
+                                                <Book />
+                                                <span>Wiki</span>
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                </SidebarMenu>
+                            </SidebarGroup>
                         </>
                     )}
                 </SidebarContent>

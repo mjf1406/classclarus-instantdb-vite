@@ -16,6 +16,7 @@ import {
 export function NavMain({
     items,
     showLabel = false,
+    label,
     onLinkClick,
 }: {
     items: {
@@ -25,11 +26,12 @@ export function NavMain({
         isActive?: boolean;
     }[];
     showLabel?: boolean;
+    label?: string;
     onLinkClick?: () => void;
 }) {
     return (
         <SidebarGroup>
-            {showLabel && <SidebarGroupLabel>Platform</SidebarGroupLabel>}
+            {showLabel && label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
