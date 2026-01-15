@@ -88,7 +88,7 @@ export function OrgCard({ organization }: OrgCardProps) {
                 : null;
 
     return (
-        <Card className="group/card hover:ring-foreground/20 transition-all">
+        <Card className="group/card hover:ring-foreground/20 transition-all h-full">
             <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -118,7 +118,7 @@ export function OrgCard({ organization }: OrgCardProps) {
                     </CardAction>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
                 <div className="flex items-center gap-2">
                     <Badge
                         variant="secondary"
