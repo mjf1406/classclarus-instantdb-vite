@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
 import { useAuthContext } from "@/components/auth/auth-provider";
-import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import {
     PlusIcon,
@@ -18,66 +15,19 @@ import { OrgGrid } from "../-components/org-grid";
 import { OrgLists } from "../-components/org-lists";
 import { OrgNoOrgs } from "../-components/org-no-orgs";
 import { CreateOrgDialog } from "../-components/create-org-dialog";
-import LoginPage from "@/components/auth/login-page";
-
-type Organization = InstaQLEntity<
-    AppSchema,
-    "organizations",
-    {
-        classes: {};
-        owner: {};
-        admins: {};
-        orgTeachers: {};
-        orgStudents: {};
-        orgParents: {};
-    }
->;
 
 export const Route = createFileRoute("/organizations/_orgLayout/")({
     component: RouteComponent,
 });
 
 function RouteComponent() {
-    const { user, isLoading: authLoading } = useAuthContext();
+    const {
+        isLoading: authLoading,
+        organizations,
+        isLoading: orgLoading,
+    } = useAuthContext();
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
-    const hasValidUser = user?.id && user.id.trim() !== "";
-
-    const query = hasValidUser
-        ? {
-              organizations: {
-                  $: {
-                      where: {
-                          or: [
-                              { "owner.id": user.id },
-                              { "admins.id": user.id },
-                              { "orgStudents.id": user.id },
-                              { "orgTeachers.id": user.id },
-                              { "orgParents.id": user.id },
-                          ],
-                      },
-                  },
-                  classes: {},
-                  owner: {},
-                  admins: {},
-                  orgStudents: {},
-                  orgTeachers: {},
-                  orgParents: {},
-              },
-          }
-        : { organizations: {} };
-
-    const { data, isLoading: dataLoading } = db.useQuery(
-        query as unknown as Parameters<typeof db.useQuery>[0]
-    );
-
-    const organizations: Organization[] =
-        ((data as any)?.organizations as Organization[] | undefined) || [];
-    const isLoading = authLoading || dataLoading;
-
-    if (!user || !user.id) {
-        return <LoginPage />;
-    }
+    const isLoading = authLoading || orgLoading;
 
     return (
         <div className="container mx-auto md:py-12 space-y-6">

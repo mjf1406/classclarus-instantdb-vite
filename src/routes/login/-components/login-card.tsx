@@ -27,7 +27,15 @@ export function LoginCard() {
                         Welcome to ClassClarus
                     </CardTitle>
                     <CardDescription className="mt-2">
-                        Sign in to continue to your account
+                        Sign in to continue.{" "}
+                        <a
+                            href="https://www.classclarus.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline underline-offset-4"
+                        >
+                            Learn more about what we do
+                        </a>
                     </CardDescription>
                 </div>
             </CardHeader>
@@ -42,6 +50,20 @@ export function LoginCard() {
                 <TryAsGuestButton />
                 <GuestDescription />
                 <GuestLimitations />
+                <div className="pt-4 mt-4 border-t">
+                    <p className="text-xs text-center text-muted-foreground">
+                        This is the ClassClarus app.{" "}
+                        <a
+                            href="https://www.classclarus.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline underline-offset-4"
+                        >
+                            Learn more about what we do
+                        </a>
+                        .
+                    </p>
+                </div>
             </CardContent>
         </Card>
     );

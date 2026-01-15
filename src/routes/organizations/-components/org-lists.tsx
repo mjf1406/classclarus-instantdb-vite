@@ -1,26 +1,12 @@
 /** @format */
 
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrgRow } from "./org-row";
-
-type Organization = InstaQLEntity<
-    AppSchema,
-    "organizations",
-    {
-        classes: {};
-        owner: {};
-        admins: {};
-        orgTeachers: {};
-        orgStudents: {};
-        orgParents: {};
-    }
->;
+import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 
 interface OrgListsProps {
-    organizations: Organization[];
+    organizations: OrganizationWithRelations[];
     isLoading?: boolean;
 }
 

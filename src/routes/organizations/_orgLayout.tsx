@@ -1,8 +1,7 @@
 /** @format */
 
 import { useAuthContext } from "@/components/auth/auth-provider";
-import LoginPage from "@/components/auth/login-page";
-import LoadingPage from "@/components/auth/loading-page";
+import LoadingPage from "@/components/loading/loading-page";
 import {
     createFileRoute,
     Link,
@@ -31,13 +30,22 @@ import { useOrganizationById } from "@/hooks/use-organization-hooks";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RenderLogo } from "@/components/icons/render-logo";
+import { useOrgRole } from "./-components/navigation/use-org-role";
+import {
+    OwnerBadge,
+    AdminBadge,
+    TeacherBadge,
+    AssistantTeacherBadge,
+    StudentBadge,
+    ParentBadge,
+} from "@/components/icons/role-icons";
 
 export const Route = createFileRoute("/organizations/_orgLayout")({
     component: RouteComponent,
 });
 
 function RouteComponent() {
-    const { user, isLoading: authLoading } = useAuthContext();
+    const { isLoading: authLoading } = useAuthContext();
     const params = useParams({ strict: false });
     const location = useLocation();
     const isIndexRoute = !params.orgId;
@@ -45,6 +53,7 @@ function RouteComponent() {
     const { organization, isLoading: orgLoading } = useOrganizationById(
         params.orgId
     );
+    const roleInfo = useOrgRole(organization);
 
     // Build breadcrumb segments based on current route
     const getBreadcrumbSegments = () => {
@@ -115,9 +124,6 @@ function RouteComponent() {
 
     const breadcrumbSegments = getBreadcrumbSegments();
 
-    if (!user || !user.id) {
-        return <LoginPage />;
-    }
     if (authLoading) {
         return <LoadingPage />;
     }
@@ -237,15 +243,33 @@ function RouteComponent() {
                                 rounded="full"
                                 alt={organization?.name}
                             />
-                            {organization.name.length > 10 ? (
-                                <span className="text-2xl w-full font-medium mx-auto truncate">
-                                    {organization.name}
-                                </span>
-                            ) : (
-                                <span className="text-2xl w-full font-medium mx-auto">
-                                    {organization.name}
-                                </span>
-                            )}
+                            <div className="flex items-center gap-2">
+                                {organization.name.length > 10 ? (
+                                    <span className="text-2xl font-medium truncate">
+                                        {organization.name}
+                                    </span>
+                                ) : (
+                                    <span className="text-2xl font-medium">
+                                        {organization.name}
+                                    </span>
+                                )}
+                                {(() => {
+                                    const RoleBadge = roleInfo.isOwner
+                                        ? OwnerBadge
+                                        : roleInfo.isAdmin
+                                          ? AdminBadge
+                                          : roleInfo.isTeacher
+                                            ? TeacherBadge
+                                            : roleInfo.isAssistantTeacher
+                                              ? AssistantTeacherBadge
+                                              : roleInfo.isStudent
+                                                ? StudentBadge
+                                                : roleInfo.isParent
+                                                  ? ParentBadge
+                                                  : null;
+                                    return RoleBadge ? <RoleBadge /> : null;
+                                })()}
+                            </div>
                         </div>
                     )}
                     <Outlet />

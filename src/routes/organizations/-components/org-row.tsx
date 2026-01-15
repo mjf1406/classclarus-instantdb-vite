@@ -1,13 +1,10 @@
 /** @format */
 
 import { Link } from "@tanstack/react-router";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Building2Icon, CalendarPlus, RefreshCw } from "lucide-react";
 import { OrgActionsMenu } from "./org-actions-menu";
-import { useAuthContext } from "@/components/auth/auth-provider";
 import {
     OwnerBadge,
     AdminBadge,
@@ -17,65 +14,30 @@ import {
 } from "@/components/icons/role-icons";
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
-
-type Organization = InstaQLEntity<
-    AppSchema,
-    "organizations",
-    {
-        classes: {};
-        owner: {};
-        admins: {};
-        orgTeachers: {};
-        orgStudents: {};
-        orgParents: {};
-    }
->;
+import { useOrgRole } from "./navigation/use-org-role";
+import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 
 interface OrgRowProps {
-    organization: Organization;
+    organization: OrganizationWithRelations;
 }
 
 export function OrgRow({ organization }: OrgRowProps) {
-    const { user } = useAuthContext();
     const classCount = organization.classes?.length || 0;
     const description = organization.description || "No description";
 
-    // Determine user's role in the organization (priority: Owner > Admin > Teacher > Student > Parent)
-    const userId = user?.id;
-    const isOwner = userId && organization.owner?.id === userId;
-    const isAdmin =
-        userId &&
-        !isOwner &&
-        organization.admins?.some((admin) => admin.id === userId);
-    const isTeacher =
-        userId &&
-        !isOwner &&
-        !isAdmin &&
-        organization.orgTeachers?.some((teacher) => teacher.id === userId);
-    const isStudent =
-        userId &&
-        !isOwner &&
-        !isAdmin &&
-        !isTeacher &&
-        organization.orgStudents?.some((student) => student.id === userId);
-    const isParent =
-        userId &&
-        !isOwner &&
-        !isAdmin &&
-        !isTeacher &&
-        !isStudent &&
-        organization.orgParents?.some((parent) => parent.id === userId);
+    // Determine user's role in the organization
+    const roleInfo = useOrgRole(organization);
 
     // Get the appropriate role badge
-    const RoleBadge = isOwner
+    const RoleBadge = roleInfo.isOwner
         ? OwnerBadge
-        : isAdmin
+        : roleInfo.isAdmin
           ? AdminBadge
-          : isTeacher
+          : roleInfo.isTeacher
             ? TeacherBadge
-            : isStudent
+            : roleInfo.isStudent
               ? StudentBadge
-              : isParent
+              : roleInfo.isParent
                 ? ParentBadge
                 : null;
 

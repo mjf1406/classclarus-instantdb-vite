@@ -3,19 +3,11 @@
 "use client";
 
 import * as React from "react";
-import { Home, LayoutDashboard, UserPlus, BookOpen, Users } from "lucide-react";
 import { useParams, Link } from "@tanstack/react-router";
 
 import { NavMain } from "./org-main";
 import { NavUser } from "@/components/navigation/nav-user";
 import { OrgSidebarHeader } from "./org-sidebar-header";
-import {
-    AdminIcon,
-    TeacherIcon,
-    AssistantTeacherIcon,
-    ParentIcon,
-    StudentIcon,
-} from "@/components/icons/role-icons";
 import {
     Sidebar,
     SidebarContent,
@@ -30,6 +22,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useRef } from "react";
+import { useRoleBasedNavigation } from "../navigation/role-based-navigation";
+import type { LucideIcon } from "lucide-react";
 
 const STORAGE_KEY_PREFIX = "org-sidebar-preference-";
 
@@ -45,6 +39,7 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const lastRouteRef = useRef<string>(currentRoute);
     const programmaticStateRef = useRef<boolean | null>(open);
     const isAdjustingRef = useRef(false);
+    const { mainItems, memberItems, settingsItem, isLoading } = useRoleBasedNavigation();
 
     // Close sidebar on mobile when a link is clicked
     const handleLinkClick = React.useCallback(() => {
@@ -112,135 +107,58 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     />
                 </SidebarHeader>
                 <SidebarContent>
-                    {isIndexRoute ? null : (
+                    {isIndexRoute || isLoading ? null : (
                         <>
-                            <NavMain
-                                items={[
-                                    {
-                                        title: "Home",
-                                        url: `/organizations/${params.orgId}` as any,
-                                        icon: Home,
-                                    },
-                                    {
-                                        title: "Dashboard",
-                                        url: `/organizations/${params.orgId}/main/dashboard` as any,
-                                        icon: LayoutDashboard,
-                                    },
-                                    {
-                                        title: "Join Org Code",
-                                        url: `/organizations/${params.orgId}/main/join-org-code` as any,
-                                        icon: UserPlus,
-                                    },
-                                    {
-                                        title: "Classes",
-                                        url: `/organizations/${params.orgId}/main/classes` as any,
-                                        icon: BookOpen,
-                                    },
-                                ]}
-                                showLabel={false}
-                                onLinkClick={handleLinkClick}
-                            />
-                            <SidebarGroup>
-                                <SidebarGroupLabel>Members</SidebarGroupLabel>
-                                <SidebarMenu>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="All"
-                                        >
-                                            <Link
-                                                to={
-                                                    `/organizations/${params.orgId}/members` as any
-                                                }
-                                                onClick={handleLinkClick}
-                                            >
-                                                <Users />
-                                                <span>All</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Admins"
-                                        >
-                                            <Link
-                                                to={
-                                                    `/organizations/${params.orgId}/members/admins` as any
-                                                }
-                                                onClick={handleLinkClick}
-                                            >
-                                                <AdminIcon />
-                                                <span>Admins</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Teachers"
-                                        >
-                                            <Link
-                                                to={
-                                                    `/organizations/${params.orgId}/members/teachers` as any
-                                                }
-                                                onClick={handleLinkClick}
-                                            >
-                                                <TeacherIcon />
-                                                <span>Teachers</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Assistant Teachers"
-                                        >
-                                            <Link
-                                                to={
-                                                    `/organizations/${params.orgId}/members/assistant-teachers` as any
-                                                }
-                                                onClick={handleLinkClick}
-                                            >
-                                                <AssistantTeacherIcon />
-                                                <span>Assistant Teachers</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Parents"
-                                        >
-                                            <Link
-                                                to={
-                                                    `/organizations/${params.orgId}/members/parents` as any
-                                                }
-                                                onClick={handleLinkClick}
-                                            >
-                                                <ParentIcon />
-                                                <span>Parents</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Students"
-                                        >
-                                            <Link
-                                                to={
-                                                    `/organizations/${params.orgId}/members/students` as any
-                                                }
-                                                onClick={handleLinkClick}
-                                            >
-                                                <StudentIcon />
-                                                <span>Students</span>
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                </SidebarMenu>
-                            </SidebarGroup>
+                            {mainItems.length > 0 && (
+                                <NavMain
+                                    items={mainItems.map((item) => ({
+                                        title: item.title,
+                                        url: item.url as any,
+                                        icon: item.icon as LucideIcon,
+                                    }))}
+                                    showLabel={false}
+                                    onLinkClick={handleLinkClick}
+                                />
+                            )}
+                            {settingsItem && (
+                                <NavMain
+                                    items={[
+                                        {
+                                            title: settingsItem.title,
+                                            url: settingsItem.url as any,
+                                            icon: settingsItem.icon as LucideIcon,
+                                        },
+                                    ]}
+                                    showLabel={false}
+                                    onLinkClick={handleLinkClick}
+                                />
+                            )}
+                            {memberItems.length > 0 && (
+                                <SidebarGroup>
+                                    <SidebarGroupLabel>Members</SidebarGroupLabel>
+                                    <SidebarMenu>
+                                        {memberItems.map((item) => {
+                                            const Icon = item.icon as LucideIcon;
+                                            return (
+                                                <SidebarMenuItem key={item.url}>
+                                                    <SidebarMenuButton
+                                                        asChild
+                                                        tooltip={item.title}
+                                                    >
+                                                        <Link
+                                                            to={item.url as any}
+                                                            onClick={handleLinkClick}
+                                                        >
+                                                            <Icon />
+                                                            <span>{item.title}</span>
+                                                        </Link>
+                                                    </SidebarMenuButton>
+                                                </SidebarMenuItem>
+                                            );
+                                        })}
+                                    </SidebarMenu>
+                                </SidebarGroup>
+                            )}
                         </>
                     )}
                 </SidebarContent>

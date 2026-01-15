@@ -24,6 +24,10 @@ Gamify your classroom to motivate your students.
 
 ## Change Log
 
+### 2026/01/15
+
+- UX: org index now only shows nav elements that the user has access to
+
 ### 2026/01/13
 
 - UX: sidebar auto close on mobile when a link is clicked

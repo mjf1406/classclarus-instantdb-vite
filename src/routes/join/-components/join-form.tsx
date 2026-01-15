@@ -1,7 +1,6 @@
 /** @format */
 
 import { useState, useEffect, useRef } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import {
     Card,
     CardContent,
@@ -16,11 +15,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/join")({
-    component: RouteComponent,
-});
-
-function RouteComponent() {
+export function JoinForm() {
     const [code, setCode] = useState("");
     const formRef = useRef<HTMLFormElement>(null);
 
