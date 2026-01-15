@@ -140,7 +140,15 @@ const userOrgRelationshipBind = [
     "isStudentInMyOrgAsOwner",
     "auth.id in data.ref('studentOrganizations.owner.id')",
 ];
-
+const userBinds = [
+    ...userBasicRelationshipBind,
+    ...userClassOwnerBind,
+    ...userClassAdminBind,
+    ...userClassTeacherBind,
+    ...userClassParentBind,
+    ...userClassStudentBind,
+    ...userOrgRelationshipBind,
+];
 const rules = {
     attrs: {
         allow: {
@@ -165,16 +173,7 @@ const rules = {
             update: "isAuthenticated && ((isOwner && isStillOwner) || (auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('parentClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('assistantTeacherClasses.classAdmins.id') || auth.id in data.ref('studentOrganizations.admins.id') || auth.id in data.ref('parentOrganizations.admins.id') || auth.id in data.ref('teacherOrganizations.admins.id') || auth.id in data.ref('assistantTeacherOrganizations.admins.id')))",
             delete: "false",
         },
-        bind: [
-            ...dataBind,
-            ...userBasicRelationshipBind,
-            ...userClassOwnerBind,
-            ...userClassAdminBind,
-            ...userClassTeacherBind,
-            ...userClassParentBind,
-            ...userClassStudentBind,
-            ...userOrgRelationshipBind,
-        ],
+        bind: [...dataBind, ...userBinds],
     },
     organizations: {
         allow: {
