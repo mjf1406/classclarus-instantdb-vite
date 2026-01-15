@@ -62,15 +62,18 @@ const ImageSkeleton = React.forwardRef<HTMLImageElement, ImageSkeletonProps>(
         if (height !== undefined) {
             if (typeof height === "number") {
                 containerStyle.height = `${height}px`;
-                imageStyle.height = `${height}px`;
             } else if (typeof height === "string") {
                 // If it's a Tailwind class (like "h-12"), add to classes
                 if (height.match(/^h-/) || height.match(/^\[h-/)) {
                     dimensionClasses.push(height);
                 } else {
-                    // Otherwise treat as CSS value
-                    containerStyle.height = height;
-                    imageStyle.height = height;
+                    // If it's a numeric string, add px; otherwise use as-is
+                    const numericHeight = Number(height);
+                    if (!isNaN(numericHeight)) {
+                        containerStyle.height = `${numericHeight}px`;
+                    } else {
+                        containerStyle.height = height;
+                    }
                 }
             }
         }
@@ -79,15 +82,18 @@ const ImageSkeleton = React.forwardRef<HTMLImageElement, ImageSkeletonProps>(
         if (width !== undefined) {
             if (typeof width === "number") {
                 containerStyle.width = `${width}px`;
-                imageStyle.width = `${width}px`;
             } else if (typeof width === "string") {
                 // If it's a Tailwind class (like "w-12"), add to classes
                 if (width.match(/^w-/) || width.match(/^\[w-/)) {
                     dimensionClasses.push(width);
                 } else {
-                    // Otherwise treat as CSS value
-                    containerStyle.width = width;
-                    imageStyle.width = width;
+                    // If it's a numeric string, add px; otherwise use as-is
+                    const numericWidth = Number(width);
+                    if (!isNaN(numericWidth)) {
+                        containerStyle.width = `${numericWidth}px`;
+                    } else {
+                        containerStyle.width = width;
+                    }
                 }
             }
         }
@@ -102,14 +108,14 @@ const ImageSkeleton = React.forwardRef<HTMLImageElement, ImageSkeletonProps>(
             }
         }
 
-        // Ensure image fits container exactly
-        imageStyle.objectFit = "cover";
+        // Ensure image fits container exactly - always fill the container
         imageStyle.width = "100%";
         imageStyle.height = "100%";
+        imageStyle.objectFit = "cover";
 
         return (
             <div
-                className={cn("relative", dimensionClasses)}
+                className={cn("relative mx-auto", dimensionClasses)}
                 style={containerStyle}
             >
                 {isLoading && !hasError && (

@@ -99,7 +99,7 @@ function RouteComponent() {
                     const mainSubrouteLabels: Record<string, string> = {
                         dashboard: "Dashboard",
                         classes: "Classes",
-                        "join-org-code": "Invite Members",
+                        settings: "Settings",
                     };
 
                     if (mainSubrouteLabels[mainSubroute]) {
@@ -110,8 +110,14 @@ function RouteComponent() {
                     }
                 }
             } else if (subroute === "members") {
-                // Check for specific member subroutes
-                if (pathParts.length > orgIdIndex + 2) {
+                // Check if we're at the members index route
+                if (pathParts.length === orgIdIndex + 2) {
+                    // At /organizations/$orgId/members
+                    segments.push({
+                        label: "All Members",
+                    });
+                } else if (pathParts.length > orgIdIndex + 2) {
+                    // Check for specific member subroutes
                     const memberSubroute = pathParts[orgIdIndex + 2];
                     const memberSubrouteLabels: Record<string, string> = {
                         admins: "Admins",
@@ -119,6 +125,7 @@ function RouteComponent() {
                         "assistant-teachers": "Asst Teachers",
                         parents: "Parents",
                         students: "Students",
+                        invite: "Invite Members",
                     };
 
                     if (memberSubrouteLabels[memberSubroute]) {

@@ -1,11 +1,11 @@
 /** @format */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { Users } from "lucide-react";
+import { StudentIcon } from "@/components/icons/role-icons";
 import { UnderConstruction } from "@/components/under-construction";
 
 export const Route = createFileRoute(
-    "/organizations/_orgLayout/$orgId/members/"
+    "/organizations/_orgLayout/$orgId/members/students/"
 )({
     component: RouteComponent,
 });
@@ -15,13 +15,13 @@ function RouteComponent() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Users className="size-12 md:size-16 text-primary" />
+                    <StudentIcon className="size-12 md:size-16 text-primary" />
                     <div>
                         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                            All Members
+                            Students
                         </h1>
                         <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                            View and manage all organization members
+                            Manage students in your organization
                         </p>
                     </div>
                 </div>

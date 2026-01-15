@@ -31,13 +31,6 @@ export function getAdminNavigation(orgId: string): {
                 icon: LayoutDashboard,
             },
             {
-                title: "Invite Members",
-                description:
-                    "Generate or view the code for others to join this organization",
-                url: `/organizations/${orgId}/main/join-org-code`,
-                icon: UserPlus,
-            },
-            {
                 title: "Classes",
                 description:
                     "Manage and organize all classes within this organization",
@@ -46,6 +39,13 @@ export function getAdminNavigation(orgId: string): {
             },
         ],
         memberItems: [
+            {
+                title: "Invite Members",
+                description:
+                    "Generate or view the code for others to join this organization",
+                url: `/organizations/${orgId}/members/invite`,
+                icon: UserPlus,
+            },
             {
                 title: "All Members",
                 description:
