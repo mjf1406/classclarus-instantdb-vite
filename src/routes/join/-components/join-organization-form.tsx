@@ -24,7 +24,6 @@ export function JoinOrganizationForm() {
     const [error, setError] = useState<string | null>(null);
     const [isRateLimited, setIsRateLimited] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [orgId, setOrgId] = useState<string | null>(null);
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const lastSubmittedCodeRef = useRef<string>("");
@@ -130,7 +129,6 @@ export function JoinOrganizationForm() {
                 // Success - show success state and delay navigation
                 setIsSubmitting(false);
                 setIsSuccess(true);
-                setOrgId(data.entityId);
 
                 // Delay navigation by 500ms to allow InstantDB to sync
                 redirectTimeoutRef.current = setTimeout(() => {

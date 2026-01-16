@@ -24,7 +24,6 @@ export function JoinClassForm() {
     const [error, setError] = useState<string | null>(null);
     const [isRateLimited, setIsRateLimited] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [classId, setClassId] = useState<string | null>(null);
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const lastSubmittedCodeRef = useRef<string>("");
@@ -98,7 +97,6 @@ export function JoinClassForm() {
                 // Success - show success state and delay navigation
                 setIsSubmitting(false);
                 setIsSuccess(true);
-                setClassId(data.entityId);
 
                 // Delay navigation by 500ms to allow InstantDB to sync
                 redirectTimeoutRef.current = setTimeout(() => {
