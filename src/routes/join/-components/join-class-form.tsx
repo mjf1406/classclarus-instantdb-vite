@@ -16,14 +16,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { useNavigate } from "@tanstack/react-router";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 export function JoinClassForm() {
     const [code, setCode] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isRateLimited, setIsRateLimited] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [classId, setClassId] = useState<string | null>(null);
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const lastSubmittedCodeRef = useRef<string>("");
+    const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleSubmit = useCallback(
         async (e?: React.FormEvent) => {
@@ -47,6 +52,7 @@ export function JoinClassForm() {
 
             setIsSubmitting(true);
             setError(null);
+            setIsRateLimited(false);
             lastSubmittedCodeRef.current = codeUpper;
 
             try {
@@ -74,6 +80,7 @@ export function JoinClassForm() {
                     } else if (response.status === 409) {
                         setError(data.message || "You are already a member of this class.");
                     } else if (response.status === 429) {
+                        setIsRateLimited(true);
                         setError(
                             data.message ||
                                 "Too many requests. Please try again in a minute."
@@ -88,11 +95,18 @@ export function JoinClassForm() {
                     return;
                 }
 
-                // Success - navigate to the class
-                navigate({
-                    to: "/classes/$classId",
-                    params: { classId: data.entityId },
-                });
+                // Success - show success state and delay navigation
+                setIsSubmitting(false);
+                setIsSuccess(true);
+                setClassId(data.entityId);
+
+                // Delay navigation by 500ms to allow InstantDB to sync
+                redirectTimeoutRef.current = setTimeout(() => {
+                    navigate({
+                        to: "/classes/$classId",
+                        params: { classId: data.entityId },
+                    });
+                }, 500);
             } catch (err) {
                 console.error("[Join Class Form] Error joining:", err);
                 setError(
@@ -119,9 +133,12 @@ export function JoinClassForm() {
             .join("")
             .slice(0, 6);
         setCode(filtered);
-        // Reset error when user types
+        // Reset error and rate limit state when user types
         if (error) {
             setError(null);
+        }
+        if (isRateLimited) {
+            setIsRateLimited(false);
         }
         // Reset last submitted code when code changes (so it can be resubmitted)
         if (lastSubmittedCodeRef.current !== filtered) {
@@ -135,7 +152,8 @@ export function JoinClassForm() {
         if (
             code.length === 6 &&
             lastSubmittedCodeRef.current !== codeUpper &&
-            !isSubmitting
+            !isSubmitting &&
+            !isSuccess
         ) {
             // Use a small delay to ensure the state is updated
             const timeoutId = setTimeout(() => {
@@ -143,7 +161,42 @@ export function JoinClassForm() {
             }, 100);
             return () => clearTimeout(timeoutId);
         }
-    }, [code, isSubmitting, handleSubmit]);
+    }, [code, isSubmitting, isSuccess, handleSubmit]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (redirectTimeoutRef.current) {
+                clearTimeout(redirectTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    // Show success state with loading spinner
+    if (isSuccess) {
+        return (
+            <div className="flex min-h-screen items-center justify-center p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="text-center">
+                        <CardTitle className="text-2xl">
+                            Successfully Joined!
+                        </CardTitle>
+                        <CardDescription>
+                            You've successfully joined the class
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                            <p className="text-muted-foreground text-center">
+                                Redirecting...
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
@@ -155,6 +208,11 @@ export function JoinClassForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
+                    <div className="mb-4 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3">
+                        <p className="text-center text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                            Be careful! You only get 3 tries!
+                        </p>
+                    </div>
                     <form
                         onSubmit={handleSubmit}
                         className="space-y-6"
@@ -167,7 +225,7 @@ export function JoinClassForm() {
                                 autoFocus
                                 inputMode="text"
                                 pattern="[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]*"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || isSuccess}
                             >
                                 <InputOTPGroup className="bg-background">
                                     <InputOTPSlot index={0} />
@@ -180,14 +238,19 @@ export function JoinClassForm() {
                             </InputOTP>
                         </div>
                         {error && (
-                            <div className="text-sm text-destructive text-center">
-                                {error}
+                            <div className="flex flex-col items-center space-y-2">
+                                {isRateLimited && (
+                                    <AlertTriangle className="h-16 w-16 text-destructive" />
+                                )}
+                                <div className="text-sm text-destructive text-center">
+                                    {error}
+                                </div>
                             </div>
                         )}
                         <Button
                             type="submit"
                             className="w-full"
-                            disabled={code.length < 6 || isSubmitting}
+                            disabled={code.length < 6 || isSubmitting || isSuccess}
                             size="lg"
                         >
                             {isSubmitting ? "Joining..." : "Join Class"}

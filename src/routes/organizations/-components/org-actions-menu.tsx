@@ -12,6 +12,9 @@ import {
 import { MoreVerticalIcon } from "lucide-react";
 import { EditOrgDialog } from "./edit-org-dialog";
 import { DeleteOrgDialog } from "./delete-org-dialog";
+import { LeaveOrgDialog } from "./leave-org-dialog";
+import { useOrgRole } from "./navigation/use-org-role";
+import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 
 type Organization = InstaQLEntity<AppSchema, "organizations">;
 
@@ -20,6 +23,9 @@ interface OrgActionsMenuProps {
 }
 
 export function OrgActionsMenu({ organization }: OrgActionsMenuProps) {
+    // Determine user's role in the organization
+    const roleInfo = useOrgRole(organization as OrganizationWithRelations);
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -33,9 +39,17 @@ export function OrgActionsMenu({ organization }: OrgActionsMenuProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <EditOrgDialog organization={organization} asDropdownItem />
-                <DropdownMenuSeparator />
-                <DeleteOrgDialog organization={organization} asDropdownItem />
+                {!roleInfo.isTeacher && (
+                    <>
+                        <EditOrgDialog organization={organization} asDropdownItem />
+                        <DropdownMenuSeparator />
+                    </>
+                )}
+                {roleInfo.isTeacher ? (
+                    <LeaveOrgDialog organization={organization} asDropdownItem />
+                ) : (
+                    <DeleteOrgDialog organization={organization} asDropdownItem />
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );
