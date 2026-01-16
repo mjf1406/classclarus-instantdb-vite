@@ -183,9 +183,7 @@ function RouteComponent() {
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem className="">
                                         <BreadcrumbLink asChild>
-                                            <Link to="/classes">
-                                                Classes
-                                            </Link>
+                                            <Link to="/classes">Classes</Link>
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
                                     {classEntity && (

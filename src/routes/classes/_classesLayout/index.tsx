@@ -29,6 +29,7 @@ export const Route = createFileRoute("/classes/_classesLayout/")({
 
 function RouteComponent() {
     const { classes, isLoading } = useAllUserClasses();
+    console.log("🚀 ~ RouteComponent ~ classes:", classes);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     // Separate active and archived classes
@@ -76,10 +77,16 @@ function RouteComponent() {
                         <Button size="lg">
                             <PlusIcon />
                             <span className="sr-only">Create Class</span>
-                            <span className="hidden md:block">Create Class</span>
+                            <span className="hidden md:block">
+                                Create Class
+                            </span>
                         </Button>
                     </CreateClassDialog>
-                    <Button size="lg" variant="outline" asChild>
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        asChild
+                    >
                         <Link to="/join">
                             <UserPlus />
                             <span className="sr-only">Join Organization</span>
@@ -108,7 +115,10 @@ function RouteComponent() {
                     <ClassNoClasses
                         createClassButton={
                             <CreateClassDialog>
-                                <Button size="lg" className="w-full">
+                                <Button
+                                    size="lg"
+                                    className="w-full"
+                                >
                                     <PlusIcon />
                                     <span>Create Class</span>
                                 </Button>
@@ -116,14 +126,23 @@ function RouteComponent() {
                         }
                         createOrgButton={
                             <CreateOrgDialog>
-                                <Button size="lg" variant="ghost" className="w-full">
+                                <Button
+                                    size="lg"
+                                    variant="ghost"
+                                    className="w-full"
+                                >
                                     <PlusIcon />
                                     <span>Create Organization</span>
                                 </Button>
                             </CreateOrgDialog>
                         }
                         joinClassButton={
-                            <Button size="lg" variant="outline" asChild className="w-full">
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                asChild
+                                className="w-full"
+                            >
                                 <Link to="/join/class">
                                     <LogIn />
                                     <span>Join Class</span>
@@ -131,7 +150,12 @@ function RouteComponent() {
                             </Button>
                         }
                         joinOrgButton={
-                            <Button size="lg" variant="outline" asChild className="w-full">
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                asChild
+                                className="w-full"
+                            >
                                 <Link to="/join/organization">
                                     <UserPlus />
                                     <span>Join Organization</span>
@@ -140,9 +164,15 @@ function RouteComponent() {
                         }
                     />
                 ) : viewMode === "grid" ? (
-                    <ClassGrid classes={activeClasses} isLoading={isLoading} />
+                    <ClassGrid
+                        classes={activeClasses}
+                        isLoading={isLoading}
+                    />
                 ) : (
-                    <ClassList classes={activeClasses} isLoading={isLoading} />
+                    <ClassList
+                        classes={activeClasses}
+                        isLoading={isLoading}
+                    />
                 )}
             </div>
 

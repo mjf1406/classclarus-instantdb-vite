@@ -99,24 +99,21 @@ const userClassTeacherRelationships = {
         "auth.id in data.ref('assistantTeacherClasses.classTeachers.id')",
     isParentInMyClassAsTeacher:
         "auth.id in data.ref('parentClasses.classTeachers.id')",
-    // NEW: Teachers can see owners and admins of their classes
     isOwnerOfMyClass: "auth.id in data.ref('classes.classTeachers.id')",
     isAdminOfMyClass: "auth.id in data.ref('adminClasses.classTeachers.id')",
 };
 
 // User Class Relationships - As Assistant Teacher
 const userClassAssistantTeacherRelationships = {
-    // NEW: Assistant teachers can also see owners and admins
     isOwnerOfMyClassAsAssistant:
         "auth.id in data.ref('classes.classAssistantTeachers.id')",
     isAdminOfMyClassAsAssistant:
         "auth.id in data.ref('adminClasses.classAssistantTeachers.id')",
 };
 
-// User Class Relationships - As Parent
+// User Class Relationships - As Parent (teachers/assistant teachers only, NOT students)
 const userClassParentRelationships = {
-    isStudentInMyClassAsParent:
-        "auth.id in data.ref('studentClasses.classParents.id')",
+    // REMOVED: isStudentInMyClassAsParent - Parents should only see their own children's full info
     isTeacherInMyClassAsParent:
         "auth.id in data.ref('teacherClasses.classParents.id')",
     isAssistantTeacherInMyClassAsParent:
@@ -183,6 +180,8 @@ const allBinds = {
 // User field visibility conditions
 const USER_SELF_AND_FAMILY = "isMyself || isMyChild || isMyParent";
 
+// Full profile access for class staff, admins, parents viewing teachers, and students viewing teachers
+// NOTE: isStudentInMyClassAsParent is intentionally EXCLUDED so parents only see full info for their own children
 const USER_ALL_CLASS_RELATIONSHIPS = [
     "isMyChildInSharedClass",
     "isMyParentInSharedClass",
@@ -200,7 +199,7 @@ const USER_ALL_CLASS_RELATIONSHIPS = [
     "isTeacherInMyClassAsTeacher",
     "isAssistantTeacherInMyClassAsTeacher",
     "isParentInMyClassAsTeacher",
-    "isStudentInMyClassAsParent",
+    // "isStudentInMyClassAsParent", // REMOVED - parents can only see their own children's info
     "isTeacherInMyClassAsParent",
     "isAssistantTeacherInMyClassAsParent",
     "isTeacherInMyClassAsStudent",
@@ -261,11 +260,14 @@ const rules = {
             delete: "false",
         },
         fields: {
+            // Profile fields: visible to self, family, own children, class staff, and teachers in your class
+            // Parents can see teachers/assistants, but NOT other students (only their own children via isMyChild)
             email: USER_CAN_VIEW_PROFILE,
             imageURL: USER_CAN_VIEW_PROFILE,
             avatarURL: USER_CAN_VIEW_PROFILE,
             firstName: USER_CAN_VIEW_PROFILE,
             lastName: USER_CAN_VIEW_PROFILE,
+            // Private fields: only self and family
             type: USER_CAN_VIEW_PRIVATE_INFO,
             plan: USER_CAN_VIEW_PRIVATE_INFO,
             created: USER_CAN_VIEW_PRIVATE_INFO,
@@ -284,6 +286,9 @@ const rules = {
             update: "isAuthenticated && (isOwner || isAdmin) && (isStillOwner || isStillAdmin)",
             delete: "isAuthenticated && isOwner",
         },
+        fields: {
+            code: "isOwner || isAdmin",
+        },
         bind: bindObjectToArray(allDataBinds),
     },
 
@@ -293,6 +298,11 @@ const rules = {
             view: "isAuthenticated && (isOwner || isClassAdmin || isClassMember || isClassParent || isTeacher || isAssistantTeacher)",
             update: "isAuthenticated && (isOwner || isClassAdmin || isTeacher || isAssistantTeacher) && (isStillOwner || isStillClassAdmin || isStillTeacher || isStillAssistantTeacher)",
             delete: "isAuthenticated && isOwner",
+        },
+        fields: {
+            parentCode: "isOwner || isClassAdmin || isTeacher",
+            studentCode: "isOwner || isClassAdmin || isTeacher",
+            teacherCode: "isOwner || isClassAdmin || isTeacher",
         },
         bind: bindObjectToArray(allDataBinds),
     },
