@@ -63,6 +63,7 @@ export function CreateClassDialog({ children, orgId }: CreateClassDialogProps) {
                     archivedAt: null,
                 })
                     .link({ owner: user.id })
+                    .link({ classTeachers: user.id })
                     .link({ organization: orgId }),
             ]);
 

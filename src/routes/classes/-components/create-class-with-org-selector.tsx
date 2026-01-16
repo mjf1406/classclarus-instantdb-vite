@@ -93,6 +93,7 @@ export function CreateClassWithOrgSelector({
                         archivedAt: null,
                     })
                     .link({ owner: user.id })
+                    .link({ classTeachers: user.id })
                     .link({ organization: selectedOrgId }),
             ]);
 

@@ -12,8 +12,8 @@ import {
     ArchiveIcon,
     UserPlus,
 } from "lucide-react";
-import { ClassGrid } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/class-grid";
-import { ClassList } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/class-list";
+import { ClassGrid } from "./-components/class-grid";
+import { ClassList } from "./-components/class-list";
 import { ClassNoClasses } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/class-no-classes";
 import { CreateClassWrapper } from "./-components/create-class-wrapper";
 import { useAllUserClasses } from "@/hooks/use-class-hooks";
