@@ -6,6 +6,9 @@
 # with Wrangler. In production, configure the rate limiting binding through:
 # Cloudflare Dashboard > Your Pages Project > Settings > Functions > Rate Limiting
 #
+# Build output directory for Cloudflare Pages
+pages_build_output_dir = "dist"
+
 # Rate limiting for join endpoints: 3 requests per minute per user
 [[ratelimits]]
 name = "JOIN_RATE_LIMITER"
