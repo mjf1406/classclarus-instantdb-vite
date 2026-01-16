@@ -31,6 +31,8 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RenderLogo } from "@/components/icons/render-logo";
 import { useClassRole } from "@/hooks/use-class-role";
+import { useOrganizationById } from "@/hooks/use-organization-hooks";
+import { useOrgRole } from "@/hooks/use-org-role";
 import {
     OwnerBadge,
     AdminBadge,
@@ -57,7 +59,7 @@ export const Route = createFileRoute("/classes/_classesLayout")({
 });
 
 function RouteComponent() {
-    const { isLoading: authLoading } = useAuthContext();
+    const { isLoading: authLoading, organizations, user } = useAuthContext();
     const params = useParams({ strict: false });
     const location = useLocation();
     const isIndexRoute = !params.classId;
@@ -66,6 +68,39 @@ function RouteComponent() {
         params.classId
     );
     const roleInfo = useClassRole(classEntity);
+    
+    // Get organization and check if user is org owner/admin
+    // For class detail route: use the class's organization
+    // For index route: use first organization where user is owner/admin
+    const orgId = classEntity?.organization?.id;
+    const { organization: classOrg } = useOrganizationById(orgId);
+    const classOrgRoleInfo = useOrgRole(classOrg);
+    
+    // For index route, find first org where user is owner/admin
+    // Check directly without using hook in callback
+    const userId = user?.id;
+    const indexOrg = isIndexRoute
+        ? organizations.find((org) => {
+              if (!userId) return false;
+              const isOwner = org.owner?.id === userId;
+              const isAdmin = org.admins?.some((admin) => admin.id === userId);
+              return isOwner || isAdmin;
+          }) || null
+        : null;
+    
+    // Determine which organization to show and if user can view it
+    const organization = isIndexRoute ? indexOrg : classOrg;
+    const orgRoleInfo = isIndexRoute
+        ? {
+              isOwner: !!(userId && indexOrg?.owner?.id === userId),
+              isAdmin: !!(
+                  userId &&
+                  indexOrg?.owner?.id !== userId &&
+                  indexOrg?.admins?.some((admin) => admin.id === userId)
+              ),
+          }
+        : classOrgRoleInfo;
+    const canViewOrg = orgRoleInfo.isOwner || orgRoleInfo.isAdmin;
 
     // Build breadcrumb segments based on current route
     const getBreadcrumbSegments = () => {
@@ -181,6 +216,31 @@ function RouteComponent() {
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator />
+                                    {canViewOrg && organization && (
+                                        <>
+                                            <BreadcrumbItem>
+                                                <BreadcrumbLink asChild>
+                                                    <Link to="/organizations">
+                                                        Orgs
+                                                    </Link>
+                                                </BreadcrumbLink>
+                                            </BreadcrumbItem>
+                                            <BreadcrumbSeparator />
+                                            <BreadcrumbItem>
+                                                <BreadcrumbLink asChild>
+                                                    <Link
+                                                        to={`/organizations/${organization.id}`}
+                                                        className="flex items-center"
+                                                    >
+                                                        <span className="block max-w-[60px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
+                                                            {organization.name}
+                                                        </span>
+                                                    </Link>
+                                                </BreadcrumbLink>
+                                            </BreadcrumbItem>
+                                            <BreadcrumbSeparator />
+                                        </>
+                                    )}
                                     <BreadcrumbItem className="">
                                         <BreadcrumbLink asChild>
                                             <Link to="/classes">Classes</Link>
@@ -195,11 +255,12 @@ function RouteComponent() {
                                                         to={
                                                             `/classes/${params.classId}` as any
                                                         }
+                                                        className="flex items-center"
                                                     >
                                                         {classLoading ? (
                                                             "Loading..."
                                                         ) : (
-                                                            <span className="inline-block mt-1 md:mt-0 max-w-[100px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
+                                                            <span className="block max-w-[60px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
                                                                 {
                                                                     classEntity.name
                                                                 }

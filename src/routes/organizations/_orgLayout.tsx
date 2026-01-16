@@ -195,11 +195,12 @@ function RouteComponent() {
                                                         to={
                                                             `/organizations/${params.orgId}` as any
                                                         }
+                                                        className="flex items-center"
                                                     >
                                                         {orgLoading ? (
                                                             "Loading..."
                                                         ) : (
-                                                            <span className="inline-block mt-1 md:mt-0 max-w-[100px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
+                                                            <span className="block max-w-[60px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">
                                                                 {
                                                                     organization.name
                                                                 }

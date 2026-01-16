@@ -116,13 +116,21 @@ export function ClassCardWithOrg({
                             {organization && (
                                 <div className="flex items-center gap-1.5 mt-2">
                                     <Building2 className="size-3.5 text-muted-foreground" />
-                                    <Link
-                                        to="/organizations/$orgId"
-                                        params={{ orgId: organization.id }}
-                                        className="text-sm text-muted-foreground hover:text-foreground hover:underline transition-colors"
-                                    >
-                                        {organization.name}
-                                    </Link>
+                                    {roleInfo.isOwner ||
+                                    roleInfo.isAdmin ||
+                                    roleInfo.isTeacher ? (
+                                        <Link
+                                            to="/organizations/$orgId"
+                                            params={{ orgId: organization.id }}
+                                            className="text-sm text-muted-foreground hover:text-foreground hover:underline transition-colors"
+                                        >
+                                            {organization.name}
+                                        </Link>
+                                    ) : (
+                                        <span className="text-sm text-muted-foreground">
+                                            {organization.name}
+                                        </span>
+                                    )}
                                 </div>
                             )}
                         </div>
