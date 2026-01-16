@@ -24,6 +24,7 @@ import { Route as OrganizationsOrgLayoutOrgIdIndexRouteImport } from './routes/o
 import { Route as ClassesClassesLayoutMembersIndexRouteImport } from './routes/classes/_classesLayout/members/index'
 import { Route as ClassesClassesLayoutClassIdIndexRouteImport } from './routes/classes/_classesLayout/$classId/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/index'
+import { Route as ClassesClassesLayoutClassIdMembersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersTeachersIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/teachers/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersStudentsIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/students/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersParentsIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/parents/index'
@@ -33,6 +34,14 @@ import { Route as OrganizationsOrgLayoutOrgIdMembersAdminsIndexRouteImport } fro
 import { Route as OrganizationsOrgLayoutOrgIdMainSettingsIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/main/settings/index'
 import { Route as OrganizationsOrgLayoutOrgIdMainDashboardIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/main/dashboard/index'
 import { Route as OrganizationsOrgLayoutOrgIdMainClassesIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/main/classes/index'
+import { Route as ClassesClassesLayoutClassIdMembersTeachersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/teachers/index'
+import { Route as ClassesClassesLayoutClassIdMembersStudentsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/students/index'
+import { Route as ClassesClassesLayoutClassIdMembersParentsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/parents/index'
+import { Route as ClassesClassesLayoutClassIdMembersInviteIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/invite/index'
+import { Route as ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/assistant-teachers/index'
+import { Route as ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/admins/index'
+import { Route as ClassesClassesLayoutClassIdMainSettingsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/settings/index'
+import { Route as ClassesClassesLayoutClassIdMainDashboardIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/dashboard/index'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -115,6 +124,12 @@ const OrganizationsOrgLayoutOrgIdMembersIndexRoute =
     path: '/$orgId/members/',
     getParentRoute: () => OrganizationsOrgLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdMembersIndexRoute =
+  ClassesClassesLayoutClassIdMembersIndexRouteImport.update({
+    id: '/$classId/members/',
+    path: '/$classId/members/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 const OrganizationsOrgLayoutOrgIdMembersTeachersIndexRoute =
   OrganizationsOrgLayoutOrgIdMembersTeachersIndexRouteImport.update({
     id: '/$orgId/members/teachers/',
@@ -169,6 +184,54 @@ const OrganizationsOrgLayoutOrgIdMainClassesIndexRoute =
     path: '/$orgId/main/classes/',
     getParentRoute: () => OrganizationsOrgLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdMembersTeachersIndexRoute =
+  ClassesClassesLayoutClassIdMembersTeachersIndexRouteImport.update({
+    id: '/$classId/members/teachers/',
+    path: '/$classId/members/teachers/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMembersStudentsIndexRoute =
+  ClassesClassesLayoutClassIdMembersStudentsIndexRouteImport.update({
+    id: '/$classId/members/students/',
+    path: '/$classId/members/students/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMembersParentsIndexRoute =
+  ClassesClassesLayoutClassIdMembersParentsIndexRouteImport.update({
+    id: '/$classId/members/parents/',
+    path: '/$classId/members/parents/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMembersInviteIndexRoute =
+  ClassesClassesLayoutClassIdMembersInviteIndexRouteImport.update({
+    id: '/$classId/members/invite/',
+    path: '/$classId/members/invite/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute =
+  ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteImport.update({
+    id: '/$classId/members/assistant-teachers/',
+    path: '/$classId/members/assistant-teachers/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMembersAdminsIndexRoute =
+  ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport.update({
+    id: '/$classId/members/admins/',
+    path: '/$classId/members/admins/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMainSettingsIndexRoute =
+  ClassesClassesLayoutClassIdMainSettingsIndexRouteImport.update({
+    id: '/$classId/main/settings/',
+    path: '/$classId/main/settings/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMainDashboardIndexRoute =
+  ClassesClassesLayoutClassIdMainDashboardIndexRouteImport.update({
+    id: '/$classId/main/dashboard/',
+    path: '/$classId/main/dashboard/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -185,7 +248,16 @@ export interface FileRoutesByFullPath {
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdIndexRoute
+  '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
+  '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
+  '/classes/$classId/members/invite': typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
+  '/classes/$classId/members/parents': typeof ClassesClassesLayoutClassIdMembersParentsIndexRoute
+  '/classes/$classId/members/students': typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
+  '/classes/$classId/members/teachers': typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
   '/organizations/$orgId/main/classes': typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRoute
   '/organizations/$orgId/main/dashboard': typeof OrganizationsOrgLayoutOrgIdMainDashboardIndexRoute
   '/organizations/$orgId/main/settings': typeof OrganizationsOrgLayoutOrgIdMainSettingsIndexRoute
@@ -209,7 +281,16 @@ export interface FileRoutesByTo {
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdIndexRoute
+  '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
+  '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
+  '/classes/$classId/members/invite': typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
+  '/classes/$classId/members/parents': typeof ClassesClassesLayoutClassIdMembersParentsIndexRoute
+  '/classes/$classId/members/students': typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
+  '/classes/$classId/members/teachers': typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
   '/organizations/$orgId/main/classes': typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRoute
   '/organizations/$orgId/main/dashboard': typeof OrganizationsOrgLayoutOrgIdMainDashboardIndexRoute
   '/organizations/$orgId/main/settings': typeof OrganizationsOrgLayoutOrgIdMainSettingsIndexRoute
@@ -236,7 +317,16 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/_classesLayout/members/': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/_orgLayout/$orgId/': typeof OrganizationsOrgLayoutOrgIdIndexRoute
+  '/classes/_classesLayout/$classId/members/': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/organizations/_orgLayout/$orgId/members/': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/_classesLayout/$classId/main/dashboard/': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/_classesLayout/$classId/main/settings/': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  '/classes/_classesLayout/$classId/members/admins/': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
+  '/classes/_classesLayout/$classId/members/assistant-teachers/': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
+  '/classes/_classesLayout/$classId/members/invite/': typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
+  '/classes/_classesLayout/$classId/members/parents/': typeof ClassesClassesLayoutClassIdMembersParentsIndexRoute
+  '/classes/_classesLayout/$classId/members/students/': typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
+  '/classes/_classesLayout/$classId/members/teachers/': typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
   '/organizations/_orgLayout/$orgId/main/classes/': typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRoute
   '/organizations/_orgLayout/$orgId/main/dashboard/': typeof OrganizationsOrgLayoutOrgIdMainDashboardIndexRoute
   '/organizations/_orgLayout/$orgId/main/settings/': typeof OrganizationsOrgLayoutOrgIdMainSettingsIndexRoute
@@ -264,7 +354,16 @@ export interface FileRouteTypes {
     | '/classes/$classId'
     | '/classes/members'
     | '/organizations/$orgId'
+    | '/classes/$classId/members'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/main/dashboard'
+    | '/classes/$classId/main/settings'
+    | '/classes/$classId/members/admins'
+    | '/classes/$classId/members/assistant-teachers'
+    | '/classes/$classId/members/invite'
+    | '/classes/$classId/members/parents'
+    | '/classes/$classId/members/students'
+    | '/classes/$classId/members/teachers'
     | '/organizations/$orgId/main/classes'
     | '/organizations/$orgId/main/dashboard'
     | '/organizations/$orgId/main/settings'
@@ -288,7 +387,16 @@ export interface FileRouteTypes {
     | '/classes/$classId'
     | '/classes/members'
     | '/organizations/$orgId'
+    | '/classes/$classId/members'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/main/dashboard'
+    | '/classes/$classId/main/settings'
+    | '/classes/$classId/members/admins'
+    | '/classes/$classId/members/assistant-teachers'
+    | '/classes/$classId/members/invite'
+    | '/classes/$classId/members/parents'
+    | '/classes/$classId/members/students'
+    | '/classes/$classId/members/teachers'
     | '/organizations/$orgId/main/classes'
     | '/organizations/$orgId/main/dashboard'
     | '/organizations/$orgId/main/settings'
@@ -314,7 +422,16 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/'
     | '/classes/_classesLayout/members/'
     | '/organizations/_orgLayout/$orgId/'
+    | '/classes/_classesLayout/$classId/members/'
     | '/organizations/_orgLayout/$orgId/members/'
+    | '/classes/_classesLayout/$classId/main/dashboard/'
+    | '/classes/_classesLayout/$classId/main/settings/'
+    | '/classes/_classesLayout/$classId/members/admins/'
+    | '/classes/_classesLayout/$classId/members/assistant-teachers/'
+    | '/classes/_classesLayout/$classId/members/invite/'
+    | '/classes/_classesLayout/$classId/members/parents/'
+    | '/classes/_classesLayout/$classId/members/students/'
+    | '/classes/_classesLayout/$classId/members/teachers/'
     | '/organizations/_orgLayout/$orgId/main/classes/'
     | '/organizations/_orgLayout/$orgId/main/dashboard/'
     | '/organizations/_orgLayout/$orgId/main/settings/'
@@ -445,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganizationsOrgLayoutOrgIdMembersIndexRouteImport
       parentRoute: typeof OrganizationsOrgLayoutRoute
     }
+    '/classes/_classesLayout/$classId/members/': {
+      id: '/classes/_classesLayout/$classId/members/'
+      path: '/$classId/members'
+      fullPath: '/classes/$classId/members'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/organizations/_orgLayout/$orgId/members/teachers/': {
       id: '/organizations/_orgLayout/$orgId/members/teachers/'
       path: '/$orgId/members/teachers'
@@ -508,6 +632,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRouteImport
       parentRoute: typeof OrganizationsOrgLayoutRoute
     }
+    '/classes/_classesLayout/$classId/members/teachers/': {
+      id: '/classes/_classesLayout/$classId/members/teachers/'
+      path: '/$classId/members/teachers'
+      fullPath: '/classes/$classId/members/teachers'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersTeachersIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/members/students/': {
+      id: '/classes/_classesLayout/$classId/members/students/'
+      path: '/$classId/members/students'
+      fullPath: '/classes/$classId/members/students'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersStudentsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/members/parents/': {
+      id: '/classes/_classesLayout/$classId/members/parents/'
+      path: '/$classId/members/parents'
+      fullPath: '/classes/$classId/members/parents'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersParentsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/members/invite/': {
+      id: '/classes/_classesLayout/$classId/members/invite/'
+      path: '/$classId/members/invite'
+      fullPath: '/classes/$classId/members/invite'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersInviteIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/members/assistant-teachers/': {
+      id: '/classes/_classesLayout/$classId/members/assistant-teachers/'
+      path: '/$classId/members/assistant-teachers'
+      fullPath: '/classes/$classId/members/assistant-teachers'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/members/admins/': {
+      id: '/classes/_classesLayout/$classId/members/admins/'
+      path: '/$classId/members/admins'
+      fullPath: '/classes/$classId/members/admins'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/main/settings/': {
+      id: '/classes/_classesLayout/$classId/main/settings/'
+      path: '/$classId/main/settings'
+      fullPath: '/classes/$classId/main/settings'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/main/dashboard/': {
+      id: '/classes/_classesLayout/$classId/main/dashboard/'
+      path: '/$classId/main/dashboard'
+      fullPath: '/classes/$classId/main/dashboard'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
   }
 }
 
@@ -515,12 +695,39 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutIndexRoute: typeof ClassesClassesLayoutIndexRoute
   ClassesClassesLayoutClassIdIndexRoute: typeof ClassesClassesLayoutClassIdIndexRoute
   ClassesClassesLayoutMembersIndexRoute: typeof ClassesClassesLayoutMembersIndexRoute
+  ClassesClassesLayoutClassIdMembersIndexRoute: typeof ClassesClassesLayoutClassIdMembersIndexRoute
+  ClassesClassesLayoutClassIdMainDashboardIndexRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  ClassesClassesLayoutClassIdMainSettingsIndexRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  ClassesClassesLayoutClassIdMembersAdminsIndexRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
+  ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute: typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
+  ClassesClassesLayoutClassIdMembersInviteIndexRoute: typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
+  ClassesClassesLayoutClassIdMembersParentsIndexRoute: typeof ClassesClassesLayoutClassIdMembersParentsIndexRoute
+  ClassesClassesLayoutClassIdMembersStudentsIndexRoute: typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
+  ClassesClassesLayoutClassIdMembersTeachersIndexRoute: typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
 }
 
 const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
   ClassesClassesLayoutIndexRoute: ClassesClassesLayoutIndexRoute,
   ClassesClassesLayoutClassIdIndexRoute: ClassesClassesLayoutClassIdIndexRoute,
   ClassesClassesLayoutMembersIndexRoute: ClassesClassesLayoutMembersIndexRoute,
+  ClassesClassesLayoutClassIdMembersIndexRoute:
+    ClassesClassesLayoutClassIdMembersIndexRoute,
+  ClassesClassesLayoutClassIdMainDashboardIndexRoute:
+    ClassesClassesLayoutClassIdMainDashboardIndexRoute,
+  ClassesClassesLayoutClassIdMainSettingsIndexRoute:
+    ClassesClassesLayoutClassIdMainSettingsIndexRoute,
+  ClassesClassesLayoutClassIdMembersAdminsIndexRoute:
+    ClassesClassesLayoutClassIdMembersAdminsIndexRoute,
+  ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute:
+    ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute,
+  ClassesClassesLayoutClassIdMembersInviteIndexRoute:
+    ClassesClassesLayoutClassIdMembersInviteIndexRoute,
+  ClassesClassesLayoutClassIdMembersParentsIndexRoute:
+    ClassesClassesLayoutClassIdMembersParentsIndexRoute,
+  ClassesClassesLayoutClassIdMembersStudentsIndexRoute:
+    ClassesClassesLayoutClassIdMembersStudentsIndexRoute,
+  ClassesClassesLayoutClassIdMembersTeachersIndexRoute:
+    ClassesClassesLayoutClassIdMembersTeachersIndexRoute,
 }
 
 const ClassesClassesLayoutRouteWithChildren =

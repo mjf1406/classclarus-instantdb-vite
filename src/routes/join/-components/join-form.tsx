@@ -14,7 +14,6 @@ import {
     InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
-import { db } from "@/lib/db/db";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -41,8 +40,10 @@ export function JoinForm() {
                 return;
             }
 
-            if (!user?.id) {
-                setError("You must be logged in to join an organization");
+            if (!user?.id || !user?.refresh_token) {
+                setError(
+                    "You must be logged in to join an organization or class"
+                );
                 return;
             }
 
@@ -51,101 +52,74 @@ export function JoinForm() {
             lastSubmittedCodeRef.current = codeUpper;
 
             try {
-                console.log("[Join Form] Attempting to join with code:", codeUpper);
+                console.log(
+                    "[Join Form] Attempting to join with code:",
+                    codeUpper
+                );
                 console.log("[Join Form] User ID:", user.id);
 
-                // Query for the organization with this join code
-                const query = {
-                    orgJoinCodes: {
-                        $: {
-                            where: { code: codeUpper },
-                        },
-                        organization: {
-                            owner: {},
-                        },
+                // Call the API endpoint
+                const response = await fetch("/api/join", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: user.refresh_token,
                     },
-                };
-                console.log("[Join Form] Query:", JSON.stringify(query, null, 2));
+                    body: JSON.stringify({ code: codeUpper }),
+                });
 
-                const { data } = await db.queryOnce(query);
-                console.log("[Join Form] Query response:", data);
+                const data = await response.json();
 
-                const joinCode = data?.orgJoinCodes?.[0];
-                console.log("[Join Form] Join code found:", joinCode);
-                console.log("[Join Form] Join code ID:", joinCode?.id);
-                console.log("[Join Form] Join code value:", joinCode?.code);
+                if (!response.ok) {
+                    // Handle different error status codes
+                    if (response.status === 401) {
+                        setError("Authentication failed. Please log in again.");
+                    } else if (response.status === 404) {
+                        setError(
+                            data.message ||
+                                "Invalid join code. Please check and try again."
+                        );
+                    } else if (response.status === 409) {
+                        setError(data.message || "You are already a member.");
+                    } else if (response.status === 429) {
+                        setError(
+                            data.message ||
+                                "Too many requests. Please try again in a minute."
+                        );
+                    } else if (response.status === 400) {
+                        setError(data.message || "Invalid code format.");
+                    } else {
+                        setError(
+                            data.message || "Failed to join. Please try again."
+                        );
+                    }
+                    return;
+                }
 
-                const organization = joinCode?.organization;
-                console.log("[Join Form] Organization found:", organization);
-                console.log("[Join Form] Organization ID:", organization?.id);
-                console.log("[Join Form] Organization name:", organization?.name);
-
-                if (!organization) {
-                    console.error("[Join Form] Invalid join code - no organization found");
-                    console.error("[Join Form] Details:", {
-                        enteredCode: codeUpper,
-                        joinCodeFound: !!joinCode,
-                        joinCodeId: joinCode?.id,
-                        joinCodeValue: joinCode?.code,
-                        organization: organization,
-                        allJoinCodes: data?.orgJoinCodes,
+                // Success - navigate to the appropriate entity
+                if (data.entityType === "organization") {
+                    navigate({
+                        to: "/organizations/$orgId",
+                        params: { orgId: data.entityId },
                     });
-                    setError("Invalid join code. Please check and try again.");
-                    return;
+                } else if (data.entityType === "class") {
+                    // Navigate to the class - need to get the orgId from the class
+                    // For now, navigate to classes list or the class directly if we have the route
+                    navigate({
+                        to: "/classes/$classId",
+                        params: { classId: data.entityId },
+                    });
+                } else {
+                    // Fallback - just show success message
+                    setError(null);
+                    console.log("[Join Form] Success:", data.message);
                 }
-
-                // Check if user is already a member
-                const { data: userOrgs } = await db.queryOnce({
-                    $users: {
-                        $: { where: { id: user.id } },
-                        teacherOrganizations: {
-                            $: { where: { id: organization.id } },
-                        },
-                        adminOrganizations: {
-                            $: { where: { id: organization.id } },
-                        },
-                    },
-                });
-
-                const userData = userOrgs?.$users?.[0];
-                const isAlreadyTeacher =
-                    userData?.teacherOrganizations?.some(
-                        (org) => org.id === organization.id
-                    );
-                const isAlreadyAdmin = userData?.adminOrganizations?.some(
-                    (org) => org.id === organization.id
-                );
-                const isOwner = organization.owner?.id === user.id;
-
-                if (isOwner || isAlreadyAdmin || isAlreadyTeacher) {
-                    setError("You are already a member of this organization.");
-                    return;
-                }
-
-                // Add user as a teacher to the organization
-                db.transact([
-                    db.tx.organizations[organization.id].link({
-                        orgTeachers: user.id,
-                    }),
-                ]);
-
-                // Navigate to the organization
-                navigate({
-                    to: "/organizations/$orgId",
-                    params: { orgId: organization.id },
-                });
             } catch (err) {
-                console.error("[Join Form] Error joining organization:", err);
-                console.error("[Join Form] Error details:", {
-                    code: codeUpper,
-                    userId: user?.id,
-                    error: err instanceof Error ? err.message : String(err),
-                    stack: err instanceof Error ? err.stack : undefined,
-                });
+                console.error("[Join Form] Error joining:", err);
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "Failed to join organization. Please try again."
+                        : "Failed to join. Please try again."
                 );
             } finally {
                 setIsSubmitting(false);
@@ -202,7 +176,10 @@ export function JoinForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-6"
+                    >
                         <div className="flex justify-center">
                             <InputOTP
                                 maxLength={6}

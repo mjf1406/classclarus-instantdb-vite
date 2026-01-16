@@ -13,11 +13,13 @@ import {
 import { ClassGrid } from "./-components/class-grid";
 import { ClassList } from "./-components/class-list";
 import { ClassNoClasses } from "./-components/class-no-classes";
-import { useClassesByRole, useArchivedClassesByRole } from "@/hooks/use-class-hooks";
+import {
+    useClassesByRole,
+    useArchivedClassesByRole,
+} from "@/hooks/use-class-hooks";
 import { CreateClassDialog } from "./-components/create-class-dialog";
 import { Link } from "@tanstack/react-router";
 import { UserPlus, LogIn } from "lucide-react";
-import { CreateOrgDialog } from "@/routes/organizations/-components/create-org-dialog";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/main/classes/"
@@ -28,7 +30,8 @@ export const Route = createFileRoute(
 function RouteComponent() {
     const { orgId } = useParams({ strict: false });
     const { classes, isLoading } = useClassesByRole(orgId);
-    const { classes: archivedClasses, isLoading: isLoadingArchived } = useArchivedClassesByRole(orgId);
+    const { classes: archivedClasses, isLoading: isLoadingArchived } =
+        useArchivedClassesByRole(orgId);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     return (
@@ -69,7 +72,9 @@ function RouteComponent() {
                             <Button size="lg">
                                 <PlusIcon />
                                 <span className="sr-only">Create Class</span>
-                                <span className="hidden md:block">Create Class</span>
+                                <span className="hidden md:block">
+                                    Create Class
+                                </span>
                             </Button>
                         </CreateClassDialog>
                     )}
@@ -94,23 +99,23 @@ function RouteComponent() {
                         createClassButton={
                             orgId ? (
                                 <CreateClassDialog orgId={orgId}>
-                                    <Button size="lg" className="w-full">
+                                    <Button
+                                        size="lg"
+                                        className="w-full"
+                                    >
                                         <PlusIcon />
                                         <span>Create Class</span>
                                     </Button>
                                 </CreateClassDialog>
                             ) : undefined
                         }
-                        createOrgButton={
-                            <CreateOrgDialog>
-                                <Button size="lg" variant="ghost" className="w-full">
-                                    <PlusIcon />
-                                    <span>Create Organization</span>
-                                </Button>
-                            </CreateOrgDialog>
-                        }
                         joinClassButton={
-                            <Button size="lg" variant="outline" asChild className="w-full">
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                asChild
+                                className="w-full"
+                            >
                                 <Link to="/join">
                                     <LogIn />
                                     <span>Join Class</span>
@@ -118,7 +123,12 @@ function RouteComponent() {
                             </Button>
                         }
                         joinOrgButton={
-                            <Button size="lg" variant="outline" asChild className="w-full">
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                asChild
+                                className="w-full"
+                            >
                                 <Link to="/join">
                                     <UserPlus />
                                     <span>Join Organization</span>
@@ -154,7 +164,9 @@ function RouteComponent() {
                         </h2>
                     </div>
                     {archivedClasses.length === 0 && !isLoadingArchived ? (
-                        <p className="text-sm text-muted-foreground">No archived classes</p>
+                        <p className="text-sm text-muted-foreground">
+                            No archived classes
+                        </p>
                     ) : viewMode === "grid" ? (
                         <ClassGrid
                             classes={archivedClasses}

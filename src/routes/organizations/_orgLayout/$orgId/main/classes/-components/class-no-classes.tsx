@@ -18,11 +18,15 @@ interface ClassNoClassesProps {
 
 export function ClassNoClasses({
     createClassButton,
-    createOrgButton,
+    createOrgButton = false,
     joinClassButton,
     joinOrgButton,
 }: ClassNoClassesProps) {
-    const hasActions = createClassButton || createOrgButton || joinClassButton || joinOrgButton;
+    const hasActions =
+        createClassButton ||
+        createOrgButton ||
+        joinClassButton ||
+        joinOrgButton;
 
     return (
         <Card className="border-dashed max-w-md space-y-4 mx-auto">
@@ -33,9 +37,9 @@ export function ClassNoClasses({
                 <CardTitle>No classes yet</CardTitle>
                 <CardDescription>
                     <div className="max-w-sm mx-auto">
-                        Classes are where you organize your students, assignments,
-                        and course materials. Create your first class to get
-                        started.
+                        Classes are where you organize your students,
+                        assignments, and course materials. Create your first
+                        class to get started.
                     </div>
                 </CardDescription>
             </CardHeader>

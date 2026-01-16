@@ -734,3 +734,21 @@ export function useAllUserClasses() {
         error,
     };
 }
+
+/**
+ * Fetches a single class by ID from the user's classes
+ * Returns the class with all relations if found
+ */
+export function useClassById(classId: string | undefined) {
+    const { classes, isLoading, error } = useAllUserClasses();
+
+    const classEntity = classId
+        ? classes.find((c) => c.id === classId)
+        : undefined;
+
+    return {
+        class: classEntity,
+        isLoading,
+        error,
+    };
+}
