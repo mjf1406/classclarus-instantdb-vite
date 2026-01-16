@@ -58,7 +58,7 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             };
 
             const classResult = await dbAdmin.query(classQuery);
-            const classEntity = classResult.data?.classes?.[0];
+            const classEntity = classResult.classes?.[0];
 
             if (!classEntity) {
                 return c.json(
@@ -117,7 +117,7 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             };
 
             const userClassesResult = await dbAdmin.query(userClassesQuery);
-            const userClassData = userClassesResult.data?.$users?.[0];
+            const userClassData = userClassesResult.$users?.[0];
 
             const isAlreadyStudent = userClassData?.studentClasses?.some(
                 (cls: InstaQLEntity<AppSchema, "classes">) =>

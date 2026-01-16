@@ -6,7 +6,8 @@ export type Env = {
     INSTANT_APP_ID?: string;
     VITE_INSTANT_APP_ADMIN_TOKEN?: string;
     INSTANT_ADMIN_TOKEN?: string;
-    JOIN_RATE_LIMITER?: any; // Cloudflare RateLimit type - optional, checked at runtime
+    UPSTASH_REDIS_REST_URL?: string;
+    UPSTASH_REDIS_REST_TOKEN?: string;
 };
 
 // Variables stored in Hono context via c.set()

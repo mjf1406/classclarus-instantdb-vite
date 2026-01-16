@@ -2,46 +2,55 @@
 
 import { initDbAdmin } from "../../src/lib/db/db-admin";
 import type { Env } from "./types";
+import { initRateLimiter } from "./utils/rate-limiter";
 
-// Rate limiting middleware: 3 requests per minute per user
-// Uses Cloudflare's built-in Rate Limiting API
+// Rate limiting middleware: 3 requests per 60 seconds per user
+// Uses Upstash Redis for rate limiting
 export async function rateLimitMiddleware(c: any, next: () => Promise<void>) {
     const userId = c.get("userId") as string | undefined;
     if (!userId) {
         return c.json({ error: "Unauthorized" }, 401);
     }
 
-    // Get the rate limiter from environment
-    const rateLimiter = c.env?.JOIN_RATE_LIMITER;
+    // Get environment variables
+    const env = (c.env as Env) || {};
     
-    if (!rateLimiter) {
-        // If rate limiter is not configured, skip rate limiting
-        console.warn("[Rate Limit Middleware] JOIN_RATE_LIMITER not configured, skipping rate limit");
+    // Initialize rate limiter
+    const ratelimit = initRateLimiter(env);
+    
+    if (!ratelimit) {
+        // If rate limiter is not configured, skip rate limiting with warning
+        console.warn("[Rate Limit Middleware] Upstash Redis not configured, skipping rate limit");
         return await next();
     }
 
-    // Check if rate limiter has the expected API
-    if (typeof rateLimiter.limit !== "function") {
-        // Rate limiter exists but doesn't have the expected API, skip rate limiting
-        console.warn("[Rate Limit Middleware] JOIN_RATE_LIMITER does not have limit method, skipping rate limit");
-        return await next();
+    try {
+        // Use Upstash rate limiting API
+        // Key is the user ID to rate limit per user
+        const { success, limit, remaining, reset } = await ratelimit.limit(userId);
+
+        if (!success) {
+            // Calculate retry after seconds
+            const retryAfter = reset ? Math.ceil((reset - Date.now()) / 1000) : 60;
+            
+            return c.json(
+                {
+                    error: "Rate limit exceeded",
+                    message: "Too many requests. Please try again in a minute.",
+                },
+                429,
+                {
+                    "Retry-After": retryAfter.toString(),
+                }
+            );
+        }
+
+        await next();
+    } catch (error) {
+        // If rate limiting fails, log error but allow request to proceed
+        console.error("[Rate Limit Middleware] Error checking rate limit:", error);
+        await next();
     }
-
-    // Use Cloudflare's rate limiting API
-    // Key is the user ID to rate limit per user
-    const { success } = await rateLimiter.limit({ key: userId });
-
-    if (!success) {
-        return c.json(
-            {
-                error: "Rate limit exceeded",
-                message: "Too many requests. Please try again in a minute.",
-            },
-            429
-        );
-    }
-
-    await next();
 }
 
 // Auth middleware: Verify refresh_token

@@ -65,14 +65,14 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
                 JSON.stringify(orgResult, null, 2)
             );
 
-            const organization = orgResult.data?.organizations?.[0];
+            const organization = orgResult.organizations?.[0];
 
             // Log query results for debugging
             console.log("[Join Organization] Query result summary:", {
                 code,
                 foundOrganization: !!organization,
                 organizationId: organization?.id,
-                organizationsCount: orgResult.data?.organizations?.length || 0,
+                organizationsCount: orgResult.organizations?.length || 0,
             });
 
             if (!organization) {
@@ -103,7 +103,7 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
             };
 
             const userOrgsResult = await dbAdmin.query(userOrgsQuery);
-            const userData = userOrgsResult.data?.$users?.[0];
+            const userData = userOrgsResult.$users?.[0];
 
             const isAlreadyTeacher = userData?.teacherOrganizations?.some(
                 (org: InstaQLEntity<AppSchema, "organizations">) =>
