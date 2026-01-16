@@ -1,6 +1,7 @@
 /** @format */
 
 import { Hono } from "hono";
+import { handle } from "hono/cloudflare-pages";
 import type { Env, HonoContext } from "./types";
 import { authMiddleware, rateLimitMiddleware } from "./middleware";
 import { createJoinOrganizationRoute } from "./routes/join-organization";
@@ -19,10 +20,6 @@ app.use("/join/class", rateLimitMiddleware);
 createJoinOrganizationRoute(app);
 createJoinClassRoute(app);
 
-// Export default handler for Cloudflare Pages Functions
-// Cloudflare Pages Functions pass the request and env to the handler
-export default {
-    async fetch(request: Request, env: Env): Promise<Response> {
-        return app.fetch(request, env);
-    },
-};
+// Export handler for Cloudflare Pages Functions
+// Using Hono's handle adapter for proper Pages Functions integration
+export const onRequest = handle(app);

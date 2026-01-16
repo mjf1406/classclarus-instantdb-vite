@@ -8,12 +8,13 @@
 #
 # Rate limiting for join endpoints: 3 requests per minute per user
 [[ratelimits]]
-name = "JOIN_RATE_LIMITER" # Same name as set in Settings > Bindings for KV Namespace
-namespace_id = "7fe6ba808d82413d8836d6ff79143b7a" # ClassClarus Namespace ID from https://dash.cloudflare.com/c351c733a9fa0ceac027aa286cd56693/workers/kv/namespaces
-
+name = "JOIN_RATE_LIMITER"
 # An identifier you define, that is unique to your Cloudflare account.
 # Must be an integer. Change this to a unique namespace ID for your account.
 # Each namespace_id must be unique across your entire Cloudflare account.
+# Note: This is NOT a KV namespace ID - it's an arbitrary integer for rate limiting
+# Must be a string in TOML format, but represents a positive integer
+namespace_id = "1001"
 # Limit: 3 requests per 60 seconds (1 minute) per user
 # The key used for rate limiting is the authenticated user ID
 simple = { limit = 3, period = 60 }
