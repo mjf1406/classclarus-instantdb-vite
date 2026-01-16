@@ -45,7 +45,7 @@ const _schema = i.schema({
             archivedAt: i.date().indexed().optional(), // null = active, date = archived
             studentCode: i.string().unique().indexed(),
             teacherCode: i.string().unique().indexed(),
-            parentCode: i.string().unique().indexed(),
+            guardianCode: i.string().unique().indexed(),
         }),
     },
     links: {
@@ -199,29 +199,29 @@ const _schema = i.schema({
                 label: "studentClasses",
             }, // Each user can be a student in many classes
         },
-        classParents: {
+        classGuardians: {
             forward: {
                 on: "classes",
                 has: "many",
-                label: "classParents",
-            }, // Each class can have many parents
+                label: "classGuardians",
+            }, // Each class can have many guardians
             reverse: {
                 on: "$users",
                 has: "many",
-                label: "parentClasses",
-            }, // Each user can be a parent in many classes
+                label: "guardianClasses",
+            }, // Each user can be a guardian in many classes
         },
-        parentStudents: {
+        guardianStudents: {
             forward: {
                 on: "$users",
                 has: "many",
                 label: "children",
-            }, // Each parent can have many children (students)
+            }, // Each guardian can have many children (students)
             reverse: {
                 on: "$users",
                 has: "many",
-                label: "parents",
-            }, // Each student can have many parents
+                label: "guardians",
+            }, // Each student can have many guardians
         },
     },
     rooms: {},

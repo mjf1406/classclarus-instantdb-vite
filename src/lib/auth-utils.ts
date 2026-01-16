@@ -48,7 +48,7 @@ export function checkOrgAccess(
  * User has access if:
  * - They are the owner of the class
  * - They are a class admin
- * - They are a member (teacher, assistant teacher, student, or parent)
+ * - They are a member (teacher, assistant teacher, student, or guardian)
  * - The class belongs to an organization they have access to
  */
 export function checkClassAccess(

@@ -3,7 +3,7 @@
 import { Home } from "lucide-react";
 import type { NavigationItem } from "./owner-navigation";
 
-export function getParentNavigation(classId: string): {
+export function getGuardianNavigation(classId: string): {
     mainItems: NavigationItem[];
     memberItems: NavigationItem[];
 } {

@@ -54,7 +54,7 @@ export function AssistantTeacherIcon(props: React.SVGProps<SVGSVGElement>) {
     );
 }
 
-export function ParentIcon(props: React.SVGProps<SVGSVGElement>) {
+export function GuardianIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <Heart
             {...props}
@@ -181,7 +181,7 @@ export function StudentBadge({
     );
 }
 
-export function ParentBadge({
+export function GuardianBadge({
     className,
     variant = "outline",
     ...props
@@ -195,8 +195,8 @@ export function ParentBadge({
             )}
             {...props}
         >
-            <ParentIcon className="size-3" />
-            Parent
+            <GuardianIcon className="size-3" />
+            Guardian
         </Badge>
     );
 }

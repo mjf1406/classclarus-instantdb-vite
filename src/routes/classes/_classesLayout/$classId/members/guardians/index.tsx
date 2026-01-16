@@ -1,7 +1,7 @@
 /** @format */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { StudentIcon } from "@/components/icons/role-icons";
+import { GuardianIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { useParams } from "@tanstack/react-router";
@@ -40,52 +40,52 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
 export const Route = createFileRoute(
-    "/classes/_classesLayout/$classId/members/students/"
+    "/classes/_classesLayout/$classId/members/guardians/"
 )({
     component: RouteComponent,
 });
 
-type UserWithGuardians = InstaQLEntity<
+type UserWithChildren = InstaQLEntity<
     AppSchema,
     "$users",
     {
-        guardians: {};
+        children: {};
     }
 >;
 
 type UserQueryResult = {
-    $users: UserWithGuardians[];
+    $users: UserWithChildren[];
 };
 
-function StudentCard({
-    student,
+function GuardianCard({
+    guardian,
     canManage,
-    classGuardians,
+    classStudents,
 }: {
-    student: InstaQLEntity<AppSchema, "$users">;
+    guardian: InstaQLEntity<AppSchema, "$users">;
     canManage: boolean;
-    classGuardians: InstaQLEntity<AppSchema, "$users">[];
+    classStudents: InstaQLEntity<AppSchema, "$users">[];
 }) {
     const [open, setOpen] = useState(false);
-    const [selectedGuardianId, setSelectedGuardianId] = useState<string>("");
+    const [selectedChildId, setSelectedChildId] = useState<string>("");
     const [isLinking, setIsLinking] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Query guardians for this student
+    // Query children for this guardian
     const { data: userData } = db.useQuery({
         $users: {
-            $: { where: { id: student.id } },
-            guardians: {},
+            $: { where: { id: guardian.id } },
+            children: {},
         },
     });
 
     const typedUserData = (userData as UserQueryResult | undefined) ?? null;
-    const studentWithGuardians = typedUserData?.$users?.[0];
-    const guardians = studentWithGuardians?.guardians || [];
+    const guardianWithChildren = typedUserData?.$users?.[0];
+    const children = guardianWithChildren?.children || [];
 
-    const handleLinkGuardian = async () => {
-        if (!selectedGuardianId) {
-            setError("Please select a guardian");
+    const handleLinkChild = async () => {
+        if (!selectedChildId) {
+            setError("Please select a child");
             return;
         }
 
@@ -93,35 +93,33 @@ function StudentCard({
         setError(null);
 
         try {
-            // Link guardian to student (reverse relationship)
             db.transact([
-                db.tx.$users[selectedGuardianId].link({ children: student.id }),
+                db.tx.$users[guardian.id].link({ children: selectedChildId }),
             ]);
             setOpen(false);
-            setSelectedGuardianId("");
+            setSelectedChildId("");
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : "Failed to link guardian"
+                err instanceof Error ? err.message : "Failed to link child"
             );
         } finally {
             setIsLinking(false);
         }
     };
 
-    const handleUnlinkGuardian = async (guardianId: string) => {
+    const handleUnlinkChild = async (childId: string) => {
         try {
-            // Unlink guardian from student (reverse relationship)
             db.transact([
-                db.tx.$users[guardianId].unlink({ children: student.id }),
+                db.tx.$users[guardian.id].unlink({ children: childId }),
             ]);
         } catch (err) {
-            console.error("Failed to unlink guardian:", err);
+            console.error("Failed to unlink child:", err);
         }
     };
 
     const displayName =
-        `${student.firstName || ""} ${student.lastName || ""}`.trim() ||
-        student.email ||
+        `${guardian.firstName || ""} ${guardian.lastName || ""}`.trim() ||
+        guardian.email ||
         "Unknown User";
     const initials = displayName
         .split(" ")
@@ -130,9 +128,9 @@ function StudentCard({
         .toUpperCase()
         .slice(0, 2);
 
-    // Get available guardians (not already guardians of this student)
-    const availableGuardians = classGuardians.filter(
-        (guardian) => !guardians.some((g) => g.id === guardian.id)
+    // Get available students (not already children of this guardian)
+    const availableStudents = classStudents.filter(
+        (student) => !children.some((child) => child.id === student.id)
     );
 
     return (
@@ -142,7 +140,7 @@ function StudentCard({
                     <div className="flex items-center gap-4">
                         <Avatar>
                             <AvatarImage
-                                src={student.avatarURL || student.imageURL}
+                                src={guardian.avatarURL || guardian.imageURL}
                             />
                             <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
@@ -150,41 +148,41 @@ function StudentCard({
                             <div className="font-medium truncate">
                                 {displayName}
                             </div>
-                            {student.email && (
+                            {guardian.email && (
                                 <div className="text-sm text-muted-foreground truncate">
-                                    {student.email}
+                                    {guardian.email}
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {guardians.length > 0 && (
+                    {children.length > 0 && (
                         <div className="ml-14 space-y-2">
                             <div className="text-sm font-medium">
-                                Guardians ({guardians.length}):
+                                Children ({children.length}):
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {guardians.map((guardian) => {
-                                    const guardianDisplayName =
-                                        `${guardian.firstName || ""} ${guardian.lastName || ""}`.trim() ||
-                                        guardian.email ||
+                                {children.map((child) => {
+                                    const childDisplayName =
+                                        `${child.firstName || ""} ${child.lastName || ""}`.trim() ||
+                                        child.email ||
                                         "Unknown User";
                                     return (
                                         <Badge
-                                            key={guardian.id}
+                                            key={child.id}
                                             variant="outline"
                                             className="flex items-center gap-1"
                                         >
-                                            {guardianDisplayName}
+                                            {childDisplayName}
                                             {canManage && (
                                                 <button
                                                     onClick={() =>
-                                                        handleUnlinkGuardian(
-                                                            guardian.id
+                                                        handleUnlinkChild(
+                                                            child.id
                                                         )
                                                     }
                                                     className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
-                                                    aria-label={`Remove ${guardianDisplayName}`}
+                                                    aria-label={`Remove ${childDisplayName}`}
                                                 >
                                                     <X className="size-3" />
                                                 </button>
@@ -206,59 +204,60 @@ function StudentCard({
                                         className="w-full"
                                     >
                                         <Plus className="size-4" />
-                                        Add Guardian
+                                        Add Child
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>Add Guardian</DialogTitle>
+                                        <DialogTitle>Add Child</DialogTitle>
                                         <DialogDescription>
-                                            Link a guardian to this student.
+                                            Link a student as a child of this
+                                            guardian.
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4">
                                         <Field>
-                                            <FieldLabel htmlFor="guardian-select">
-                                                Guardian
+                                            <FieldLabel htmlFor="child-select">
+                                                Student
                                             </FieldLabel>
                                             <FieldContent>
                                                 <Select
-                                                    value={selectedGuardianId}
+                                                    value={selectedChildId}
                                                     onValueChange={
-                                                        setSelectedGuardianId
+                                                        setSelectedChildId
                                                     }
                                                 >
-                                                    <SelectTrigger id="guardian-select">
-                                                        <SelectValue placeholder="Select a guardian" />
+                                                    <SelectTrigger id="child-select">
+                                                        <SelectValue placeholder="Select a student" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        {availableGuardians.length ===
+                                                        {availableStudents.length ===
                                                         0 ? (
                                                             <SelectItem
                                                                 value=""
                                                                 disabled
                                                             >
                                                                 No available
-                                                                guardians
+                                                                students
                                                             </SelectItem>
                                                         ) : (
-                                                            availableGuardians.map(
-                                                                (guardian) => {
-                                                                    const guardianDisplayName =
-                                                                        `${guardian.firstName || ""} ${guardian.lastName || ""}`.trim() ||
-                                                                        guardian.email ||
+                                                            availableStudents.map(
+                                                                (student) => {
+                                                                    const studentDisplayName =
+                                                                        `${student.firstName || ""} ${student.lastName || ""}`.trim() ||
+                                                                        student.email ||
                                                                         "Unknown User";
                                                                     return (
                                                                         <SelectItem
                                                                             key={
-                                                                                guardian.id
+                                                                                student.id
                                                                             }
                                                                             value={
-                                                                                guardian.id
+                                                                                student.id
                                                                             }
                                                                         >
                                                                             {
-                                                                                guardianDisplayName
+                                                                                studentDisplayName
                                                                             }
                                                                         </SelectItem>
                                                                     );
@@ -273,8 +272,8 @@ function StudentCard({
                                                     </FieldError>
                                                 )}
                                                 <FieldDescription>
-                                                    Select a guardian to link to
-                                                    this student.
+                                                    Select a student to link as
+                                                    a child of this guardian.
                                                 </FieldDescription>
                                             </FieldContent>
                                         </Field>
@@ -287,14 +286,14 @@ function StudentCard({
                                             Cancel
                                         </Button>
                                         <Button
-                                            onClick={handleLinkGuardian}
+                                            onClick={handleLinkChild}
                                             disabled={
-                                                !selectedGuardianId || isLinking
+                                                !selectedChildId || isLinking
                                             }
                                         >
                                             {isLinking
                                                 ? "Linking..."
-                                                : "Link Guardian"}
+                                                : "Link Child"}
                                         </Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -313,8 +312,8 @@ function RouteComponent() {
     const { class: classEntity, isLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
-    const students = classEntity?.classStudents || [];
     const guardians = classEntity?.classGuardians || [];
+    const students = classEntity?.classStudents || [];
     const canManage =
         roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
 
@@ -322,13 +321,13 @@ function RouteComponent() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <StudentIcon className="size-12 md:size-16 text-primary" />
+                    <GuardianIcon className="size-12 md:size-16 text-primary" />
                     <div>
                         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                            Students
+                            Guardians
                         </h1>
                         <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                            View and manage students in your class
+                            View and manage guardians in your class
                         </p>
                     </div>
                 </div>
@@ -340,23 +339,23 @@ function RouteComponent() {
                         <Skeleton key={i} className="h-20 w-full" />
                     ))}
                 </div>
-            ) : students.length === 0 ? (
+            ) : guardians.length === 0 ? (
                 <Card>
                     <CardContent className="py-12 text-center">
                         <Users className="size-12 mx-auto text-muted-foreground mb-4" />
                         <p className="text-muted-foreground">
-                            No students have been added to this class yet.
+                            No guardians have been added to this class yet.
                         </p>
                     </CardContent>
                 </Card>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {students.map((student) => (
-                        <StudentCard
-                            key={student.id}
-                            student={student}
+                    {guardians.map((guardian) => (
+                        <GuardianCard
+                            key={guardian.id}
+                            guardian={guardian}
                             canManage={canManage}
-                            classGuardians={guardians}
+                            classStudents={students}
                         />
                     ))}
                 </div>

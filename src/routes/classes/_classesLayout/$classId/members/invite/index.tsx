@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
     StudentIcon,
     TeacherIcon,
-    ParentIcon,
+    GuardianIcon,
 } from "@/components/icons/role-icons";
 
 export const Route = createFileRoute(
@@ -40,17 +40,17 @@ function RouteComponent() {
     const [copySuccess, setCopySuccess] = useState<{
         student: boolean;
         teacher: boolean;
-        parent: boolean;
+        guardian: boolean;
     }>({
         student: false,
         teacher: false,
-        parent: false,
+        guardian: false,
     });
 
     const isLoading = classLoading;
     const hasPermission = roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
 
-    const handleCopySuccess = (type: "student" | "teacher" | "parent") => {
+    const handleCopySuccess = (type: "student" | "teacher" | "guardian") => {
         setCopySuccess((prev) => ({ ...prev, [type]: true }));
         setTimeout(() => {
             setCopySuccess((prev) => ({ ...prev, [type]: false }));
@@ -89,9 +89,9 @@ function RouteComponent() {
         ? {
               student: classEntityWithCodes.studentCode || null,
               teacher: classEntityWithCodes.teacherCode || null,
-              parent: classEntityWithCodes.parentCode || null,
+              guardian: classEntityWithCodes.guardianCode || null,
           }
-        : { student: null, teacher: null, parent: null };
+        : { student: null, teacher: null, guardian: null };
 
     const CodeCard = ({
         type,
@@ -100,7 +100,7 @@ function RouteComponent() {
         title,
         description,
     }: {
-        type: "student" | "teacher" | "parent";
+        type: "student" | "teacher" | "guardian";
         code: string | null;
         icon: React.ComponentType<{ className?: string }>;
         title: string;
@@ -195,11 +195,11 @@ function RouteComponent() {
                         description="Share this code with teachers to join the class"
                     />
                     <CodeCard
-                        type="parent"
-                        code={codes.parent}
-                        icon={ParentIcon}
-                        title="Parent"
-                        description="Share this code with parents to join the class"
+                        type="guardian"
+                        code={codes.guardian}
+                        icon={GuardianIcon}
+                        title="Guardian"
+                        description="Share this code with guardians to join the class"
                     />
                 </div>
             )}

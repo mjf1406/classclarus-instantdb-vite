@@ -11,7 +11,7 @@ import {
     AdminIcon,
     TeacherIcon,
     AssistantTeacherIcon,
-    ParentIcon,
+    GuardianIcon,
     StudentIcon,
 } from "@/components/icons/role-icons";
 import { Users } from "lucide-react";
@@ -87,16 +87,16 @@ export function getOwnerNavigation(orgId: string): {
                 icon: AssistantTeacherIcon,
             },
             {
-                title: "Parents",
+                title: "Guardians",
                 description:
-                    "View and manage parent accounts in the organization and their children",
-                url: `/organizations/${orgId}/members/parents`,
-                icon: ParentIcon,
+                    "View and manage guardian accounts in the organization and their children",
+                url: `/organizations/${orgId}/members/guardians`,
+                icon: GuardianIcon,
             },
             {
                 title: "Students",
                 description:
-                    "Manage student accounts in the organization and their classes and parents",
+                    "Manage student accounts in the organization and their classes and guardians",
                 url: `/organizations/${orgId}/members/students`,
                 icon: StudentIcon,
             },

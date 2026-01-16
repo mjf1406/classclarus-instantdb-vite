@@ -19,7 +19,7 @@ import {
     AdminIcon,
     TeacherIcon,
     AssistantTeacherIcon,
-    ParentIcon,
+    GuardianIcon,
     StudentIcon,
 } from "@/components/icons/role-icons";
 import { useOrgClassRoleMembers } from "@/hooks/use-org-class-role-members";
@@ -39,9 +39,9 @@ function RouteComponent() {
         useOrgClassRoleMembers(orgId, "classStudents");
     const { users: assistantTeachers, isLoading: assistantTeachersLoading } =
         useOrgClassRoleMembers(orgId, "classAssistantTeachers");
-    const { users: parents, isLoading: parentsLoading } = useOrgClassRoleMembers(
+    const { users: guardians, isLoading: guardiansLoading } = useOrgClassRoleMembers(
         orgId,
-        "classParents"
+        "classGuardians"
     );
 
     const owners = organization?.owner ? [organization.owner] : [];
@@ -90,14 +90,14 @@ function RouteComponent() {
             link: `/organizations/${orgId}/members/assistant-teachers`,
         },
         {
-            id: "parents",
-            title: "Parents",
-            icon: ParentIcon,
-            count: parents.length,
-            items: parents,
-            isLoading: parentsLoading,
+            id: "guardians",
+            title: "Guardians",
+            icon: GuardianIcon,
+            count: guardians.length,
+            items: guardians,
+            isLoading: guardiansLoading,
             isOrgLevel: false,
-            link: `/organizations/${orgId}/members/parents`,
+            link: `/organizations/${orgId}/members/guardians`,
         },
         {
             id: "students",

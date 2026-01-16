@@ -12,7 +12,7 @@ export type ClassRole =
     | "admin"
     | "teacher"
     | "assistant-teacher"
-    | "parent"
+    | "guardian"
     | "student"
     | null;
 
@@ -22,7 +22,7 @@ export interface ClassRoleInfo {
     isAdmin: boolean;
     isTeacher: boolean;
     isAssistantTeacher: boolean;
-    isParent: boolean;
+    isGuardian: boolean;
     isStudent: boolean;
 }
 
@@ -39,12 +39,12 @@ export function useClassRole(
             isAdmin: false,
             isTeacher: false,
             isAssistantTeacher: false,
-            isParent: false,
+            isGuardian: false,
             isStudent: false,
         };
     }
 
-    // Determine user's role in the class (priority: Owner > Admin > Teacher > Assistant Teacher > Parent > Student)
+    // Determine user's role in the class (priority: Owner > Admin > Teacher > Assistant Teacher > Guardian > Student)
     const isOwner = !!(userId && classEntity.owner?.id === userId);
     const isAdmin =
         !!(
@@ -78,7 +78,7 @@ export function useClassRole(
             !isAssistantTeacher &&
             classEntity.classStudents?.some((student: UserEntity) => student.id === userId)
         );
-    const isParent =
+    const isGuardian =
         !!(
             userId &&
             !isOwner &&
@@ -86,7 +86,7 @@ export function useClassRole(
             !isTeacher &&
             !isAssistantTeacher &&
             !isStudent &&
-            classEntity.classParents?.some((parent: UserEntity) => parent.id === userId)
+            classEntity.classGuardians?.some((guardian: UserEntity) => guardian.id === userId)
         );
 
     const role: ClassRole = isOwner
@@ -97,8 +97,8 @@ export function useClassRole(
             ? "teacher"
             : isAssistantTeacher
               ? "assistant-teacher"
-              : isParent
-                ? "parent"
+              : isGuardian
+                ? "guardian"
                 : isStudent
                   ? "student"
                   : null;
@@ -109,7 +109,7 @@ export function useClassRole(
         isAdmin,
         isTeacher,
         isAssistantTeacher,
-        isParent,
+        isGuardian,
         isStudent,
     };
 }

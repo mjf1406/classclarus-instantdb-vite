@@ -37,7 +37,7 @@ import {
     TeacherBadge,
     AssistantTeacherBadge,
     StudentBadge,
-    ParentBadge,
+    GuardianBadge,
 } from "@/components/icons/role-icons";
 import { requireAuth, requireClassAccess } from "@/lib/auth-utils";
 
@@ -123,7 +123,7 @@ function RouteComponent() {
                         teachers: "Teachers",
                         "assistant-teachers": "Asst Teachers",
                         students: "Students",
-                        parents: "Parents",
+                        guardians: "Guardians",
                         invite: "Invite Members",
                     };
 
@@ -281,8 +281,8 @@ function RouteComponent() {
                                             ? TeacherBadge
                                             : roleInfo.isAssistantTeacher
                                               ? AssistantTeacherBadge
-                                              : roleInfo.isParent
-                                                ? ParentBadge
+                                              : roleInfo.isGuardian
+                                                ? GuardianBadge
                                                 : roleInfo.isStudent
                                                   ? StudentBadge
                                                   : null;

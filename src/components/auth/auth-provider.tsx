@@ -4,6 +4,8 @@ import React, { createContext, useContext } from "react";
 import { db } from "@/lib/db/db";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 import { useOrganizationsByUserId } from "@/hooks/use-organization-hooks";
+import type { InstaQLEntity } from "@instantdb/react";
+import type { AppSchema } from "@/instant.schema";
 
 export interface AuthContextValue {
     user: {
@@ -65,7 +67,7 @@ export default function AuthProvider({
         error: orgError,
     } = useOrganizationsByUserId(user?.id);
 
-    // Query user's children for parent role
+    // Query user's children for guardian role
     const { data: userWithChildrenData, isLoading: userChildrenLoading } =
         db.useQuery(
             hasValidUser
@@ -82,6 +84,10 @@ export default function AuthProvider({
         userWithChildrenData?.$users?.[0]?.children?.map((c) => c.id) || [];
 
     // Query class IDs where user is a member
+    type ClassQueryResult = {
+        classes: InstaQLEntity<AppSchema, "classes">[];
+    };
+
     const { data: classData, isLoading: classLoading } = db.useQuery(
         hasValidUser
             ? {
@@ -94,7 +100,7 @@ export default function AuthProvider({
                                   { "classTeachers.id": user.id },
                                   { "classAssistantTeachers.id": user.id },
                                   { "classStudents.id": user.id },
-                                  { "classParents.id": user.id },
+                                  { "classGuardians.id": user.id },
                                   ...(childrenIds.length > 0
                                       ? [
                                             {
@@ -112,7 +118,8 @@ export default function AuthProvider({
             : null
     );
 
-    const classIds = classData?.classes?.map((c) => c.id) || [];
+    const typedClassData = (classData as ClassQueryResult | undefined) ?? null;
+    const classIds = typedClassData?.classes?.map((c) => c.id) || [];
 
     // If there's no user, we're done loading (no user = not authenticated, not loading)
     // If there is a user, wait for all queries to complete

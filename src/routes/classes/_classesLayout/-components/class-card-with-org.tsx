@@ -17,11 +17,11 @@ import {
     TeacherBadge,
     AssistantTeacherBadge,
     StudentBadge,
-    ParentBadge,
+    GuardianBadge,
     StudentIcon,
     TeacherIcon,
     AssistantTeacherIcon,
-    ParentIcon,
+    GuardianIcon,
 } from "@/components/icons/role-icons";
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
@@ -45,7 +45,7 @@ export function ClassCardWithOrg({
     const teacherCount = classEntity.classTeachers?.length || 0;
     const assistantTeacherCount =
         classEntity.classAssistantTeachers?.length || 0;
-    const parentCount = classEntity.classParents?.length || 0;
+    const guardianCount = classEntity.classGuardians?.length || 0;
     const description = classEntity.description || "No description";
 
     // Get organization (has: "one" relationship returns a single object)
@@ -68,8 +68,8 @@ export function ClassCardWithOrg({
               ? AssistantTeacherBadge
               : roleInfo.isStudent
                 ? StudentBadge
-                : roleInfo.isParent
-                  ? ParentBadge
+                : roleInfo.isGuardian
+                  ? GuardianBadge
                   : null;
 
     return (
@@ -170,8 +170,8 @@ export function ClassCardWithOrg({
                         variant="secondary"
                         className="gap-1"
                     >
-                        <ParentIcon className="size-3" />
-                        {parentCount} {parentCount === 1 ? "parent" : "parents"}
+                        <GuardianIcon className="size-3" />
+                        {guardianCount} {guardianCount === 1 ? "guardian" : "guardians"}
                     </Badge>
                 </div>
             </CardContent>

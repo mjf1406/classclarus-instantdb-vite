@@ -3,7 +3,7 @@
 import { BookOpen } from "lucide-react";
 import type { NavigationItem } from "./owner-navigation";
 
-export function getParentNavigation(orgId: string): {
+export function getGuardianNavigation(orgId: string): {
     mainItems: NavigationItem[];
     memberItems: NavigationItem[];
 } {

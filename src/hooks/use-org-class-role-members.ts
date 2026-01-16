@@ -5,7 +5,7 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { useMemo } from "react";
 
-export type ClassRoleType = "classStudents" | "classTeachers" | "classAssistantTeachers" | "classParents";
+export type ClassRoleType = "classStudents" | "classTeachers" | "classAssistantTeachers" | "classGuardians";
 
 type ClassWithRoleMembers = InstaQLEntity<
     AppSchema,
@@ -15,7 +15,7 @@ type ClassWithRoleMembers = InstaQLEntity<
         classStudents: {};
         classTeachers: {};
         classAssistantTeachers: {};
-        classParents: {};
+        classGuardians: {};
     }
 >;
 
@@ -49,7 +49,7 @@ export function useOrgClassRoleMembers(
                   classStudents: {},
                   classTeachers: {},
                   classAssistantTeachers: {},
-                  classParents: {},
+                  classGuardians: {},
               },
           }
         : null;

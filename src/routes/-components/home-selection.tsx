@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
     StudentIcon,
     TeacherIcon,
-    ParentIcon,
+    GuardianIcon,
     AdminIcon,
 } from "@/components/icons/role-icons";
 import { UserCard } from "@/components/navigation/user-card";
@@ -29,8 +29,8 @@ const options: HomeSelectionOption[] = [
         route: "/classes",
     },
     {
-        title: "Parent",
-        icon: ParentIcon,
+        title: "Guardian",
+        icon: GuardianIcon,
         route: "/classes",
     },
     {

@@ -8,7 +8,7 @@ import { getAdminNavigation } from "./admin-navigation";
 import { getTeacherNavigation } from "./teacher-navigation";
 import { getAssistantTeacherNavigation } from "./assistant-teacher-navigation";
 import { getStudentNavigation } from "./student-navigation";
-import { getParentNavigation } from "./parent-navigation";
+import { getGuardianNavigation } from "./guardian-navigation";
 import type { NavigationItem } from "./owner-navigation";
 
 export interface RoleBasedNavigationResult {
@@ -75,8 +75,8 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
                 isLoading: false,
             };
         }
-        case "parent": {
-            const nav = getParentNavigation(classId);
+        case "guardian": {
+            const nav = getGuardianNavigation(classId);
             return {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,

@@ -120,7 +120,7 @@ function RouteComponent() {
                         admins: "Admins",
                         teachers: "Teachers",
                         "assistant-teachers": "Asst Teachers",
-                        parents: "Parents",
+                        guardians: "Guardians",
                         students: "Students",
                         invite: "Invite Members",
                     };

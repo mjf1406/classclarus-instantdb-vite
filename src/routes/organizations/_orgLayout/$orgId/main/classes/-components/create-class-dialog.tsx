@@ -98,7 +98,7 @@ export function CreateClassDialog({
             const classId = id();
             const studentCode = generateJoinCode();
             const teacherCode = generateJoinCode();
-            const parentCode = generateJoinCode();
+            const guardianCode = generateJoinCode();
             const now = new Date();
 
             // Build transaction array based on user's role
@@ -111,7 +111,7 @@ export function CreateClassDialog({
                 archivedAt: null,
                 studentCode,
                 teacherCode,
-                parentCode,
+                guardianCode,
             });
 
             // If user is an orgTeacher, set orgOwner as classOwner and orgAdmins as classAdmins

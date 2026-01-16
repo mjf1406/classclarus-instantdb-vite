@@ -19,7 +19,7 @@ import {
     AdminIcon,
     TeacherIcon,
     AssistantTeacherIcon,
-    ParentIcon,
+    GuardianIcon,
     StudentIcon,
 } from "@/components/icons/role-icons";
 
@@ -39,7 +39,7 @@ function RouteComponent() {
     const teachers = classEntity?.classTeachers || [];
     const assistantTeachers = classEntity?.classAssistantTeachers || [];
     const students = classEntity?.classStudents || [];
-    const parents = classEntity?.classParents || [];
+    const guardians = classEntity?.classGuardians || [];
 
     const sections = [
         {
@@ -88,13 +88,13 @@ function RouteComponent() {
             link: `/classes/${classId}/members/students`,
         },
         {
-            id: "parents",
-            title: "Parents",
-            icon: ParentIcon,
-            count: parents.length,
-            items: parents,
+            id: "guardians",
+            title: "Guardians",
+            icon: GuardianIcon,
+            count: guardians.length,
+            items: guardians,
             isLoading: false,
-            link: `/classes/${classId}/members/parents`,
+            link: `/classes/${classId}/members/guardians`,
         },
     ];
 

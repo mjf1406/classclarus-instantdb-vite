@@ -18,7 +18,7 @@ export type OrganizationWithRelations = InstaQLEntity<
             classTeachers: {};
             classStudents: {};
             classAssistantTeachers: {};
-            classParents: {};
+            classGuardians: {};
         };
     }
 >;
@@ -51,7 +51,7 @@ export function useOrganizationsByUserId(userId: string | undefined) {
                       classTeachers: {},
                       classStudents: {},
                       classAssistantTeachers: {},
-                      classParents: {},
+                      classGuardians: {},
                   },
               },
           }

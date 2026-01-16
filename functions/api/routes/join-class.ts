@@ -48,7 +48,7 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                             or: [
                                 { studentCode: code },
                                 { teacherCode: code },
-                                { parentCode: code },
+                                { guardianCode: code },
                             ],
                         },
                     },
@@ -72,8 +72,8 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             }
 
             // Determine role from which code matched
-            let role: "student" | "teacher" | "parent";
-            let linkLabel: "classStudents" | "classTeachers" | "classParents";
+            let role: "student" | "teacher" | "guardian";
+            let linkLabel: "classStudents" | "classTeachers" | "classGuardians";
 
             if (classEntity.studentCode === code) {
                 role = "student";
@@ -81,9 +81,9 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             } else if (classEntity.teacherCode === code) {
                 role = "teacher";
                 linkLabel = "classTeachers";
-            } else if (classEntity.parentCode === code) {
-                role = "parent";
-                linkLabel = "classParents";
+            } else if (classEntity.guardianCode === code) {
+                role = "guardian";
+                linkLabel = "classGuardians";
             } else {
                 return c.json(
                     {
@@ -104,7 +104,7 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                     teacherClasses: {
                         $: { where: { id: classEntity.id } },
                     },
-                    parentClasses: {
+                    guardianClasses: {
                         $: { where: { id: classEntity.id } },
                     },
                     adminClasses: {
@@ -127,7 +127,7 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 (cls: InstaQLEntity<AppSchema, "classes">) =>
                     cls.id === classEntity.id
             );
-            const isAlreadyParent = userClassData?.parentClasses?.some(
+            const isAlreadyGuardian = userClassData?.guardianClasses?.some(
                 (cls: InstaQLEntity<AppSchema, "classes">) =>
                     cls.id === classEntity.id
             );
@@ -142,7 +142,7 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 isAlreadyAdmin ||
                 isAlreadyStudent ||
                 isAlreadyTeacher ||
-                isAlreadyParent
+                isAlreadyGuardian
             ) {
                 return c.json(
                     {

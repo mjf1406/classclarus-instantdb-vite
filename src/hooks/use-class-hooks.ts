@@ -18,7 +18,7 @@ export type ClassWithRelations = InstaQLEntity<
         classTeachers: {};
         classAssistantTeachers: {};
         classStudents: {};
-        classParents: {};
+        classGuardians: {};
     }
 >;
 
@@ -37,7 +37,7 @@ export type ClassForTeacher = InstaQLEntity<
         classTeachers: {};
         classAssistantTeachers: {};
         classStudents: {};
-        classParents: {};
+        classGuardians: {};
     }
 >;
 
@@ -51,11 +51,11 @@ export type ClassForAssistantTeacher = InstaQLEntity<
         classTeachers: {};
         classAssistantTeachers: {};
         classStudents: {};
-        classParents: {};
+        classGuardians: {};
     }
 >;
 
-export type ClassForParent = InstaQLEntity<
+export type ClassForGuardian = InstaQLEntity<
     AppSchema,
     "classes",
     {
@@ -65,7 +65,7 @@ export type ClassForParent = InstaQLEntity<
         classTeachers: {};
         classAssistantTeachers: {};
         classStudents: {};
-        classParents: {};
+        classGuardians: {};
     }
 >;
 
@@ -78,7 +78,7 @@ export type ClassForStudent = InstaQLEntity<
         classAdmins: {};
         classTeachers: {};
         classAssistantTeachers: {};
-        classParents: {};
+        classGuardians: {};
         classStudents: {};
     }
 >;
@@ -101,7 +101,7 @@ type UserQueryResult = {
 
 /**
  * @deprecated Use useClassesByRole instead for role-based filtering
- * Fetches classes where the user is a member (owner, admin, teacher, assistant teacher, student, or parent)
+ * Fetches classes where the user is a member (owner, admin, teacher, assistant teacher, student, or guardian)
  */
 export function useClassesByOrgId(orgId: string | undefined) {
     const { user } = useAuthContext();
@@ -128,7 +128,7 @@ export function useClassesByOrgId(orgId: string | undefined) {
                                                   userId,
                                           },
                                           { "classStudents.id": userId },
-                                          { "classParents.id": userId },
+                                          { "classGuardians.id": userId },
                                       ],
                                   },
                               ],
@@ -140,7 +140,7 @@ export function useClassesByOrgId(orgId: string | undefined) {
                       classTeachers: {},
                       classAssistantTeachers: {},
                       classStudents: {},
-                      classParents: {},
+                      classGuardians: {},
                   },
               }
             : null;
@@ -149,7 +149,7 @@ export function useClassesByOrgId(orgId: string | undefined) {
 
     const typedClassData = (classData as ClassQueryResult | undefined) ?? null;
     const classes = typedClassData?.classes || [];
-    console.log("🚀 ~ useClassesForParent ~ classes:", classes);
+    console.log("🚀 ~ useClassesForGuardian ~ classes:", classes);
     console.log("🚀 ~ useClassesForStudent ~ classes:", classes);
     console.log("🚀 ~ useClassesForStudent ~ classes:", classes);
     console.log("🚀 ~ useClassesForStudent ~ classes:", classes);
@@ -163,7 +163,7 @@ export function useClassesByOrgId(orgId: string | undefined) {
 
 /**
  * Fetches all classes in the organization (for owners)
- * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classParents
+ * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classGuardians
  */
 export function useClassesForOwner(orgId: string | undefined) {
     const hasValidOrgId = orgId && orgId.trim() !== "";
@@ -185,7 +185,7 @@ export function useClassesForOwner(orgId: string | undefined) {
                   classTeachers: {},
                   classAssistantTeachers: {},
                   classStudents: {},
-                  classParents: {},
+                  classGuardians: {},
               },
           }
         : null;
@@ -205,7 +205,7 @@ export function useClassesForOwner(orgId: string | undefined) {
 
 /**
  * Fetches all classes in the organization (for admins)
- * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classParents
+ * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classGuardians
  */
 export function useClassesForAdmin(orgId: string | undefined) {
     const hasValidOrgId = orgId && orgId.trim() !== "";
@@ -227,7 +227,7 @@ export function useClassesForAdmin(orgId: string | undefined) {
                   classTeachers: {},
                   classAssistantTeachers: {},
                   classStudents: {},
-                  classParents: {},
+                  classGuardians: {},
               },
           }
         : null;
@@ -247,7 +247,7 @@ export function useClassesForAdmin(orgId: string | undefined) {
 
 /**
  * Fetches classes where the user is a teacher
- * Returns classes with relations: owner, organization, classTeachers, classAssistantTeachers, classStudents, classParents
+ * Returns classes with relations: owner, organization, classTeachers, classAssistantTeachers, classStudents, classGuardians
  */
 export function useClassesForTeacher(orgId: string | undefined) {
     const { user } = useAuthContext();
@@ -274,7 +274,7 @@ export function useClassesForTeacher(orgId: string | undefined) {
                       classTeachers: {},
                       classAssistantTeachers: {},
                       classStudents: {},
-                      classParents: {},
+                      classGuardians: {},
                   },
               }
             : null;
@@ -294,7 +294,7 @@ export function useClassesForTeacher(orgId: string | undefined) {
 
 /**
  * Fetches classes where the user is an assistant teacher
- * Returns classes with relations: owner, organization, classTeachers, classStudents, classParents
+ * Returns classes with relations: owner, organization, classTeachers, classStudents, classGuardians
  */
 export function useClassesForAssistantTeacher(orgId: string | undefined) {
     const { user } = useAuthContext();
@@ -321,7 +321,7 @@ export function useClassesForAssistantTeacher(orgId: string | undefined) {
                       classTeachers: {},
                       classAssistantTeachers: {},
                       classStudents: {},
-                      classParents: {},
+                      classGuardians: {},
                   },
               }
             : null;
@@ -344,7 +344,7 @@ export function useClassesForAssistantTeacher(orgId: string | undefined) {
  * Fetches classes where the user's children are students
  * Returns classes with relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents
  */
-export function useClassesForParent(orgId: string | undefined) {
+export function useClassesForGuardian(orgId: string | undefined) {
     const { user } = useAuthContext();
     const userId = user?.id;
     const hasValidOrgId = orgId && orgId.trim() !== "";
@@ -390,7 +390,7 @@ export function useClassesForParent(orgId: string | undefined) {
                       classTeachers: {},
                       classAssistantTeachers: {},
                       classStudents: {},
-                      classParents: {},
+                      classGuardians: {},
                   },
               }
             : null;
@@ -402,7 +402,7 @@ export function useClassesForParent(orgId: string | undefined) {
     } = db.useQuery(classQuery);
 
     const typedClassData =
-        (classData as ClassQueryResult<ClassForParent> | undefined) ?? null;
+        (classData as ClassQueryResult<ClassForGuardian> | undefined) ?? null;
     const classes = typedClassData?.classes || [];
     return {
         classes,
@@ -439,7 +439,7 @@ export function useClassesForStudent(orgId: string | undefined) {
                       classAdmins: {},
                       classTeachers: {},
                       classAssistantTeachers: {},
-                      classParents: {},
+                      classGuardians: {},
                       classStudents: {},
                   },
               }
@@ -463,7 +463,7 @@ export type ClassByRole =
     | ClassForAdmin
     | ClassForTeacher
     | ClassForAssistantTeacher
-    | ClassForParent
+    | ClassForGuardian
     | ClassForStudent;
 
 /**
@@ -523,7 +523,7 @@ export function useClassesByRole(orgId: string | undefined) {
 
 /**
  * Fetches all archived classes in the organization (for owners)
- * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classParents
+ * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classGuardians
  */
 export function useArchivedClassesForOwner(orgId: string | undefined) {
     const hasValidOrgId = orgId && orgId.trim() !== "";
@@ -545,7 +545,7 @@ export function useArchivedClassesForOwner(orgId: string | undefined) {
                   classTeachers: {},
                   classAssistantTeachers: {},
                   classStudents: {},
-                  classParents: {},
+                  classGuardians: {},
               },
           }
         : null;
@@ -565,7 +565,7 @@ export function useArchivedClassesForOwner(orgId: string | undefined) {
 
 /**
  * Fetches all archived classes in the organization (for admins)
- * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classParents
+ * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classGuardians
  */
 export function useArchivedClassesForAdmin(orgId: string | undefined) {
     const hasValidOrgId = orgId && orgId.trim() !== "";
@@ -587,7 +587,7 @@ export function useArchivedClassesForAdmin(orgId: string | undefined) {
                   classTeachers: {},
                   classAssistantTeachers: {},
                   classStudents: {},
-                  classParents: {},
+                  classGuardians: {},
               },
           }
         : null;
@@ -652,7 +652,7 @@ export function useArchivedClassesByRole(orgId: string | undefined) {
 }
 
 /**
- * Fetches all classes where the user is a member (owner, admin, teacher, assistant teacher, student, or parent)
+ * Fetches all classes where the user is a member (owner, admin, teacher, assistant teacher, student, or guardian)
  * across all organizations. Returns classes with all relations.
  */
 export function useAllUserClasses() {
@@ -660,7 +660,7 @@ export function useAllUserClasses() {
     const userId = user?.id;
     const hasValidUser = userId && userId.trim() !== "";
 
-    // First, get the user's children for parent role
+    // First, get the user's children for guardian role
     const userQuery = hasValidUser
         ? {
               $users: {
@@ -694,7 +694,7 @@ export function useAllUserClasses() {
                                   "classAssistantTeachers.id": userId,
                               },
                               { "classStudents.id": userId },
-                              { "classParents.id": userId },
+                              { "classGuardians.id": userId },
                               ...(childrenIds.length > 0
                                   ? [
                                         {
@@ -713,7 +713,7 @@ export function useAllUserClasses() {
                   classTeachers: {},
                   classAssistantTeachers: {},
                   classStudents: {},
-                  classParents: {},
+                  classGuardians: {},
               },
           }
         : null;

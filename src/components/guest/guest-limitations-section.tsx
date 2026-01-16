@@ -12,7 +12,7 @@ const GUEST_MODE_LIMITATIONS = [
     "You can only create organizations, not join them.",
     "You can only create classes, not join them.",
     "Teachers cannot join the classes you create.",
-    "Parents cannot join the classes you create.",
+    "Guardians cannot join the classes you create.",
     "Students cannot join the classes you create.",
 ];
 
