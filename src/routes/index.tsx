@@ -11,7 +11,6 @@ import { ThemeSwitcher } from "@/components/themes/theme-switcher";
 import LoadingPage from "@/components/loading/loading-page";
 import { LoginCard } from "@/routes/login/-components/login-card";
 import { HomeSelection } from "./-components/home-selection";
-import { ImageSkeleton } from "@/components/ui/image-skeleton";
 import { LogoBig } from "@/components/brand/logo";
 
 export const Route = createFileRoute("/")({
