@@ -19,6 +19,8 @@ import { Route as UserBillingRouteImport } from './routes/user/billing'
 import { Route as OrganizationsOrgLayoutRouteImport } from './routes/organizations/_orgLayout'
 import { Route as ClassesClassesLayoutRouteImport } from './routes/classes/_classesLayout'
 import { Route as OrganizationsOrgLayoutIndexRouteImport } from './routes/organizations/_orgLayout/index'
+import { Route as JoinOrganizationIndexRouteImport } from './routes/join/organization/index'
+import { Route as JoinClassIndexRouteImport } from './routes/join/class/index'
 import { Route as ClassesClassesLayoutIndexRouteImport } from './routes/classes/_classesLayout/index'
 import { Route as OrganizationsOrgLayoutOrgIdIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/index'
 import { Route as ClassesClassesLayoutMembersIndexRouteImport } from './routes/classes/_classesLayout/members/index'
@@ -94,6 +96,16 @@ const OrganizationsOrgLayoutIndexRoute =
     path: '/',
     getParentRoute: () => OrganizationsOrgLayoutRoute,
   } as any)
+const JoinOrganizationIndexRoute = JoinOrganizationIndexRouteImport.update({
+  id: '/join/organization/',
+  path: '/join/organization/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinClassIndexRoute = JoinClassIndexRouteImport.update({
+  id: '/join/class/',
+  path: '/join/class/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClassesClassesLayoutIndexRoute =
   ClassesClassesLayoutIndexRouteImport.update({
     id: '/',
@@ -244,6 +256,8 @@ export interface FileRoutesByFullPath {
   '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
   '/classes/': typeof ClassesClassesLayoutIndexRoute
+  '/join/class': typeof JoinClassIndexRoute
+  '/join/organization': typeof JoinOrganizationIndexRoute
   '/organizations/': typeof OrganizationsOrgLayoutIndexRoute
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
@@ -277,6 +291,8 @@ export interface FileRoutesByTo {
   '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
   '/classes': typeof ClassesClassesLayoutIndexRoute
+  '/join/class': typeof JoinClassIndexRoute
+  '/join/organization': typeof JoinOrganizationIndexRoute
   '/organizations': typeof OrganizationsOrgLayoutIndexRoute
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
@@ -313,6 +329,8 @@ export interface FileRoutesById {
   '/blocked/': typeof BlockedIndexRoute
   '/join/': typeof JoinIndexRoute
   '/classes/_classesLayout/': typeof ClassesClassesLayoutIndexRoute
+  '/join/class/': typeof JoinClassIndexRoute
+  '/join/organization/': typeof JoinOrganizationIndexRoute
   '/organizations/_orgLayout/': typeof OrganizationsOrgLayoutIndexRoute
   '/classes/_classesLayout/$classId/': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/_classesLayout/members/': typeof ClassesClassesLayoutMembersIndexRoute
@@ -350,6 +368,8 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/join'
     | '/classes/'
+    | '/join/class'
+    | '/join/organization'
     | '/organizations/'
     | '/classes/$classId'
     | '/classes/members'
@@ -383,6 +403,8 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/join'
     | '/classes'
+    | '/join/class'
+    | '/join/organization'
     | '/organizations'
     | '/classes/$classId'
     | '/classes/members'
@@ -418,6 +440,8 @@ export interface FileRouteTypes {
     | '/blocked/'
     | '/join/'
     | '/classes/_classesLayout/'
+    | '/join/class/'
+    | '/join/organization/'
     | '/organizations/_orgLayout/'
     | '/classes/_classesLayout/$classId/'
     | '/classes/_classesLayout/members/'
@@ -453,6 +477,8 @@ export interface RootRouteChildren {
   UserSettingsRoute: typeof UserSettingsRoute
   BlockedIndexRoute: typeof BlockedIndexRoute
   JoinIndexRoute: typeof JoinIndexRoute
+  JoinClassIndexRoute: typeof JoinClassIndexRoute
+  JoinOrganizationIndexRoute: typeof JoinOrganizationIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -526,6 +552,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/organizations/'
       preLoaderRoute: typeof OrganizationsOrgLayoutIndexRouteImport
       parentRoute: typeof OrganizationsOrgLayoutRoute
+    }
+    '/join/organization/': {
+      id: '/join/organization/'
+      path: '/join/organization'
+      fullPath: '/join/organization'
+      preLoaderRoute: typeof JoinOrganizationIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join/class/': {
+      id: '/join/class/'
+      path: '/join/class'
+      fullPath: '/join/class'
+      preLoaderRoute: typeof JoinClassIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/classes/_classesLayout/': {
       id: '/classes/_classesLayout/'
@@ -790,6 +830,8 @@ const rootRouteChildren: RootRouteChildren = {
   UserSettingsRoute: UserSettingsRoute,
   BlockedIndexRoute: BlockedIndexRoute,
   JoinIndexRoute: JoinIndexRoute,
+  JoinClassIndexRoute: JoinClassIndexRoute,
+  JoinOrganizationIndexRoute: JoinOrganizationIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

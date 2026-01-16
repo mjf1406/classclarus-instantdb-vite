@@ -1,0 +1,19 @@
+# Cloudflare Pages Functions configuration
+# This file configures rate limiting for the API endpoints
+#
+# Note: For Cloudflare Pages, rate limiting bindings may need to be configured
+# through the Cloudflare dashboard. This file is primarily for local development
+# with Wrangler. In production, configure the rate limiting binding through:
+# Cloudflare Dashboard > Your Pages Project > Settings > Functions > Rate Limiting
+#
+# Rate limiting for join endpoints: 3 requests per minute per user
+[[ratelimits]]
+name = "JOIN_RATE_LIMITER" # Same name as set in Settings > Bindings for KV Namespace
+namespace_id = "7fe6ba808d82413d8836d6ff79143b7a" # ClassClarus Namespace ID from https://dash.cloudflare.com/c351c733a9fa0ceac027aa286cd56693/workers/kv/namespaces
+
+# An identifier you define, that is unique to your Cloudflare account.
+# Must be an integer. Change this to a unique namespace ID for your account.
+# Each namespace_id must be unique across your entire Cloudflare account.
+# Limit: 3 requests per 60 seconds (1 minute) per user
+# The key used for rate limiting is the authenticated user ID
+simple = { limit = 3, period = 60 }

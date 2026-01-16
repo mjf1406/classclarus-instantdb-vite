@@ -81,7 +81,7 @@ function RouteComponent() {
                         variant="outline"
                         asChild
                     >
-                        <Link to="/join">
+                        <Link to="/join/organization">
                             <UserPlus />
                             <span className="sr-only">Join</span>
                             <span className="hidden md:block">Join</span>

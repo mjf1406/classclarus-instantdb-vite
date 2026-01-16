@@ -116,7 +116,7 @@ function RouteComponent() {
                                 asChild
                                 className="w-full"
                             >
-                                <Link to="/join">
+                                <Link to="/join/class">
                                     <LogIn />
                                     <span>Join Class</span>
                                 </Link>
@@ -129,7 +129,7 @@ function RouteComponent() {
                                 asChild
                                 className="w-full"
                             >
-                                <Link to="/join">
+                                <Link to="/join/organization">
                                     <UserPlus />
                                     <span>Join Organization</span>
                                 </Link>

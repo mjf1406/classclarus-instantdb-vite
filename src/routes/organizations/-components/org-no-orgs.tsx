@@ -8,8 +8,9 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2Icon, PlusIcon } from "lucide-react";
+import { Building2Icon, PlusIcon, UserPlus } from "lucide-react";
 import { CreateOrgDialog } from "./create-org-dialog";
+import { Link } from "@tanstack/react-router";
 
 export function OrgNoOrgs() {
     return (
@@ -29,13 +30,19 @@ export function OrgNoOrgs() {
                     </div>
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-center space-y-4">
+            <CardContent className="flex flex-col gap-2">
                 <CreateOrgDialog>
-                    <Button>
+                    <Button className="w-full">
                         <PlusIcon />
                         Create Organization
                     </Button>
                 </CreateOrgDialog>
+                <Button variant="outline" className="w-full" asChild>
+                    <Link to="/join/organization">
+                        <UserPlus />
+                        Join Organization
+                    </Link>
+                </Button>
             </CardContent>
         </Card>
     );

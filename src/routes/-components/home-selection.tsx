@@ -1,6 +1,6 @@
 /** @format */
 
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
     StudentIcon,
@@ -9,6 +9,7 @@ import {
     AdminIcon,
 } from "@/components/icons/role-icons";
 import { UserCard } from "@/components/navigation/user-card";
+import { UserPlus, LogIn } from "lucide-react";
 
 interface HomeSelectionOption {
     title: string;
@@ -72,6 +73,25 @@ export function HomeSelection() {
                             </Button>
                         );
                     })}
+                </div>
+                <div className="flex items-center gap-4 my-4">
+                    <div className="flex-1 border-t"></div>
+                    <span className="text-sm text-muted-foreground">or</span>
+                    <div className="flex-1 border-t"></div>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <Button size="lg" variant="outline" className="w-full justify-start gap-3 h-auto py-4" asChild>
+                        <Link to="/join/organization">
+                            <UserPlus className="size-5" />
+                            <span className="text-base font-medium">Join Organization</span>
+                        </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" className="w-full justify-start gap-3 h-auto py-4" asChild>
+                        <Link to="/join/class">
+                            <LogIn className="size-5" />
+                            <span className="text-base font-medium">Join Class</span>
+                        </Link>
+                    </Button>
                 </div>
                 <UserCard />
             </div>
