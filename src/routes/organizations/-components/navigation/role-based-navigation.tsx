@@ -6,9 +6,6 @@ import { useOrgRole } from "./use-org-role";
 import { getOwnerNavigation } from "./owner-navigation";
 import { getAdminNavigation } from "./admin-navigation";
 import { getTeacherNavigation } from "./teacher-navigation";
-import { getAssistantTeacherNavigation } from "./assistant-teacher-navigation";
-import { getParentNavigation } from "./parent-navigation";
-import { getStudentNavigation } from "./student-navigation";
 import type { NavigationItem } from "./owner-navigation";
 
 export interface RoleBasedNavigationResult {
@@ -52,30 +49,6 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
         }
         case "teacher": {
             const nav = getTeacherNavigation(orgId);
-            return {
-                mainItems: nav.mainItems,
-                memberItems: nav.memberItems,
-                isLoading: false,
-            };
-        }
-        case "assistant-teacher": {
-            const nav = getAssistantTeacherNavigation(orgId);
-            return {
-                mainItems: nav.mainItems,
-                memberItems: nav.memberItems,
-                isLoading: false,
-            };
-        }
-        case "parent": {
-            const nav = getParentNavigation(orgId);
-            return {
-                mainItems: nav.mainItems,
-                memberItems: nav.memberItems,
-                isLoading: false,
-            };
-        }
-        case "student": {
-            const nav = getStudentNavigation(orgId);
             return {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,

@@ -3,23 +3,13 @@
 import { useAuthContext } from "@/components/auth/auth-provider";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 
-export type OrgRole =
-    | "owner"
-    | "admin"
-    | "teacher"
-    | "assistant-teacher"
-    | "parent"
-    | "student"
-    | null;
+export type OrgRole = "owner" | "admin" | "teacher" | null;
 
 export interface OrgRoleInfo {
     role: OrgRole;
     isOwner: boolean;
     isAdmin: boolean;
     isTeacher: boolean;
-    isAssistantTeacher: boolean;
-    isParent: boolean;
-    isStudent: boolean;
 }
 
 export function useOrgRole(
@@ -34,13 +24,10 @@ export function useOrgRole(
             isOwner: false,
             isAdmin: false,
             isTeacher: false,
-            isAssistantTeacher: false,
-            isParent: false,
-            isStudent: false,
         };
     }
 
-    // Determine user's role in the organization (priority: Owner > Admin > Teacher > Assistant Teacher > Parent > Student)
+    // Determine user's role in the organization (priority: Owner > Admin > Teacher)
     const isOwner = !!(userId && organization.owner?.id === userId);
     const isAdmin =
         !!(
@@ -55,35 +42,6 @@ export function useOrgRole(
             !isAdmin &&
             organization.orgTeachers?.some((teacher) => teacher.id === userId)
         );
-    const isAssistantTeacher =
-        !!(
-            userId &&
-            !isOwner &&
-            !isAdmin &&
-            !isTeacher &&
-            organization.orgAssistantTeachers?.some(
-                (assistantTeacher) => assistantTeacher.id === userId
-            )
-        );
-    const isStudent =
-        !!(
-            userId &&
-            !isOwner &&
-            !isAdmin &&
-            !isTeacher &&
-            !isAssistantTeacher &&
-            organization.orgStudents?.some((student) => student.id === userId)
-        );
-    const isParent =
-        !!(
-            userId &&
-            !isOwner &&
-            !isAdmin &&
-            !isTeacher &&
-            !isAssistantTeacher &&
-            !isStudent &&
-            organization.orgParents?.some((parent) => parent.id === userId)
-        );
 
     const role: OrgRole = isOwner
         ? "owner"
@@ -91,21 +49,12 @@ export function useOrgRole(
           ? "admin"
           : isTeacher
             ? "teacher"
-            : isAssistantTeacher
-              ? "assistant-teacher"
-              : isParent
-                ? "parent"
-                : isStudent
-                  ? "student"
-                  : null;
+            : null;
 
     return {
         role,
         isOwner,
         isAdmin,
         isTeacher,
-        isAssistantTeacher,
-        isParent,
-        isStudent,
     };
 }

@@ -35,11 +35,7 @@ export function OrgRow({ organization }: OrgRowProps) {
           ? AdminBadge
           : roleInfo.isTeacher
             ? TeacherBadge
-            : roleInfo.isStudent
-              ? StudentBadge
-              : roleInfo.isParent
-                ? ParentBadge
-                : null;
+            : null;
 
     return (
         <Card className="group/card hover:ring-foreground/20 transition-all">

@@ -35,12 +35,15 @@ const dataBind = [
     // User is still an assistant teacher in a class
     "isStillAssistantTeacher",
     "auth.id in newData.ref('classAssistantTeachers.id')",
-    // User is a member of the org
-    "isOrgMember",
-    "auth.id in data.ref('orgStudents.id') || auth.id in data.ref('orgTeachers.id') || auth.id in data.ref('orgAssistantTeachers.id') || auth.id in data.ref('orgParents.id')",
-    // User is still a member of the org
-    "isStillOrgMember",
-    "auth.id in newData.ref('orgStudents.id') || auth.id in newData.ref('orgTeachers.id') || auth.id in newData.ref('orgAssistantTeachers.id') || auth.id in newData.ref('orgParents.id')",
+    // User is a teacher in an org
+    "isOrgTeacher",
+    "auth.id in data.ref('orgTeachers.id')",
+    // User is still a teacher in an org
+    "isStillOrgTeacher",
+    "auth.id in newData.ref('orgTeachers.id')",
+    // User is in a class that belongs to this org (for viewing org)
+    "isInOrgClass",
+    "auth.id in data.ref('classes.classStudents.id') || auth.id in data.ref('classes.classTeachers.id') || auth.id in data.ref('classes.classAssistantTeachers.id') || auth.id in data.ref('classes.classParents.id')",
     // User is a class member
     "isClassMember",
     "auth.id in data.ref('classStudents.id') || auth.id in data.ref('classTeachers.id') || auth.id in data.ref('classAssistantTeachers.id') || auth.id in data.ref('classParents.id')",
@@ -132,13 +135,22 @@ const userClassStudentBind = [
     "auth.id in data.ref('parentClasses.classStudents.id')",
 ];
 // ============================================================
+//          PARENT-CHILD RELATIONSHIPS IN SHARED CLASSES
+// ============================================================
+const userClassParentChildBind = [
+    "isMyChildInSharedClass",
+    "isMyChild && (auth.id in data.ref('parentClasses.classStudents.id'))",
+    "isMyParentInSharedClass",
+    "isMyParent && (auth.id in data.ref('studentClasses.classParents.id'))",
+];
+// ============================================================
 //                ORGANIZATION USER RELATIONSHIPS
 // ============================================================
 const userOrgRelationshipBind = [
-    "isStudentInMyOrgAsAdmin",
-    "auth.id in data.ref('studentOrganizations.admins.id')",
-    "isStudentInMyOrgAsOwner",
-    "auth.id in data.ref('studentOrganizations.owner.id')",
+    "isTeacherInMyOrgAsAdmin",
+    "auth.id in data.ref('teacherOrganizations.admins.id')",
+    "isTeacherInMyOrgAsOwner",
+    "auth.id in data.ref('teacherOrganizations.owner.id')",
 ];
 const userBinds = [
     ...userBasicRelationshipBind,
@@ -147,6 +159,7 @@ const userBinds = [
     ...userClassTeacherBind,
     ...userClassParentBind,
     ...userClassStudentBind,
+    ...userClassParentChildBind,
     ...userOrgRelationshipBind,
 ];
 const rules = {
@@ -170,31 +183,31 @@ const rules = {
             create: "false",
             // Allow users to update their own records, OR allow class/org admins to update users
             // who are members of classes/organizations where the admin has permissions
-            update: "isAuthenticated && ((isOwner && isStillOwner) || (auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('parentClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('assistantTeacherClasses.classAdmins.id') || auth.id in data.ref('studentOrganizations.admins.id') || auth.id in data.ref('parentOrganizations.admins.id') || auth.id in data.ref('teacherOrganizations.admins.id') || auth.id in data.ref('assistantTeacherOrganizations.admins.id')))",
+            update: "isAuthenticated && ((isOwner && isStillOwner) || (auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('parentClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('assistantTeacherClasses.classAdmins.id') || auth.id in data.ref('teacherOrganizations.admins.id')))",
             delete: "false",
         },
         fields: {
-            email: "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+            email: "isAuthenticated && ( isMyself || isMyChild || isMyParent || isMyChildInSharedClass || isMyParentInSharedClass || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isTeacherInMyOrgAsAdmin || isTeacherInMyOrgAsOwner )",
             imageURL:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
-            type: "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isMyChildInSharedClass || isMyParentInSharedClass || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isTeacherInMyOrgAsAdmin || isTeacherInMyOrgAsOwner )",
+            type: "isAuthenticated && ( isMyself || isMyChild || isMyParent )",
             avatarURL:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
-            plan: "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isMyChildInSharedClass || isMyParentInSharedClass || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isTeacherInMyOrgAsAdmin || isTeacherInMyOrgAsOwner )",
+            plan: "isAuthenticated && ( isMyself || isMyChild || isMyParent )",
             firstName:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isMyChildInSharedClass || isMyParentInSharedClass || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isTeacherInMyOrgAsAdmin || isTeacherInMyOrgAsOwner )",
             lastName:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isMyChildInSharedClass || isMyParentInSharedClass || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isTeacherInMyOrgAsAdmin || isTeacherInMyOrgAsOwner )",
             created:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent )",
             updated:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent )",
             lastLogon:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent )",
             polarCustomerId:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent )",
             polarSubscriptionId:
-                "isAuthenticated && ( isMyself || isMyChild || isMyParent || isStudentInMyClassAsOwner || isTeacherInMyClassAsOwner || isAssistantTeacherInMyClassAsOwner || isParentInMyClassAsOwner || isAdminInMyClassAsOwner || isStudentInMyClassAsAdmin || isTeacherInMyClassAsAdmin || isAssistantTeacherInMyClassAsAdmin || isParentInMyClassAsAdmin || isAdminInMyClassAsAdmin || isStudentInMyClassAsTeacher || isTeacherInMyClassAsTeacher || isAssistantTeacherInMyClassAsTeacher || isParentInMyClassAsTeacher || isStudentInMyClassAsParent || isTeacherInMyClassAsParent || isAssistantTeacherInMyClassAsParent || isTeacherInMyClassAsStudent || isAssistantTeacherInMyClassAsStudent || isParentInMyClassAsStudent || isStudentInMyOrgAsAdmin || isStudentInMyOrgAsOwner )",
+                "isAuthenticated && ( isMyself || isMyChild || isMyParent )",
         },
         bind: [...dataBind, ...userBinds],
     },
@@ -215,7 +228,7 @@ const rules = {
     organizations: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated && (isOwner || isAdmin || isOrgMember)",
+            view: "isAuthenticated && (isOwner || isAdmin || isOrgTeacher || isInOrgClass)",
             update: "isAuthenticated && (isOwner || isAdmin) && (isStillOwner || isStillAdmin)",
             delete: "isAuthenticated && isOwner",
         },

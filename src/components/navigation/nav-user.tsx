@@ -64,7 +64,7 @@ export function NavUser() {
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">
                                     {user.firstName || "Guest"}{" "}
-                                    {user.lastName || "User"}
+                                    {user.lastName || ""}
                                 </span>
                                 <span className="truncate text-xs text-muted-foreground">
                                     {user.plan || "Free"}
@@ -97,7 +97,7 @@ export function NavUser() {
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-medium">
                                         {user.firstName || "Guest"}{" "}
-                                        {user.lastName || "User"}
+                                        {user.lastName || ""}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground">
                                         {user.plan || "Free"}
@@ -150,7 +150,10 @@ export function NavUser() {
                         <DropdownMenuItem
                             onClick={() => {
                                 db.auth.signOut();
-                                navigate({ to: "/", search: { redirect: undefined } });
+                                navigate({
+                                    to: "/",
+                                    search: { redirect: undefined },
+                                });
                             }}
                         >
                             <LogOut />

@@ -19,18 +19,28 @@ export function isPublicRoute(pathname: string): boolean {
  * User has access if they are:
  * - The owner
  * - An admin
- * - A member (teacher, assistant teacher, student, or parent)
+ * - A teacher (org-level)
+ * - Or if they are a member of any class within that org (checked via permissions)
  */
 export function checkOrgAccess(
     orgId: string,
     userOrganizations: OrganizationWithRelations[]
 ): boolean {
-    if (!orgId || userOrganizations.length === 0) {
+    if (!orgId) {
         return false;
     }
 
+    // Check if user is owner/admin/teacher of the org
     const org = userOrganizations.find((o) => o.id === orgId);
-    return !!org;
+    if (org) {
+        return true;
+    }
+
+    // Note: Users who are members of classes within the org can view the org
+    // This is handled by the isInOrgClass permission check in instant.perms.ts
+    // For now, we only check explicit org roles here
+    // The permission system will allow viewing if user is in a class
+    return false;
 }
 
 /**

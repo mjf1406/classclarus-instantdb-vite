@@ -141,18 +141,6 @@ const _schema = i.schema({
                 label: "files",
             }, // Each class can have many files
         },
-        orgStudents: {
-            forward: {
-                on: "organizations",
-                has: "many",
-                label: "orgStudents",
-            }, // Each organization can have many students
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "studentOrganizations",
-            }, // Each user can be a student in many organizations
-        },
         orgTeachers: {
             forward: {
                 on: "organizations",
@@ -164,30 +152,6 @@ const _schema = i.schema({
                 has: "many",
                 label: "teacherOrganizations",
             }, // Each user can be a teacher in many organizations
-        },
-        orgAssistantTeachers: {
-            forward: {
-                on: "organizations",
-                has: "many",
-                label: "orgAssistantTeachers",
-            }, // Each organization can have many assistant teachers
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "assistantTeacherOrganizations",
-            }, // Each user can be an assistant teacher in many organizations
-        },
-        orgParents: {
-            forward: {
-                on: "organizations",
-                has: "many",
-                label: "orgParents",
-            }, // Each organization can have many parents
-            reverse: {
-                on: "$users",
-                has: "many",
-                label: "parentOrganizations",
-            }, // Each user can be a parent in many organizations
         },
         orgAdmins: {
             forward: {

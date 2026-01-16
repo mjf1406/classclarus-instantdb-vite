@@ -484,15 +484,6 @@ export function useClassesByRole(orgId: string | undefined) {
     const teacherResult = useClassesForTeacher(
         roleInfo.isTeacher ? orgId : undefined
     );
-    const assistantTeacherResult = useClassesForAssistantTeacher(
-        roleInfo.isAssistantTeacher ? orgId : undefined
-    );
-    const parentResult = useClassesForParent(
-        roleInfo.isParent ? orgId : undefined
-    );
-    const studentResult = useClassesForStudent(
-        roleInfo.isStudent ? orgId : undefined
-    );
 
     // Determine which result to use based on role priority
     if (orgLoading || !organization || !roleInfo.role) {
@@ -521,26 +512,8 @@ export function useClassesByRole(orgId: string | undefined) {
             classes: teacherResult.classes as ClassByRole[],
         };
     }
-    if (roleInfo.isAssistantTeacher) {
-        return {
-            ...assistantTeacherResult,
-            classes: assistantTeacherResult.classes as ClassByRole[],
-        };
-    }
-    if (roleInfo.isParent) {
-        return {
-            ...parentResult,
-            classes: parentResult.classes as ClassByRole[],
-        };
-    }
-    if (roleInfo.isStudent) {
-        return {
-            ...studentResult,
-            classes: studentResult.classes as ClassByRole[],
-        };
-    }
 
-    // No role found
+    // No org role found (user is not owner/admin/teacher of org)
     return {
         classes: [] as ClassByRole[],
         isLoading: false,

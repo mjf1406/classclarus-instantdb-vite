@@ -19,6 +19,7 @@ import { Route as UserBillingRouteImport } from './routes/user/billing'
 import { Route as OrganizationsOrgLayoutRouteImport } from './routes/organizations/_orgLayout'
 import { Route as ClassesClassesLayoutRouteImport } from './routes/classes/_classesLayout'
 import { Route as OrganizationsOrgLayoutIndexRouteImport } from './routes/organizations/_orgLayout/index'
+import { Route as ClassesClassesLayoutIndexRouteImport } from './routes/classes/_classesLayout/index'
 import { Route as OrganizationsOrgLayoutOrgIdIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/index'
 import { Route as ClassesClassesLayoutMembersIndexRouteImport } from './routes/classes/_classesLayout/members/index'
 import { Route as ClassesClassesLayoutClassIdIndexRouteImport } from './routes/classes/_classesLayout/$classId/index'
@@ -83,6 +84,12 @@ const OrganizationsOrgLayoutIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => OrganizationsOrgLayoutRoute,
+  } as any)
+const ClassesClassesLayoutIndexRoute =
+  ClassesClassesLayoutIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
 const OrganizationsOrgLayoutOrgIdIndexRoute =
   OrganizationsOrgLayoutOrgIdIndexRouteImport.update({
@@ -173,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/user/settings': typeof UserSettingsRoute
   '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
+  '/classes/': typeof ClassesClassesLayoutIndexRoute
   '/organizations/': typeof OrganizationsOrgLayoutIndexRoute
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
@@ -191,12 +199,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/classes': typeof ClassesClassesLayoutRouteWithChildren
   '/user/billing': typeof UserBillingRoute
   '/user/profile': typeof UserProfileRoute
   '/user/settings': typeof UserSettingsRoute
   '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
+  '/classes': typeof ClassesClassesLayoutIndexRoute
   '/organizations': typeof OrganizationsOrgLayoutIndexRoute
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/user/settings': typeof UserSettingsRoute
   '/blocked/': typeof BlockedIndexRoute
   '/join/': typeof JoinIndexRoute
+  '/classes/_classesLayout/': typeof ClassesClassesLayoutIndexRoute
   '/organizations/_orgLayout/': typeof OrganizationsOrgLayoutIndexRoute
   '/classes/_classesLayout/$classId/': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/_classesLayout/members/': typeof ClassesClassesLayoutMembersIndexRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/user/settings'
     | '/blocked'
     | '/join'
+    | '/classes/'
     | '/organizations/'
     | '/classes/$classId'
     | '/classes/members'
@@ -268,12 +278,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
-    | '/classes'
     | '/user/billing'
     | '/user/profile'
     | '/user/settings'
     | '/blocked'
     | '/join'
+    | '/classes'
     | '/organizations'
     | '/classes/$classId'
     | '/classes/members'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/user/settings'
     | '/blocked/'
     | '/join/'
+    | '/classes/_classesLayout/'
     | '/organizations/_orgLayout/'
     | '/classes/_classesLayout/$classId/'
     | '/classes/_classesLayout/members/'
@@ -399,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganizationsOrgLayoutIndexRouteImport
       parentRoute: typeof OrganizationsOrgLayoutRoute
     }
+    '/classes/_classesLayout/': {
+      id: '/classes/_classesLayout/'
+      path: '/'
+      fullPath: '/classes/'
+      preLoaderRoute: typeof ClassesClassesLayoutIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/organizations/_orgLayout/$orgId/': {
       id: '/organizations/_orgLayout/$orgId/'
       path: '/$orgId'
@@ -494,11 +512,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface ClassesClassesLayoutRouteChildren {
+  ClassesClassesLayoutIndexRoute: typeof ClassesClassesLayoutIndexRoute
   ClassesClassesLayoutClassIdIndexRoute: typeof ClassesClassesLayoutClassIdIndexRoute
   ClassesClassesLayoutMembersIndexRoute: typeof ClassesClassesLayoutMembersIndexRoute
 }
 
 const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
+  ClassesClassesLayoutIndexRoute: ClassesClassesLayoutIndexRoute,
   ClassesClassesLayoutClassIdIndexRoute: ClassesClassesLayoutClassIdIndexRoute,
   ClassesClassesLayoutMembersIndexRoute: ClassesClassesLayoutMembersIndexRoute,
 }

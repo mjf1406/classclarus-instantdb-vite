@@ -35,9 +35,6 @@ import {
     OwnerBadge,
     AdminBadge,
     TeacherBadge,
-    AssistantTeacherBadge,
-    StudentBadge,
-    ParentBadge,
 } from "@/components/icons/role-icons";
 import { requireAuth, requireOrgAccess } from "@/lib/auth-utils";
 
@@ -282,13 +279,7 @@ function RouteComponent() {
                                           ? AdminBadge
                                           : roleInfo.isTeacher
                                             ? TeacherBadge
-                                            : roleInfo.isAssistantTeacher
-                                              ? AssistantTeacherBadge
-                                              : roleInfo.isStudent
-                                                ? StudentBadge
-                                                : roleInfo.isParent
-                                                  ? ParentBadge
-                                                  : null;
+                                            : null;
                                     return RoleBadge ? <RoleBadge /> : null;
                                 })()}
                             </div>

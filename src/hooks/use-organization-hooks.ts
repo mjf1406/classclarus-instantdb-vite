@@ -10,16 +10,16 @@ export type OrganizationWithRelations = InstaQLEntity<
     "organizations",
     {
         owner: {};
-        orgStudents: {};
         orgTeachers: {};
-        orgAssistantTeachers: {};
-        orgParents: {};
         admins: {};
         joinCodeEntity: {};
         classes: {
             owner: {};
             classAdmins: {};
             classTeachers: {};
+            classStudents: {};
+            classAssistantTeachers: {};
+            classParents: {};
         };
     }
 >;
@@ -39,24 +39,21 @@ export function useOrganizationsByUserId(userId: string | undefined) {
                           or: [
                               { "owner.id": userId },
                               { "admins.id": userId },
-                              { "orgStudents.id": userId },
                               { "orgTeachers.id": userId },
-                              { "orgAssistantTeachers.id": userId },
-                              { "orgParents.id": userId },
                           ],
                       },
                   },
                   owner: {},
-                  orgStudents: {},
                   orgTeachers: {},
-                  orgAssistantTeachers: {},
-                  orgParents: {},
                   admins: {},
                   joinCodeEntity: {},
                   classes: {
                       owner: {},
                       classAdmins: {},
                       classTeachers: {},
+                      classStudents: {},
+                      classAssistantTeachers: {},
+                      classParents: {},
                   },
               },
           }
