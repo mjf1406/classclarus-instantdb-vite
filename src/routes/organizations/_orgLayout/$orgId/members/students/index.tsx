@@ -105,9 +105,8 @@ function RouteComponent() {
                                                     {classes.map((cls) => (
                                                         <Link
                                                             key={cls.id}
-                                                            to="/organizations/$orgId/main/classes/$classId"
+                                                            to="/classes/$classId"
                                                             params={{
-                                                                orgId: orgId!,
                                                                 classId: cls.id,
                                                             }}
                                                         >

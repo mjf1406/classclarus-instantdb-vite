@@ -24,6 +24,10 @@ type UserWithClasses = {
     classes: Array<{ id: string; name: string }>;
 };
 
+type ClassQueryResult = {
+    classes: ClassWithRoleMembers[];
+};
+
 export function useOrgClassRoleMembers(
     orgId: string | undefined,
     roleType: ClassRoleType
@@ -52,12 +56,13 @@ export function useOrgClassRoleMembers(
 
     const { data: classData, isLoading, error } = db.useQuery(classQuery);
 
+    const typedClassData = (classData as ClassQueryResult | undefined) ?? null;
+    const classes = typedClassData?.classes || [];
+
     const aggregatedUsers = useMemo(() => {
-        if (!classData?.classes || !hasValidOrgId) {
+        if (!classes.length || !hasValidOrgId) {
             return [];
         }
-
-        const classes = classData.classes as ClassWithRoleMembers[];
         const userMap = new Map<string, UserWithClasses>();
 
         // Iterate through all classes and collect users with the specified role
@@ -92,7 +97,7 @@ export function useOrgClassRoleMembers(
             const bName = `${b.user.firstName || ""} ${b.user.lastName || ""}`.trim() || b.user.email || "";
             return aName.localeCompare(bName);
         });
-    }, [classData, roleType, hasValidOrgId]);
+    }, [classes, roleType, hasValidOrgId]);
 
     return {
         users: aggregatedUsers,

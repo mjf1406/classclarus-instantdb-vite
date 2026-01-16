@@ -9,8 +9,6 @@ import {
     OwnerBadge,
     AdminBadge,
     TeacherBadge,
-    StudentBadge,
-    ParentBadge,
 } from "@/components/icons/role-icons";
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";

@@ -33,7 +33,7 @@ export const Route = createFileRoute(
 function RouteComponent() {
     const params = useParams({ strict: false });
     const orgId = params.orgId;
-    const { organization, isLoading: orgLoading } = useOrganizationById(orgId);
+    const { organization } = useOrganizationById(orgId);
 
     const { users: students, isLoading: studentsLoading } =
         useOrgClassRoleMembers(orgId, "classStudents");
@@ -43,8 +43,6 @@ function RouteComponent() {
         orgId,
         "classParents"
     );
-
-    const isLoading = orgLoading;
 
     const owners = organization?.owner ? [organization.owner] : [];
     const admins = organization?.admins || [];
@@ -297,10 +295,8 @@ function RouteComponent() {
                                                                                     key={
                                                                                         cls.id
                                                                                     }
-                                                                                    to="/organizations/$orgId/main/classes/$classId"
+                                                                                    to="/classes/$classId"
                                                                                     params={{
-                                                                                        orgId:
-                                                                                            orgId!,
                                                                                         classId:
                                                                                             cls.id,
                                                                                     }}
