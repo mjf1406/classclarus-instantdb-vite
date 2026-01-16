@@ -16,15 +16,18 @@ function getEnvVars(env?: Record<string, unknown>) {
     const appId =
         (env?.VITE_INSTANT_APP_ID as string) ||
         (env?.INSTANT_APP_ID as string) ||
-        (typeof import.meta !== "undefined" && import.meta.env?.VITE_INSTANT_APP_ID) ||
+        (typeof import.meta !== "undefined" &&
+            import.meta.env?.VITE_INSTANT_APP_ID) ||
         (typeof process !== "undefined" && process.env?.VITE_INSTANT_APP_ID) ||
         (typeof process !== "undefined" && process.env?.INSTANT_APP_ID);
 
     const adminToken =
         (env?.VITE_INSTANT_APP_ADMIN_TOKEN as string) ||
         (env?.INSTANT_ADMIN_TOKEN as string) ||
-        (typeof import.meta !== "undefined" && import.meta.env?.VITE_INSTANT_APP_ADMIN_TOKEN) ||
-        (typeof process !== "undefined" && process.env?.VITE_INSTANT_APP_ADMIN_TOKEN) ||
+        (typeof import.meta !== "undefined" &&
+            import.meta.env?.VITE_INSTANT_APP_ADMIN_TOKEN) ||
+        (typeof process !== "undefined" &&
+            process.env?.VITE_INSTANT_APP_ADMIN_TOKEN) ||
         (typeof process !== "undefined" && process.env?.INSTANT_ADMIN_TOKEN);
 
     if (!appId || !adminToken) {
@@ -50,5 +53,25 @@ export function initDbAdmin(env?: Record<string, unknown>) {
 }
 
 // Default export for client-side usage (backwards compatibility)
-const dbAdmin = initDbAdmin();
+// Only initialize if we're in a client context (Vite) where import.meta.env is available
+// In server contexts (Cloudflare Pages), always use initDbAdmin(env) instead
+let dbAdmin: ReturnType<typeof init> | null = null;
+
+// Only initialize if we're in a client context with Vite environment variables
+// Check for both import.meta.env existence and the required env vars before initializing
+if (
+    typeof import.meta !== "undefined" &&
+    import.meta.env &&
+    import.meta.env.VITE_INSTANT_APP_ID &&
+    import.meta.env.VITE_INSTANT_APP_ADMIN_TOKEN
+) {
+    try {
+        dbAdmin = initDbAdmin();
+    } catch (error) {
+        // If initialization fails, leave as null
+        // This can happen in server contexts or if env vars are missing
+        dbAdmin = null;
+    }
+}
+
 export default dbAdmin;
