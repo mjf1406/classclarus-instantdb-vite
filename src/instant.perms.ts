@@ -44,6 +44,18 @@ const dataBind = [
     // User is in a class that belongs to this org (for viewing org)
     "isInOrgClass",
     "auth.id in data.ref('classes.classStudents.id') || auth.id in data.ref('classes.classTeachers.id') || auth.id in data.ref('classes.classAssistantTeachers.id') || auth.id in data.ref('classes.classParents.id')",
+    // User is a teacher in tthe class
+    "isClassTeacher",
+    "auth.id in data.ref('classes.classTeachers.id')",
+    // User is still a teacher in the class
+    "isStillClassTeacher",
+    "auth.id in newData.ref('classes.classTeachers.id')",
+    // User is an assistant teacher in the class
+    "isClassAssistantTeacher",
+    "auth.id in data.ref('classes.classAssistantTeachers.id')",
+    // User is still an assistant teacher in the class
+    "isStillClassAssistantTeacher",
+    "auth.id in newData.ref('classes.classAssistantTeachers.id')",
     // User is a class member
     "isClassMember",
     "auth.id in data.ref('classStudents.id') || auth.id in data.ref('classTeachers.id') || auth.id in data.ref('classAssistantTeachers.id') || auth.id in data.ref('classParents.id')",
@@ -264,18 +276,18 @@ const rules = {
     orgJoinCodes: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated",
+            view: "isAuthenticated && ( isOrgOwner || isOrgAdmin )",
             update: "false",
-            delete: "isAuthenticated && isOrgOwner",
+            delete: "false",
         },
         bind: dataBind,
     },
     classJoinCodes: {
         allow: {
             create: "isAuthenticated",
-            view: "isAuthenticated",
+            view: "isAuthenticated && ( isClassOwner || isClassAdmin || isClassTeacher )",
             update: "false",
-            delete: "isAuthenticated && (isClassOwner || isClassAdmin || isOrgOwner || isOrgAdmin)",
+            delete: "false",
         },
         bind: dataBind,
     },

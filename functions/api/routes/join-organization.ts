@@ -20,7 +20,10 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
             // Validate code format
             if (!code || code.length !== 6) {
                 return c.json(
-                    { error: "Invalid code format", message: "Code must be exactly 6 characters" },
+                    {
+                        error: "Invalid code format",
+                        message: "Code must be exactly 6 characters",
+                    },
                     400
                 );
             }
@@ -29,7 +32,10 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
             const allowedPattern = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
             if (!allowedPattern.test(code)) {
                 return c.json(
-                    { error: "Invalid code format", message: "Code contains invalid characters" },
+                    {
+                        error: "Invalid code format",
+                        message: "Code contains invalid characters",
+                    },
                     400
                 );
             }
@@ -50,9 +56,22 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
             const orgJoinCode = orgResult.data?.orgJoinCodes?.[0];
             const organization = orgJoinCode?.organization;
 
+            // Log query results for debugging
+            console.log("[Join Organization] Query result:", {
+                code,
+                foundJoinCode: !!orgJoinCode,
+                foundOrganization: !!organization,
+                orgJoinCodeId: orgJoinCode?.id,
+                organizationId: organization?.id,
+            });
+
             if (!organization) {
                 return c.json(
-                    { error: "Code not found", message: "Invalid organization join code. Please check and try again." },
+                    {
+                        error: "Code not found",
+                        message:
+                            "Invalid organization join code. Please check and try again.",
+                    },
                     404
                 );
             }
@@ -77,10 +96,12 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
             const userData = userOrgsResult.data?.$users?.[0];
 
             const isAlreadyTeacher = userData?.teacherOrganizations?.some(
-                (org: InstaQLEntity<AppSchema, "organizations">) => org.id === organization.id
+                (org: InstaQLEntity<AppSchema, "organizations">) =>
+                    org.id === organization.id
             );
             const isAlreadyAdmin = userData?.adminOrganizations?.some(
-                (org: InstaQLEntity<AppSchema, "organizations">) => org.id === organization.id
+                (org: InstaQLEntity<AppSchema, "organizations">) =>
+                    org.id === organization.id
             );
             const isOwner = organization.owner?.id === userId;
 
@@ -88,7 +109,8 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
                 return c.json(
                     {
                         error: "Already a member",
-                        message: "You are already a member of this organization.",
+                        message:
+                            "You are already a member of this organization.",
                         entityType: "organization",
                         entityId: organization.id,
                     },
@@ -115,7 +137,10 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
             return c.json(
                 {
                     error: "Server error",
-                    message: error instanceof Error ? error.message : "An unexpected error occurred",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "An unexpected error occurred",
                 },
                 500
             );
