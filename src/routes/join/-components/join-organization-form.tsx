@@ -60,7 +60,35 @@ export function JoinOrganizationForm() {
                     body: JSON.stringify({ code: codeUpper }),
                 });
 
-                const data = await response.json();
+                // Check content-type before parsing JSON
+                const contentType = response.headers.get("content-type");
+                const isJson = contentType?.includes("application/json");
+
+                let data: any;
+                if (isJson) {
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        // If JSON parsing fails, try to get text and parse manually
+                        const text = await response.text();
+                        try {
+                            data = JSON.parse(text);
+                        } catch {
+                            // If still not JSON, create error object from text
+                            data = {
+                                error: "Parse Error",
+                                message: text || "Failed to parse response",
+                            };
+                        }
+                    }
+                } else {
+                    // Not JSON, get text response
+                    const text = await response.text();
+                    data = {
+                        error: "Invalid Response",
+                        message: text || "Server returned non-JSON response",
+                    };
+                }
 
                 if (!response.ok) {
                     // Handle different error status codes
@@ -72,7 +100,10 @@ export function JoinOrganizationForm() {
                                 "Invalid organization join code. Please check and try again."
                         );
                     } else if (response.status === 409) {
-                        setError(data.message || "You are already a member of this organization.");
+                        setError(
+                            data.message ||
+                                "You are already a member of this organization."
+                        );
                     } else if (response.status === 429) {
                         setError(
                             data.message ||
@@ -82,7 +113,8 @@ export function JoinOrganizationForm() {
                         setError(data.message || "Invalid code format.");
                     } else {
                         setError(
-                            data.message || "Failed to join organization. Please try again."
+                            data.message ||
+                                "Failed to join organization. Please try again."
                         );
                     }
                     return;
@@ -149,7 +181,9 @@ export function JoinOrganizationForm() {
         <div className="flex min-h-screen items-center justify-center p-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">Join Organization</CardTitle>
+                    <CardTitle className="text-2xl">
+                        Join Organization
+                    </CardTitle>
                     <CardDescription>
                         Enter your 6-character organization join code
                     </CardDescription>

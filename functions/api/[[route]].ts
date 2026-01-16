@@ -20,6 +20,17 @@ app.use("/join/class", rateLimitMiddleware);
 createJoinOrganizationRoute(app);
 createJoinClassRoute(app);
 
+// 404 handler for unmatched routes - returns JSON instead of plain text
+app.notFound((c) => {
+    return c.json(
+        {
+            error: "Not Found",
+            message: `The requested endpoint ${c.req.path} was not found.`,
+        },
+        404
+    );
+});
+
 // Export handler for Cloudflare Pages Functions
 // Using Hono's handle adapter for proper Pages Functions integration
 export const onRequest = handle(app);
