@@ -56,7 +56,7 @@ export function getOwnerNavigation(orgId: string): {
             {
                 title: "Invite Members",
                 description:
-                    "Generate or view the code for others to join this organization",
+                    "View the join code for others to join this organization",
                 url: `/organizations/${orgId}/members/invite`,
                 icon: UserPlus,
             },

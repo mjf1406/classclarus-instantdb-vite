@@ -15,7 +15,7 @@ import {
 import { ClassGrid } from "./-components/class-grid";
 import { ClassList } from "./-components/class-list";
 import { ClassNoClasses } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/class-no-classes";
-import { CreateClassWrapper } from "./-components/create-class-wrapper";
+import { CreateClassDialog } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/create-class-dialog";
 import { useAllUserClasses } from "@/hooks/use-class-hooks";
 import { LogIn } from "lucide-react";
 import { CreateOrgDialog } from "@/routes/organizations/-components/create-org-dialog";
@@ -72,13 +72,13 @@ function RouteComponent() {
                             <ListIcon />
                         </Button>
                     </div>
-                    <CreateClassWrapper>
+                    <CreateClassDialog>
                         <Button size="lg">
                             <PlusIcon />
                             <span className="sr-only">Create Class</span>
                             <span className="hidden md:block">Create Class</span>
                         </Button>
-                    </CreateClassWrapper>
+                    </CreateClassDialog>
                     <Button size="lg" variant="outline" asChild>
                         <Link to="/join">
                             <UserPlus />
@@ -107,12 +107,12 @@ function RouteComponent() {
                 {activeClasses.length === 0 && !isLoading ? (
                     <ClassNoClasses
                         createClassButton={
-                            <CreateClassWrapper>
+                            <CreateClassDialog>
                                 <Button size="lg" className="w-full">
                                     <PlusIcon />
                                     <span>Create Class</span>
                                 </Button>
-                            </CreateClassWrapper>
+                            </CreateClassDialog>
                         }
                         createOrgButton={
                             <CreateOrgDialog>

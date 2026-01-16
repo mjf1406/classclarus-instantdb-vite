@@ -4,6 +4,7 @@ import { useState } from "react";
 import { id } from "@instantdb/react";
 import { db } from "@/lib/db/db";
 import { useAuthContext } from "@/components/auth/auth-provider";
+import { generateJoinCode } from "@/lib/invite-utils";
 import {
     Dialog,
     DialogContent,
@@ -49,17 +50,24 @@ export function CreateOrgDialog({ children }: CreateOrgDialogProps) {
         setIsSubmitting(true);
 
         try {
+            // Generate code BEFORE transaction (on client)
             const orgId = id();
+            const codeId = id();
+            const newCode = generateJoinCode();
             const now = new Date();
 
+            // Single transaction - create both entities, then link them
             db.transact([
+                db.tx.orgJoinCodes[codeId].create({ code: newCode }),
                 db.tx.organizations[orgId].create({
                     name: name.trim(),
                     description: description.trim() || undefined,
                     icon: icon || undefined,
                     created: now,
                     updated: now,
-                }).link({ owner: user.id }),
+                }),
+                db.tx.organizations[orgId].link({ owner: user.id }),
+                db.tx.organizations[orgId].link({ joinCodeEntity: codeId }),
             ]);
 
             // Reset form and close dialog

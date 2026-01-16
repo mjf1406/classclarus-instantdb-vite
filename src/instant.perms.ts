@@ -263,18 +263,18 @@ const rules = {
     },
     orgJoinCodes: {
         allow: {
-            create: "isAuthenticated && (isOrgOwner || isOrgAdmin)",
+            create: "isAuthenticated",
             view: "isAuthenticated",
-            update: "isAuthenticated && (isOrgOwner || isOrgAdmin) && (isStillOrgOwner || isStillOrgAdmin)",
+            update: "false",
             delete: "isAuthenticated && isOrgOwner",
         },
         bind: dataBind,
     },
     classJoinCodes: {
         allow: {
-            create: "isAuthenticated && (isClassOwner || isClassAdmin || isOrgOwner || isOrgAdmin)",
+            create: "isAuthenticated",
             view: "isAuthenticated",
-            update: "isAuthenticated && (isClassOwner || isClassAdmin || isOrgOwner || isOrgAdmin) && (isStillClassOwner || isStillClassAdmin || isStillOrgOwner || isStillOrgAdmin)",
+            update: "false",
             delete: "isAuthenticated && (isClassOwner || isClassAdmin || isOrgOwner || isOrgAdmin)",
         },
         bind: dataBind,

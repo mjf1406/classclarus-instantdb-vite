@@ -5,12 +5,13 @@
     "type": "module",
     "scripts": {
         "dev": "vite --port 3000 --host",
+        "df": "wrangler pages dev dist",
         "build": "tsc && vite build",
         "preview": "vite preview",
         "ps": "npx instant-cli@latest push schema",
         "pp": "npx instant-cli@latest push perms",
         "pps": "npm run ps && npm run pp",
-        "bs": "npm run build && npm run start",
+        "bs": "npm run build && npm run preview",
         "gr": "tsr generate",
         "watch": "tsr watch"
     },
@@ -21,7 +22,8 @@
         "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
         "typescript": "~5.9.3",
-        "vite": "^7.1.2"
+        "vite": "^7.1.2",
+        "wrangler": "^4.59.2"
     },
     "dependencies": {
         "@base-ui/react": "^1.0.0",

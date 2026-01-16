@@ -1,9 +1,10 @@
 /** @format */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { id } from "@instantdb/react";
 import { db } from "@/lib/db/db";
 import { useAuthContext } from "@/components/auth/auth-provider";
+import { generateJoinCode } from "@/lib/invite-utils";
 import {
     Dialog,
     DialogContent,
@@ -18,20 +19,36 @@ import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { OrgIconSelector } from "@/components/ui/org-icon-selector";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Link } from "@tanstack/react-router";
 
 interface CreateClassDialogProps {
     children: React.ReactNode;
-    orgId: string;
+    orgId?: string; // Optional - if provided, use it; if not, show selector
 }
 
-export function CreateClassDialog({ children, orgId }: CreateClassDialogProps) {
+export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClassDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [icon, setIcon] = useState<string | undefined>(undefined);
+    const [selectedOrgId, setSelectedOrgId] = useState<string>(providedOrgId || "");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { user } = useAuthContext();
+    const { user, organizations } = useAuthContext();
+
+    // Auto-select org if there's only one and no orgId provided
+    useEffect(() => {
+        if (!providedOrgId && organizations.length === 1 && !selectedOrgId) {
+            setSelectedOrgId(organizations[0].id);
+        }
+    }, [organizations, selectedOrgId, providedOrgId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,6 +56,12 @@ export function CreateClassDialog({ children, orgId }: CreateClassDialogProps) {
 
         if (!name.trim()) {
             setError("Class name is required");
+            return;
+        }
+
+        const finalOrgId = providedOrgId || selectedOrgId;
+        if (!finalOrgId) {
+            setError("Please select an organization");
             return;
         }
 
@@ -50,10 +73,21 @@ export function CreateClassDialog({ children, orgId }: CreateClassDialogProps) {
         setIsSubmitting(true);
 
         try {
+            // Generate codes BEFORE transaction (on client)
             const classId = id();
+            const codeId = id();
+            const studentCode = generateJoinCode();
+            const teacherCode = generateJoinCode();
+            const parentCode = generateJoinCode();
             const now = new Date();
 
+            // Single transaction - create both entities, then link them
             db.transact([
+                db.tx.classJoinCodes[codeId].create({
+                    studentCode,
+                    teacherCode,
+                    parentCode,
+                }),
                 db.tx.classes[classId].create({
                     name: name.trim(),
                     description: description.trim() || undefined,
@@ -61,16 +95,20 @@ export function CreateClassDialog({ children, orgId }: CreateClassDialogProps) {
                     created: now,
                     updated: now,
                     archivedAt: null,
-                })
-                    .link({ owner: user.id })
-                    .link({ classTeachers: user.id })
-                    .link({ organization: orgId }),
+                }),
+                db.tx.classes[classId].link({ owner: user.id }),
+                db.tx.classes[classId].link({ classTeachers: user.id }),
+                db.tx.classes[classId].link({ organization: finalOrgId }),
+                db.tx.classes[classId].link({ joinCodeEntity: codeId }),
             ]);
 
             // Reset form and close dialog
             setName("");
             setDescription("");
             setIcon(undefined);
+            if (!providedOrgId) {
+                setSelectedOrgId("");
+            }
             setOpen(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to create class");
@@ -79,8 +117,50 @@ export function CreateClassDialog({ children, orgId }: CreateClassDialogProps) {
         }
     };
 
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen);
+        if (newOpen) {
+            // When opening, auto-select org if there's only one and no orgId provided
+            if (!providedOrgId && organizations.length === 1) {
+                setSelectedOrgId(organizations[0].id);
+            }
+        } else {
+            // Reset form when closing
+            setName("");
+            setDescription("");
+            setIcon(undefined);
+            if (!providedOrgId) {
+                setSelectedOrgId("");
+            }
+            setError(null);
+        }
+    };
+
+    // If no orgId provided and no organizations, show message
+    if (!providedOrgId && organizations.length === 0) {
+        return (
+            <Dialog open={open} onOpenChange={handleOpenChange}>
+                <DialogTrigger asChild>{children}</DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>No Organizations</DialogTitle>
+                        <DialogDescription>
+                            You need to be part of an organization to create a
+                            class. Please create or join an organization first.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" asChild>
+                            <Link to="/organizations">Go to Organizations</Link>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent>
                 <form onSubmit={handleSubmit}>
@@ -91,6 +171,37 @@ export function CreateClassDialog({ children, orgId }: CreateClassDialogProps) {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
+                        {!providedOrgId && organizations.length > 1 && (
+                            <Field>
+                                <FieldLabel htmlFor="org-select">
+                                    Organization *
+                                </FieldLabel>
+                                <FieldContent>
+                                    <Select
+                                        value={selectedOrgId}
+                                        onValueChange={setSelectedOrgId}
+                                        required
+                                    >
+                                        <SelectTrigger id="org-select">
+                                            <SelectValue placeholder="Select an organization" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {organizations.map((org) => (
+                                                <SelectItem
+                                                    key={org.id}
+                                                    value={org.id}
+                                                >
+                                                    {org.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FieldDescription>
+                                        Select the organization for this class
+                                    </FieldDescription>
+                                </FieldContent>
+                            </Field>
+                        )}
                         <Field>
                             <FieldLabel htmlFor="class-name">Name *</FieldLabel>
                             <FieldContent>

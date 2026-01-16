@@ -11,6 +11,8 @@ import { ThemeSwitcher } from "@/components/themes/theme-switcher";
 import LoadingPage from "@/components/loading/loading-page";
 import { LoginCard } from "@/routes/login/-components/login-card";
 import { HomeSelection } from "./-components/home-selection";
+import { ImageSkeleton } from "@/components/ui/image-skeleton";
+import { LogoBig } from "@/components/brand/logo";
 
 export const Route = createFileRoute("/")({
     component: Index,
@@ -38,24 +40,23 @@ function Index() {
     }
 
     // If user is authenticated, show home selection (no auto-redirect)
-    if (user?.id) {
-        return (
-            <div className="relative min-h-screen">
-                <div className="absolute top-4 right-4 z-10">
-                    <ThemeSwitcher />
-                </div>
-                <HomeSelection />
-            </div>
-        );
-    }
-
-    // User is not logged in - show login page
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="absolute top-4 right-4">
+        <div className="relative min-h-screen">
+            <div className="fixed top-4 right-4 z-10">
                 <ThemeSwitcher />
             </div>
-            <LoginCard />
+            {user?.id ? (
+                <>
+                    <div className="mt-8">
+                        <LogoBig />
+                    </div>
+                    <HomeSelection />
+                </>
+            ) : (
+                <div className="flex min-h-screen items-center justify-center p-4">
+                    <LoginCard />
+                </div>
+            )}
         </div>
     );
 }

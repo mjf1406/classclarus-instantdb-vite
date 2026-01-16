@@ -48,7 +48,7 @@ export function HomeSelection() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="flex min-h-screen items-start justify-center p-4">
             <div className="w-full max-w-md space-y-4">
                 <div className="text-center space-y-2 mb-8">
                     <h1 className="text-3xl md:text-4xl font-bold">
@@ -80,16 +80,30 @@ export function HomeSelection() {
                     <div className="flex-1 border-t"></div>
                 </div>
                 <div className="flex flex-col gap-3">
-                    <Button size="lg" variant="outline" className="w-full justify-start gap-3 h-auto py-4" asChild>
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full justify-start gap-3 h-auto py-4"
+                        asChild
+                    >
                         <Link to="/join/organization">
                             <UserPlus className="size-5" />
-                            <span className="text-base font-medium">Join Organization</span>
+                            <span className="text-base font-medium">
+                                Join Organization
+                            </span>
                         </Link>
                     </Button>
-                    <Button size="lg" variant="outline" className="w-full justify-start gap-3 h-auto py-4" asChild>
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full justify-start gap-3 h-auto py-4"
+                        asChild
+                    >
                         <Link to="/join/class">
                             <LogIn className="size-5" />
-                            <span className="text-base font-medium">Join Class</span>
+                            <span className="text-base font-medium">
+                                Join Class
+                            </span>
                         </Link>
                     </Button>
                 </div>

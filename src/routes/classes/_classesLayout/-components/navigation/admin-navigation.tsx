@@ -35,7 +35,7 @@ export function getAdminNavigation(classId: string): {
             {
                 title: "Invite Members",
                 description:
-                    "Generate or view the code for others to join this class",
+                    "View the join codes for others to join this class",
                 url: `/classes/${classId}/members/invite`,
                 icon: UserPlus,
             },
