@@ -18,18 +18,21 @@ import {
 } from "@/components/icons/role-icons";
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
-import { useClassRole } from "../navigation/use-class-role";
 import type { ClassByRole } from "@/hooks/use-class-hooks";
 import { ClassActionsMenu } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/class-actions-menu";
 import { ArchivedClassActionsMenu } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/archived-class-actions-menu";
 import { ArchiveIcon } from "lucide-react";
+import { useClassRole } from "./navigation/use-class-role";
 
 interface ClassRowWithOrgProps {
     classEntity: ClassByRole;
     archived?: boolean;
 }
 
-export function ClassRowWithOrg({ classEntity, archived = false }: ClassRowWithOrgProps) {
+export function ClassRowWithOrg({
+    classEntity,
+    archived = false,
+}: ClassRowWithOrgProps) {
     const studentCount = classEntity.classStudents?.length || 0;
     const teacherCount = classEntity.classTeachers?.length || 0;
     const assistantTeacherCount =
@@ -42,7 +45,7 @@ export function ClassRowWithOrg({ classEntity, archived = false }: ClassRowWithO
 
     // Determine user's role in the class
     const roleInfo = useClassRole(classEntity);
-    
+
     // Determine if class is archived based on archivedAt field
     const isArchived = archived || !!classEntity.archivedAt;
 
@@ -62,7 +65,9 @@ export function ClassRowWithOrg({ classEntity, archived = false }: ClassRowWithO
                   : null;
 
     return (
-        <Card className={`group/card hover:ring-foreground/20 transition-all ${isArchived ? "opacity-60" : ""}`}>
+        <Card
+            className={`group/card hover:ring-foreground/20 transition-all ${isArchived ? "opacity-60" : ""}`}
+        >
             <CardContent className="py-3">
                 <div className="flex items-center gap-4">
                     <Link
@@ -87,13 +92,19 @@ export function ClassRowWithOrg({ classEntity, archived = false }: ClassRowWithO
                             </Link>
                             {RoleBadge && <RoleBadge />}
                             {isArchived && (
-                                <Badge variant="secondary" className="gap-1">
+                                <Badge
+                                    variant="secondary"
+                                    className="gap-1"
+                                >
                                     <ArchiveIcon className="size-3" />
                                     Archived
                                 </Badge>
                             )}
                             {organization && (
-                                <Badge variant="outline" className="gap-1.5">
+                                <Badge
+                                    variant="outline"
+                                    className="gap-1.5"
+                                >
                                     <Building2 className="size-3" />
                                     <Link
                                         to="/organizations/$orgId"
@@ -146,7 +157,9 @@ export function ClassRowWithOrg({ classEntity, archived = false }: ClassRowWithO
                     </div>
                     <div className="shrink-0">
                         {isArchived ? (
-                            <ArchivedClassActionsMenu classEntity={classEntity} />
+                            <ArchivedClassActionsMenu
+                                classEntity={classEntity}
+                            />
                         ) : (
                             <ClassActionsMenu classEntity={classEntity} />
                         )}
