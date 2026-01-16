@@ -1,25 +1,11 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { UserPlus, Check } from "lucide-react";
-import { useState } from "react";
+import { UserPlus } from "lucide-react";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CopyButton } from "@/components/ui/copy-button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-    StudentIcon,
-    TeacherIcon,
-    GuardianIcon,
-} from "@/components/icons/role-icons";
+import { Card, CardContent } from "@/components/ui/card";
+import { InviteCodesTabs } from "./-components/invite-codes-tabs";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/invite/"
@@ -37,24 +23,13 @@ function RouteComponent() {
     // Get codes directly from class entity (already loaded via useClassById)
     const classEntityWithCodes = classEntity;
 
-    const [copySuccess, setCopySuccess] = useState<{
-        student: boolean;
-        teacher: boolean;
-        guardian: boolean;
-    }>({
-        student: false,
-        teacher: false,
-        guardian: false,
-    });
-
     const isLoading = classLoading;
-    const hasPermission = roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
+    const hasPermission =
+        roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
 
-    const handleCopySuccess = (type: "student" | "teacher" | "guardian") => {
-        setCopySuccess((prev) => ({ ...prev, [type]: true }));
-        setTimeout(() => {
-            setCopySuccess((prev) => ({ ...prev, [type]: false }));
-        }, 2000);
+    const handleCopySuccess = (_type: "student" | "teacher" | "guardian") => {
+        // Copy success feedback is handled within the sharing buttons
+        // This callback can be used for additional actions if needed
     };
 
     if (!hasPermission) {
@@ -77,7 +52,8 @@ function RouteComponent() {
                     <CardContent className="py-6">
                         <p className="text-sm text-muted-foreground text-center">
                             You don't have permission to invite members. Only
-                            class owners, admins, and teachers can manage join codes.
+                            class owners, admins, and teachers can manage join
+                            codes.
                         </p>
                     </CardContent>
                 </Card>
@@ -92,61 +68,6 @@ function RouteComponent() {
               guardian: classEntityWithCodes.guardianCode || null,
           }
         : { student: null, teacher: null, guardian: null };
-
-    const CodeCard = ({
-        type,
-        code,
-        icon: Icon,
-        title,
-        description,
-    }: {
-        type: "student" | "teacher" | "guardian";
-        code: string | null;
-        icon: React.ComponentType<{ className?: string }>;
-        title: string;
-        description: string;
-    }) => (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center gap-2">
-                    <Icon className="size-5 text-primary" />
-                    <CardTitle>{title} Code</CardTitle>
-                </div>
-                <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {code ? (
-                    <div className="flex items-center gap-3">
-                        <Badge
-                            variant="outline"
-                            className="text-2xl font-mono px-4 py-2 tracking-wider"
-                        >
-                            {code}
-                        </Badge>
-                        <CopyButton
-                            textToCopy={code}
-                            onCopySuccess={() => handleCopySuccess(type)}
-                            variant="outline"
-                            size="default"
-                        >
-                            {copySuccess[type] ? (
-                                <>
-                                    <Check className="size-4" />
-                                    Copied!
-                                </>
-                            ) : (
-                                "Copy"
-                            )}
-                        </CopyButton>
-                    </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground">
-                        {title} code is being generated...
-                    </p>
-                )}
-            </CardContent>
-        </Card>
-    );
 
     return (
         <div className="space-y-6">
@@ -164,45 +85,11 @@ function RouteComponent() {
                 </div>
             </div>
 
-            {isLoading ? (
-                <div className="space-y-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                        <Card key={i}>
-                            <CardHeader>
-                                <Skeleton className="h-6 w-48" />
-                                <Skeleton className="h-4 w-64 mt-2" />
-                            </CardHeader>
-                            <CardContent>
-                                <Skeleton className="h-10 w-full" />
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    <CodeCard
-                        type="student"
-                        code={codes.student}
-                        icon={StudentIcon}
-                        title="Student"
-                        description="Share this code with students to join the class"
-                    />
-                    <CodeCard
-                        type="teacher"
-                        code={codes.teacher}
-                        icon={TeacherIcon}
-                        title="Teacher"
-                        description="Share this code with teachers to join the class"
-                    />
-                    <CodeCard
-                        type="guardian"
-                        code={codes.guardian}
-                        icon={GuardianIcon}
-                        title="Guardian"
-                        description="Share this code with guardians to join the class"
-                    />
-                </div>
-            )}
+            <InviteCodesTabs
+                codes={codes}
+                isLoading={isLoading}
+                onCopySuccess={handleCopySuccess}
+            />
         </div>
     );
 }
