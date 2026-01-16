@@ -5,10 +5,25 @@ import {
     CardHeader,
     CardTitle,
     CardDescription,
+    CardFooter,
 } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 
-export function ClassNoClasses() {
+interface ClassNoClassesProps {
+    createClassButton?: React.ReactNode;
+    createOrgButton?: React.ReactNode;
+    joinClassButton?: React.ReactNode;
+    joinOrgButton?: React.ReactNode;
+}
+
+export function ClassNoClasses({
+    createClassButton,
+    createOrgButton,
+    joinClassButton,
+    joinOrgButton,
+}: ClassNoClassesProps) {
+    const hasActions = createClassButton || createOrgButton || joinClassButton || joinOrgButton;
+
     return (
         <Card className="border-dashed max-w-md space-y-4 mx-auto">
             <CardHeader className="text-center space-y-4">
@@ -24,6 +39,24 @@ export function ClassNoClasses() {
                     </div>
                 </CardDescription>
             </CardHeader>
+            {hasActions && (
+                <CardFooter className="flex flex-col gap-2">
+                    {createClassButton && (
+                        <div className="w-full">{createClassButton}</div>
+                    )}
+                    <div className="flex gap-2 w-full">
+                        {joinClassButton && (
+                            <div className="flex-1">{joinClassButton}</div>
+                        )}
+                        {joinOrgButton && (
+                            <div className="flex-1">{joinOrgButton}</div>
+                        )}
+                    </div>
+                    {createOrgButton && (
+                        <div className="w-full">{createOrgButton}</div>
+                    )}
+                </CardFooter>
+            )}
         </Card>
     );
 }

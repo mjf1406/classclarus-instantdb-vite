@@ -650,3 +650,87 @@ export function useArchivedClassesByRole(orgId: string | undefined) {
         error: null,
     };
 }
+
+/**
+ * Fetches all classes where the user is a member (owner, admin, teacher, assistant teacher, student, or parent)
+ * across all organizations. Returns classes with all relations.
+ */
+export function useAllUserClasses() {
+    const { user } = useAuthContext();
+    const userId = user?.id;
+    const hasValidUser = userId && userId.trim() !== "";
+
+    // First, get the user's children for parent role
+    const userQuery = hasValidUser
+        ? {
+              $users: {
+                  $: {
+                      where: {
+                          id: userId,
+                      },
+                  },
+                  children: {},
+              },
+          }
+        : null;
+
+    const { data: userData, isLoading: userLoading } = db.useQuery(userQuery);
+    const typedUserData = (userData as UserQueryResult | undefined) ?? null;
+    const currentUser = typedUserData?.$users?.[0];
+    const childrenIds =
+        currentUser?.children?.map((child) => child.id).filter(Boolean) || [];
+
+    // Query classes where user is a member in any role (both active and archived)
+    const classQuery = hasValidUser
+        ? {
+              classes: {
+                  $: {
+                      where: {
+                          or: [
+                              { "owner.id": userId },
+                              { "classAdmins.id": userId },
+                              { "classTeachers.id": userId },
+                              {
+                                  "classAssistantTeachers.id": userId,
+                              },
+                              { "classStudents.id": userId },
+                              { "classParents.id": userId },
+                              ...(childrenIds.length > 0
+                                  ? [
+                                        {
+                                            "classStudents.id": {
+                                                $in: childrenIds,
+                                            },
+                                        },
+                                    ]
+                                  : []),
+                          ],
+                      },
+                  },
+                  owner: {},
+                  organization: {},
+                  classAdmins: {},
+                  classTeachers: {},
+                  classAssistantTeachers: {},
+                  classStudents: {},
+                  classParents: {},
+              },
+          }
+        : null;
+
+    const {
+        data: classData,
+        isLoading: classLoading,
+        error,
+    } = db.useQuery(classQuery);
+
+    const typedClassData =
+        (classData as ClassQueryResult<ClassByRole> | undefined) ?? null;
+    const classes = typedClassData?.classes || [];
+
+    return {
+        classes,
+        isLoading: userLoading || classLoading,
+        error,
+    };
+}

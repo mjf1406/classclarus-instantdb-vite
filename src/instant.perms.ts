@@ -62,12 +62,30 @@ const dataBind = [
     // User is still an admin of the data
     "isStillAdmin",
     "auth.id in newData.ref('admins.id')",
-    // User is a class admin
+    // User is a class admin (works for classes and classJoinCodes)
     "isClassAdmin",
-    "auth.id in data.ref('classAdmins.id')",
-    // User is still a class admin
+    "auth.id in data.ref('classAdmins.id') || auth.id in data.ref('class.classAdmins.id')",
+    // User is still a class admin (works for classes and classJoinCodes)
     "isStillClassAdmin",
-    "auth.id in newData.ref('classAdmins.id')",
+    "auth.id in newData.ref('classAdmins.id') || auth.id in newData.ref('class.classAdmins.id')",
+    // User is the owner of an organization (works for orgJoinCodes and classJoinCodes)
+    "isOrgOwner",
+    "auth.id in data.ref('organization.owner.id') || auth.id in data.ref('class.organization.owner.id')",
+    // User is still the owner of an organization (works for orgJoinCodes and classJoinCodes)
+    "isStillOrgOwner",
+    "auth.id in newData.ref('organization.owner.id') || auth.id in newData.ref('class.organization.owner.id')",
+    // User is an admin of an organization (works for orgJoinCodes and classJoinCodes)
+    "isOrgAdmin",
+    "auth.id in data.ref('organization.admins.id') || auth.id in data.ref('class.organization.admins.id')",
+    // User is still an admin of an organization (works for orgJoinCodes and classJoinCodes)
+    "isStillOrgAdmin",
+    "auth.id in newData.ref('organization.admins.id') || auth.id in newData.ref('class.organization.admins.id')",
+    // User is the owner of a class (for classJoinCodes)
+    "isClassOwner",
+    "auth.id in data.ref('class.owner.id')",
+    // User is still the owner of a class (for classJoinCodes)
+    "isStillClassOwner",
+    "auth.id in newData.ref('class.owner.id')",
 ];
 
 // ============================================================
@@ -245,19 +263,19 @@ const rules = {
     },
     orgJoinCodes: {
         allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && (auth.id in data.ref('organization.owner.id') || auth.id in data.ref('organization.admins.id'))",
-            update: "isAuthenticated && (auth.id in data.ref('organization.owner.id') || auth.id in data.ref('organization.admins.id'))",
-            delete: "isAuthenticated && (auth.id in data.ref('organization.owner.id') || auth.id in data.ref('organization.admins.id'))",
+            create: "isAuthenticated && (isOrgOwner || isOrgAdmin)",
+            view: "isAuthenticated",
+            update: "isAuthenticated && (isOrgOwner || isOrgAdmin) && (isStillOrgOwner || isStillOrgAdmin)",
+            delete: "isAuthenticated && isOrgOwner",
         },
         bind: dataBind,
     },
     classJoinCodes: {
         allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && (auth.id in data.ref('class.owner.id') || auth.id in data.ref('class.classAdmins.id') || auth.id in data.ref('class.organization.owner.id') || auth.id in data.ref('class.organization.admins.id') || auth.id in data.ref('class.classTeachers.id') || auth.id in data.ref('class.classAssistantTeachers.id'))",
-            update: "isAuthenticated && (auth.id in data.ref('class.owner.id') || auth.id in data.ref('class.classAdmins.id') || auth.id in data.ref('class.organization.owner.id') || auth.id in data.ref('class.organization.admins.id'))",
-            delete: "isAuthenticated && (auth.id in data.ref('class.owner.id') || auth.id in data.ref('class.classAdmins.id') || auth.id in data.ref('class.organization.owner.id') || auth.id in data.ref('class.organization.admins.id'))",
+            create: "isAuthenticated && (isClassOwner || isClassAdmin || isOrgOwner || isOrgAdmin)",
+            view: "isAuthenticated",
+            update: "isAuthenticated && (isClassOwner || isClassAdmin || isOrgOwner || isOrgAdmin) && (isStillClassOwner || isStillClassAdmin || isStillOrgOwner || isStillOrgAdmin)",
+            delete: "isAuthenticated && (isClassOwner || isClassAdmin || isOrgOwner || isOrgAdmin)",
         },
         bind: dataBind,
     },

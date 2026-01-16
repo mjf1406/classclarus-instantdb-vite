@@ -1,6 +1,6 @@
 /** @format */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/classes/_classesLayout")({
@@ -11,5 +11,5 @@ export const Route = createFileRoute("/classes/_classesLayout")({
 });
 
 function RouteComponent() {
-    return <div>Hello "/_classesLayout"!</div>;
+    return <Outlet />;
 }
