@@ -20,6 +20,13 @@ export async function rateLimitMiddleware(c: any, next: () => Promise<void>) {
         return await next();
     }
 
+    // Check if rate limiter has the expected API
+    if (typeof rateLimiter.limit !== "function") {
+        // Rate limiter exists but doesn't have the expected API, skip rate limiting
+        console.warn("[Rate Limit Middleware] JOIN_RATE_LIMITER does not have limit method, skipping rate limit");
+        return await next();
+    }
+
     // Use Cloudflare's rate limiting API
     // Key is the user ID to rate limit per user
     const { success } = await rateLimiter.limit({ key: userId });
