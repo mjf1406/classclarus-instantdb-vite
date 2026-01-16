@@ -13,8 +13,9 @@ const app = new Hono<HonoContext>();
 app.use("*", authMiddleware);
 
 // Apply rate limiting to join endpoints
-app.use("/join/organization", rateLimitMiddleware);
-app.use("/join/class", rateLimitMiddleware);
+// Update paths to match route paths
+app.use("/api/join/organization", rateLimitMiddleware);
+app.use("/api/join/class", rateLimitMiddleware);
 
 // Register routes
 createJoinOrganizationRoute(app);
@@ -22,10 +23,21 @@ createJoinClassRoute(app);
 
 // 404 handler for unmatched routes - returns JSON instead of plain text
 app.notFound((c) => {
+    // Log path information for debugging
+    console.log("[404 Handler] Request path:", c.req.path);
+    console.log("[404 Handler] Request URL:", c.req.url);
+    console.log("[404 Handler] Request method:", c.req.method);
+    console.log("[404 Handler] Raw path:", c.req.raw.path);
+    
     return c.json(
         {
             error: "Not Found",
             message: `The requested endpoint ${c.req.path} was not found.`,
+            debug: {
+                path: c.req.path,
+                url: c.req.url,
+                method: c.req.method,
+            },
         },
         404
     );

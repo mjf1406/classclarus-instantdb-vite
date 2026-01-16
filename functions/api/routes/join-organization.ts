@@ -7,7 +7,8 @@ import type { InstaQLEntity } from "@instantdb/admin";
 import type { HonoContext } from "../types";
 
 export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
-    app.post("/join/organization", async (c) => {
+    // Try with full path including /api prefix
+    app.post("/api/join/organization", async (c) => {
         try {
             const dbAdmin = c.get("dbAdmin") as ReturnType<typeof initDbAdmin>;
             const userId = c.get("userId") as string;

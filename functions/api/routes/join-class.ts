@@ -7,7 +7,8 @@ import type { InstaQLEntity } from "@instantdb/admin";
 import type { HonoContext } from "../types";
 
 export function createJoinClassRoute(app: Hono<HonoContext>) {
-    app.post("/join/class", async (c) => {
+    // Use full path including /api prefix to match Cloudflare Pages routing
+    app.post("/api/join/class", async (c) => {
         try {
             const dbAdmin = c.get("dbAdmin") as ReturnType<typeof initDbAdmin>;
             const userId = c.get("userId") as string;
