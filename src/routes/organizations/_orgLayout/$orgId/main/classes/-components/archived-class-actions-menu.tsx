@@ -11,7 +11,7 @@ import {
 import { MoreVerticalIcon } from "lucide-react";
 import { UnarchiveClassDialog } from "./unarchive-class-dialog";
 import { DeleteClassDialog } from "./delete-class-dialog";
-import { useClassRole } from "./use-class-role";
+import { useClassRole } from "@/hooks/use-class-role";
 
 interface ArchivedClassActionsMenuProps {
     classEntity: ClassByRole;

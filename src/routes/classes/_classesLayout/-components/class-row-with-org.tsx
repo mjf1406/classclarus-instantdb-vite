@@ -22,7 +22,7 @@ import type { ClassByRole } from "@/hooks/use-class-hooks";
 import { ClassActionsMenu } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/class-actions-menu";
 import { ArchivedClassActionsMenu } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/archived-class-actions-menu";
 import { ArchiveIcon } from "lucide-react";
-import { useClassRole } from "./navigation/use-class-role";
+import { useClassRole } from "@/hooks/use-class-role";
 
 interface ClassRowWithOrgProps {
     classEntity: ClassByRole;

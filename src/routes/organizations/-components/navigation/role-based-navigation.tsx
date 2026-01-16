@@ -2,7 +2,7 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useOrganizationById } from "@/hooks/use-organization-hooks";
-import { useOrgRole } from "./use-org-role";
+import { useOrgRole } from "@/hooks/use-org-role";
 import { getOwnerNavigation } from "./owner-navigation";
 import { getAdminNavigation } from "./admin-navigation";
 import { getTeacherNavigation } from "./teacher-navigation";

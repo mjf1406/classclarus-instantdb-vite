@@ -13,7 +13,7 @@ import { MoreVerticalIcon } from "lucide-react";
 import { EditOrgDialog } from "./edit-org-dialog";
 import { DeleteOrgDialog } from "./delete-org-dialog";
 import { LeaveOrgDialog } from "./leave-org-dialog";
-import { useOrgRole } from "./navigation/use-org-role";
+import { useOrgRole } from "@/hooks/use-org-role";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 
 type Organization = InstaQLEntity<AppSchema, "organizations">;

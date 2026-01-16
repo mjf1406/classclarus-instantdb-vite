@@ -30,7 +30,7 @@ import { useOrganizationById } from "@/hooks/use-organization-hooks";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RenderLogo } from "@/components/icons/render-logo";
-import { useOrgRole } from "./-components/navigation/use-org-role";
+import { useOrgRole } from "@/hooks/use-org-role";
 import {
     OwnerBadge,
     AdminBadge,

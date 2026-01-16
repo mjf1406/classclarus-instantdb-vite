@@ -5,7 +5,7 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { useOrganizationById } from "@/hooks/use-organization-hooks";
-import { useOrgRole } from "@/routes/organizations/-components/navigation/use-org-role";
+import { useOrgRole } from "@/hooks/use-org-role";
 
 // Base type with all relations
 export type ClassWithRelations = InstaQLEntity<

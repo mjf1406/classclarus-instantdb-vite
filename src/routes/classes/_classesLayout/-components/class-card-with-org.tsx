@@ -30,7 +30,7 @@ import { ClassActionsMenu } from "@/routes/organizations/_orgLayout/$orgId/main/
 import { ArchivedClassActionsMenu } from "@/routes/organizations/_orgLayout/$orgId/main/classes/-components/archived-class-actions-menu";
 import { ArchiveIcon } from "lucide-react";
 import { CardAction } from "@/components/ui/card";
-import { useClassRole } from "./navigation/use-class-role";
+import { useClassRole } from "@/hooks/use-class-role";
 
 interface ClassCardWithOrgProps {
     classEntity: ClassByRole;

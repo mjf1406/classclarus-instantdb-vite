@@ -5,7 +5,7 @@ import { UserPlus, Check } from "lucide-react";
 import { useState } from "react";
 import { useOrganizationById } from "@/hooks/use-organization-hooks";
 import { useOrgJoinCode } from "@/hooks/use-org-join-code";
-import { useOrgRole } from "@/routes/organizations/-components/navigation/use-org-role";
+import { useOrgRole } from "@/hooks/use-org-role";
 import {
     Card,
     CardContent,

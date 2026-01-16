@@ -25,7 +25,7 @@ import {
 } from "@/components/icons/role-icons";
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
-import { useClassRole } from "./use-class-role";
+import { useClassRole } from "@/hooks/use-class-role";
 import type { ClassByRole } from "@/hooks/use-class-hooks";
 import { ClassActionsMenu } from "./class-actions-menu";
 import { ArchivedClassActionsMenu } from "./archived-class-actions-menu";

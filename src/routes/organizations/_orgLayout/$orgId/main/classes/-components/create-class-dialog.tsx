@@ -6,7 +6,7 @@ import { db } from "@/lib/db/db";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { generateJoinCode } from "@/lib/invite-utils";
 import { useOrganizationById } from "@/hooks/use-organization-hooks";
-import { useOrgRole } from "@/routes/organizations/-components/navigation/use-org-role";
+import { useOrgRole } from "@/hooks/use-org-role";
 import {
     Dialog,
     DialogContent,

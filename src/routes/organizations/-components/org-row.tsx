@@ -12,7 +12,7 @@ import {
 } from "@/components/icons/role-icons";
 import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
-import { useOrgRole } from "./navigation/use-org-role";
+import { useOrgRole } from "@/hooks/use-org-role";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 
 interface OrgRowProps {

@@ -4,7 +4,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { UserPlus, Check } from "lucide-react";
 import { useState } from "react";
 import { useClassById } from "@/hooks/use-class-hooks";
-import { useClassRole } from "../../../-components/navigation/use-class-role";
+import { useClassRole } from "@/hooks/use-class-role";
 import {
     Card,
     CardContent,

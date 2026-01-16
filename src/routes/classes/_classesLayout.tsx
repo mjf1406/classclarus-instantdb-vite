@@ -30,7 +30,7 @@ import { useClassById } from "@/hooks/use-class-hooks";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RenderLogo } from "@/components/icons/render-logo";
-import { useClassRole } from "@/routes/classes/_classesLayout/-components/navigation/use-class-role";
+import { useClassRole } from "@/hooks/use-class-role";
 import {
     OwnerBadge,
     AdminBadge,
@@ -42,7 +42,7 @@ import {
 import { requireAuth, requireClassAccess } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/classes/_classesLayout")({
-    beforeLoad: ({ context, location, params }) => {
+    beforeLoad: async ({ context, location, params }) => {
         // First ensure user is authenticated
         requireAuth(context, location);
 
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/classes/_classesLayout")({
         // (The index route doesn't have a classId, so we skip the check)
         const classId = (params as { classId?: string }).classId;
         if (classId) {
-            requireClassAccess(classId, context, location);
+            await requireClassAccess(classId, context, location);
         }
     },
     component: RouteComponent,
