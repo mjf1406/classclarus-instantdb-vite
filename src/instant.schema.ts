@@ -34,6 +34,7 @@ const _schema = i.schema({
             icon: i.string().optional(),
             created: i.date(),
             updated: i.date(),
+            code: i.string().unique().indexed(),
         }),
         classes: i.entity({
             name: i.string(),
@@ -42,24 +43,9 @@ const _schema = i.schema({
             created: i.date(),
             updated: i.date(),
             archivedAt: i.date().indexed().optional(), // null = active, date = archived
-        }),
-        orgJoinCodes: i.entity({
-            code: i.string().unique().indexed(),
-        }),
-        classJoinCodes: i.entity({
             studentCode: i.string().unique().indexed(),
             teacherCode: i.string().unique().indexed(),
             parentCode: i.string().unique().indexed(),
-        }),
-        joinTokens: i.entity({
-            token: i.string().unique().indexed(),
-            code: i.string().indexed(),
-            type: i.string().indexed(),
-            entityId: i.string().indexed(),
-            owner: i.string().indexed(),
-            expiresAt: i.date().indexed(),
-            used: i.boolean(),
-            created: i.date(),
         }),
     },
     links: {
@@ -236,32 +222,6 @@ const _schema = i.schema({
                 has: "many",
                 label: "parents",
             }, // Each student can have many parents
-        },
-        orgJoinCodeLink: {
-            forward: {
-                on: "organizations",
-                has: "one",
-                label: "joinCodeEntity",
-            }, // Each organization has one join code entity
-            reverse: {
-                on: "orgJoinCodes",
-                has: "one",
-                label: "organization",
-                onDelete: "cascade",
-            }, // Each join code entity belongs to one organization
-        },
-        classJoinCodeLink: {
-            forward: {
-                on: "classes",
-                has: "one",
-                label: "joinCodeEntity",
-            }, // Each class has one join code entity
-            reverse: {
-                on: "classJoinCodes",
-                has: "one",
-                label: "class",
-                onDelete: "cascade",
-            }, // Each join code entity belongs to one class
         },
     },
     rooms: {},

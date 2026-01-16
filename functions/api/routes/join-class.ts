@@ -40,9 +40,9 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 );
             }
 
-            // Query for class join codes
+            // Query for class directly by codes
             const classQuery = {
-                classJoinCodes: {
+                classes: {
                     $: {
                         where: {
                             or: [
@@ -52,16 +52,13 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                             ],
                         },
                     },
-                },
-                class: {
                     owner: {},
                     organization: {},
                 },
             };
 
             const classResult = await dbAdmin.query(classQuery);
-            const classJoinCode = classResult.data?.classJoinCodes?.[0];
-            const classEntity = classJoinCode?.class;
+            const classEntity = classResult.data?.classes?.[0];
 
             if (!classEntity) {
                 return c.json(
@@ -78,13 +75,13 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             let role: "student" | "teacher" | "parent";
             let linkLabel: "classStudents" | "classTeachers" | "classParents";
 
-            if (classJoinCode.studentCode === code) {
+            if (classEntity.studentCode === code) {
                 role = "student";
                 linkLabel = "classStudents";
-            } else if (classJoinCode.teacherCode === code) {
+            } else if (classEntity.teacherCode === code) {
                 role = "teacher";
                 linkLabel = "classTeachers";
-            } else if (classJoinCode.parentCode === code) {
+            } else if (classEntity.parentCode === code) {
                 role = "parent";
                 linkLabel = "classParents";
             } else {

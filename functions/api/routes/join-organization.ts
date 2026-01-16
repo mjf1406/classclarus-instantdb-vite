@@ -40,29 +40,39 @@ export function createJoinOrganizationRoute(app: Hono<HonoContext>) {
                 );
             }
 
-            // Query for organization join code
+            // Query for organization directly by code
             const orgQuery = {
-                orgJoinCodes: {
+                organizations: {
                     $: {
                         where: { code },
                     },
-                    organization: {
-                        owner: {},
-                    },
+                    owner: {},
                 },
             };
 
+            // Log the query being executed
+            console.log("[Join Organization] Executing query for code:", code);
+            console.log(
+                "[Join Organization] Query structure:",
+                JSON.stringify(orgQuery, null, 2)
+            );
+
             const orgResult = await dbAdmin.query(orgQuery);
-            const orgJoinCode = orgResult.data?.orgJoinCodes?.[0];
-            const organization = orgJoinCode?.organization;
+
+            // Log full query result for debugging
+            console.log(
+                "[Join Organization] Full query result:",
+                JSON.stringify(orgResult, null, 2)
+            );
+
+            const organization = orgResult.data?.organizations?.[0];
 
             // Log query results for debugging
-            console.log("[Join Organization] Query result:", {
+            console.log("[Join Organization] Query result summary:", {
                 code,
-                foundJoinCode: !!orgJoinCode,
                 foundOrganization: !!organization,
-                orgJoinCodeId: orgJoinCode?.id,
                 organizationId: organization?.id,
+                organizationsCount: orgResult.data?.organizations?.length || 0,
             });
 
             if (!organization) {

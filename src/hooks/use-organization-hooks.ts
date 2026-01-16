@@ -12,7 +12,6 @@ export type OrganizationWithRelations = InstaQLEntity<
         owner: {};
         orgTeachers: {};
         admins: {};
-        joinCodeEntity: {};
         classes: {
             owner: {};
             classAdmins: {};
@@ -46,7 +45,6 @@ export function useOrganizationsByUserId(userId: string | undefined) {
                   owner: {},
                   orgTeachers: {},
                   admins: {},
-                  joinCodeEntity: {},
                   classes: {
                       owner: {},
                       classAdmins: {},

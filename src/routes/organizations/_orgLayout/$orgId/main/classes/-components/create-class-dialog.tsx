@@ -75,19 +75,13 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
         try {
             // Generate codes BEFORE transaction (on client)
             const classId = id();
-            const codeId = id();
             const studentCode = generateJoinCode();
             const teacherCode = generateJoinCode();
             const parentCode = generateJoinCode();
             const now = new Date();
 
-            // Single transaction - create both entities, then link them
+            // Single transaction - create class with codes directly
             db.transact([
-                db.tx.classJoinCodes[codeId].create({
-                    studentCode,
-                    teacherCode,
-                    parentCode,
-                }),
                 db.tx.classes[classId].create({
                     name: name.trim(),
                     description: description.trim() || undefined,
@@ -95,11 +89,13 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
                     created: now,
                     updated: now,
                     archivedAt: null,
+                    studentCode,
+                    teacherCode,
+                    parentCode,
                 }),
                 db.tx.classes[classId].link({ owner: user.id }),
                 db.tx.classes[classId].link({ classTeachers: user.id }),
                 db.tx.classes[classId].link({ organization: finalOrgId }),
-                db.tx.classes[classId].link({ joinCodeEntity: codeId }),
             ]);
 
             // Reset form and close dialog

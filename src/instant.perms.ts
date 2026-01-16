@@ -273,33 +273,6 @@ const rules = {
         },
         bind: dataBind,
     },
-    orgJoinCodes: {
-        allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && ( isOrgOwner || isOrgAdmin )",
-            update: "false",
-            delete: "false",
-        },
-        bind: dataBind,
-    },
-    classJoinCodes: {
-        allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && ( isClassOwner || isClassAdmin || isClassTeacher )",
-            update: "false",
-            delete: "false",
-        },
-        bind: dataBind,
-    },
-    joinTokens: {
-        allow: {
-            create: "false",
-            view: "isAuthenticated && isOwner",
-            update: "false",
-            delete: "false",
-        },
-        bind: dataBind,
-    },
 } satisfies InstantRules;
 
 export default rules;

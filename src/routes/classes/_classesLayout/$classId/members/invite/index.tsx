@@ -30,20 +30,8 @@ function RouteComponent() {
     const { class: classEntity, isLoading: classLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
-    // Query for class join codes
-    const joinCodeQuery = classId
-        ? {
-              classes: {
-                  $: {
-                      where: { id: classId },
-                  },
-                  joinCodeEntity: {},
-              },
-          }
-        : null;
-
-    const { data: joinCodeData, isLoading: codeLoading } = db.useQuery(joinCodeQuery);
-    const joinCodeEntity = joinCodeData?.classes?.[0]?.joinCodeEntity;
+    // Get codes directly from class entity (already loaded via useClassById)
+    const classEntityWithCodes = classEntity;
 
     const [copySuccess, setCopySuccess] = useState<{
         student: boolean;
@@ -55,7 +43,7 @@ function RouteComponent() {
         parent: false,
     });
 
-    const isLoading = classLoading || codeLoading;
+    const isLoading = classLoading;
     const hasPermission = roleInfo.isOwner || roleInfo.isAdmin;
 
     const handleCopySuccess = (type: "student" | "teacher" | "parent") => {
@@ -93,11 +81,11 @@ function RouteComponent() {
         );
     }
 
-    const codes = joinCodeEntity
+    const codes = classEntityWithCodes
         ? {
-              student: joinCodeEntity.studentCode || null,
-              teacher: joinCodeEntity.teacherCode || null,
-              parent: joinCodeEntity.parentCode || null,
+              student: classEntityWithCodes.studentCode || null,
+              teacher: classEntityWithCodes.teacherCode || null,
+              parent: classEntityWithCodes.parentCode || null,
           }
         : { student: null, teacher: null, parent: null };
 
