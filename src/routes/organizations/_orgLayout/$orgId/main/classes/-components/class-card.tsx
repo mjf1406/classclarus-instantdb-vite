@@ -27,12 +27,18 @@ import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
 import { useClassRole } from "./use-class-role";
 import type { ClassByRole } from "@/hooks/use-class-hooks";
+import { ClassActionsMenu } from "./class-actions-menu";
+import { ArchivedClassActionsMenu } from "./archived-class-actions-menu";
+import { ArchiveIcon } from "lucide-react";
+import { CardAction } from "@/components/ui/card";
 
 interface ClassCardProps {
     classEntity: ClassByRole;
+    archived?: boolean;
 }
 
-export function ClassCard({ classEntity }: ClassCardProps) {
+export function ClassCard({ classEntity, archived = false }: ClassCardProps) {
+    console.log("🚀 ~ ClassCard ~ classEntity:", classEntity);
     const studentCount = classEntity.classStudents?.length || 0;
     const teacherCount = classEntity.classTeachers?.length || 0;
     const assistantTeacherCount =
@@ -42,6 +48,9 @@ export function ClassCard({ classEntity }: ClassCardProps) {
 
     // Determine user's role in the class
     const roleInfo = useClassRole(classEntity);
+    
+    // Determine if class is archived based on archivedAt field
+    const isArchived = archived || !!classEntity.archivedAt;
 
     // Get the appropriate role badge
     const RoleBadge = roleInfo.isOwner
@@ -59,7 +68,7 @@ export function ClassCard({ classEntity }: ClassCardProps) {
                   : null;
 
     return (
-        <Card className="group/card hover:ring-foreground/20 transition-all h-full">
+        <Card className={`group/card hover:ring-foreground/20 transition-all h-full ${isArchived ? "opacity-60" : ""}`}>
             <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -84,12 +93,25 @@ export function ClassCard({ classEntity }: ClassCardProps) {
                                     {classEntity.name}
                                 </Link>
                                 {RoleBadge && <RoleBadge />}
+                                {isArchived && (
+                                    <Badge variant="secondary" className="gap-1">
+                                        <ArchiveIcon className="size-3" />
+                                        Archived
+                                    </Badge>
+                                )}
                             </CardTitle>
                             <CardDescription className="line-clamp-2 mt-1">
                                 {description}
                             </CardDescription>
                         </div>
                     </div>
+                    <CardAction>
+                        {isArchived ? (
+                            <ArchivedClassActionsMenu classEntity={classEntity} />
+                        ) : (
+                            <ClassActionsMenu classEntity={classEntity} />
+                        )}
+                    </CardAction>
                 </div>
             </CardHeader>
             <CardContent className="flex-1">
@@ -125,8 +147,7 @@ export function ClassCard({ classEntity }: ClassCardProps) {
                         className="gap-1"
                     >
                         <ParentIcon className="size-3" />
-                        {parentCount}{" "}
-                        {parentCount === 1 ? "parent" : "parents"}
+                        {parentCount} {parentCount === 1 ? "parent" : "parents"}
                     </Badge>
                 </div>
             </CardContent>

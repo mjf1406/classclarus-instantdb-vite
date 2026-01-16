@@ -23,6 +23,7 @@ const _schema = i.schema({
             created: i.date().optional(),
             updated: i.date().optional(),
             lastLogon: i.date().optional(),
+            countHelper: i.boolean().optional(),
             // Billing fields (updated via Polar webhook)
             polarCustomerId: i.string().indexed().optional(),
             polarSubscriptionId: i.string().optional(),

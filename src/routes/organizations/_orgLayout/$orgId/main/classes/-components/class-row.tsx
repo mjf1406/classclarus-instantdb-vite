@@ -20,12 +20,16 @@ import { OrgIconDisplay } from "@/components/ui/org-icon-selector";
 import { format, formatDistanceToNow } from "date-fns";
 import { useClassRole } from "./use-class-role";
 import type { ClassByRole } from "@/hooks/use-class-hooks";
+import { ClassActionsMenu } from "./class-actions-menu";
+import { ArchivedClassActionsMenu } from "./archived-class-actions-menu";
+import { ArchiveIcon } from "lucide-react";
 
 interface ClassRowProps {
     classEntity: ClassByRole;
+    archived?: boolean;
 }
 
-export function ClassRow({ classEntity }: ClassRowProps) {
+export function ClassRow({ classEntity, archived = false }: ClassRowProps) {
     const studentCount = classEntity.classStudents?.length || 0;
     const teacherCount = classEntity.classTeachers?.length || 0;
     const assistantTeacherCount =
@@ -35,6 +39,9 @@ export function ClassRow({ classEntity }: ClassRowProps) {
 
     // Determine user's role in the class
     const roleInfo = useClassRole(classEntity);
+    
+    // Determine if class is archived based on archivedAt field
+    const isArchived = archived || !!classEntity.archivedAt;
 
     // Get the appropriate role badge
     const RoleBadge = roleInfo.isOwner
@@ -52,7 +59,7 @@ export function ClassRow({ classEntity }: ClassRowProps) {
                   : null;
 
     return (
-        <Card className="group/card hover:ring-foreground/20 transition-all">
+        <Card className={`group/card hover:ring-foreground/20 transition-all ${isArchived ? "opacity-60" : ""}`}>
             <CardContent className="py-3">
                 <div className="flex items-center gap-4">
                     <Link
@@ -76,6 +83,12 @@ export function ClassRow({ classEntity }: ClassRowProps) {
                                 {classEntity.name}
                             </Link>
                             {RoleBadge && <RoleBadge />}
+                            {isArchived && (
+                                <Badge variant="secondary" className="gap-1">
+                                    <ArchiveIcon className="size-3" />
+                                    Archived
+                                </Badge>
+                            )}
                             <Badge
                                 variant="secondary"
                                 className="gap-1"
@@ -114,6 +127,13 @@ export function ClassRow({ classEntity }: ClassRowProps) {
                         <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
                             {description}
                         </p>
+                    </div>
+                    <div className="shrink-0">
+                        {isArchived ? (
+                            <ArchivedClassActionsMenu classEntity={classEntity} />
+                        ) : (
+                            <ClassActionsMenu classEntity={classEntity} />
+                        )}
                     </div>
                 </div>
             </CardContent>

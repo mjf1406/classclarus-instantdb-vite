@@ -149,6 +149,10 @@ export function useClassesByOrgId(orgId: string | undefined) {
 
     const typedClassData = (classData as ClassQueryResult | undefined) ?? null;
     const classes = typedClassData?.classes || [];
+    console.log("🚀 ~ useClassesForParent ~ classes:", classes);
+    console.log("🚀 ~ useClassesForStudent ~ classes:", classes);
+    console.log("🚀 ~ useClassesForStudent ~ classes:", classes);
+    console.log("🚀 ~ useClassesForStudent ~ classes:", classes);
 
     return {
         classes,
@@ -400,7 +404,6 @@ export function useClassesForParent(orgId: string | undefined) {
     const typedClassData =
         (classData as ClassQueryResult<ClassForParent> | undefined) ?? null;
     const classes = typedClassData?.classes || [];
-
     return {
         classes,
         isLoading: userLoading || classLoading,
@@ -447,7 +450,6 @@ export function useClassesForStudent(orgId: string | undefined) {
     const typedClassData =
         (classData as ClassQueryResult<ClassForStudent> | undefined) ?? null;
     const classes = typedClassData?.classes || [];
-
     return {
         classes,
         isLoading,
@@ -539,6 +541,136 @@ export function useClassesByRole(orgId: string | undefined) {
     }
 
     // No role found
+    return {
+        classes: [] as ClassByRole[],
+        isLoading: false,
+        error: null,
+    };
+}
+
+/**
+ * Fetches all archived classes in the organization (for owners)
+ * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classParents
+ */
+export function useArchivedClassesForOwner(orgId: string | undefined) {
+    const hasValidOrgId = orgId && orgId.trim() !== "";
+
+    const classQuery = hasValidOrgId
+        ? {
+              classes: {
+                  $: {
+                      where: {
+                          and: [
+                              { "organization.id": orgId },
+                              { archivedAt: { $isNull: false } },
+                          ],
+                      },
+                  },
+                  owner: {},
+                  organization: {},
+                  classAdmins: {},
+                  classTeachers: {},
+                  classAssistantTeachers: {},
+                  classStudents: {},
+                  classParents: {},
+              },
+          }
+        : null;
+
+    const { data: classData, isLoading, error } = db.useQuery(classQuery);
+
+    const typedClassData =
+        (classData as ClassQueryResult<ClassForOwner> | undefined) ?? null;
+    const classes = typedClassData?.classes || [];
+
+    return {
+        classes,
+        isLoading,
+        error,
+    };
+}
+
+/**
+ * Fetches all archived classes in the organization (for admins)
+ * Returns classes with all relations: owner, organization, classAdmins, classTeachers, classAssistantTeachers, classStudents, classParents
+ */
+export function useArchivedClassesForAdmin(orgId: string | undefined) {
+    const hasValidOrgId = orgId && orgId.trim() !== "";
+
+    const classQuery = hasValidOrgId
+        ? {
+              classes: {
+                  $: {
+                      where: {
+                          and: [
+                              { "organization.id": orgId },
+                              { archivedAt: { $isNull: false } },
+                          ],
+                      },
+                  },
+                  owner: {},
+                  organization: {},
+                  classAdmins: {},
+                  classTeachers: {},
+                  classAssistantTeachers: {},
+                  classStudents: {},
+                  classParents: {},
+              },
+          }
+        : null;
+
+    const { data: classData, isLoading, error } = db.useQuery(classQuery);
+
+    const typedClassData =
+        (classData as ClassQueryResult<ClassForAdmin> | undefined) ?? null;
+    const classes = typedClassData?.classes || [];
+
+    return {
+        classes,
+        isLoading,
+        error,
+    };
+}
+
+/**
+ * Main hook that automatically selects the appropriate role-based hook for archived classes
+ * Returns archived classes filtered and with relations appropriate for the user's role
+ */
+export function useArchivedClassesByRole(orgId: string | undefined) {
+    const { organization, isLoading: orgLoading } = useOrganizationById(orgId);
+    const roleInfo = useOrgRole(organization);
+
+    // Use appropriate hook based on role
+    const ownerResult = useArchivedClassesForOwner(
+        roleInfo.isOwner ? orgId : undefined
+    );
+    const adminResult = useArchivedClassesForAdmin(
+        roleInfo.isAdmin ? orgId : undefined
+    );
+
+    // Determine which result to use based on role priority
+    if (orgLoading || !organization || !roleInfo.role) {
+        return {
+            classes: [] as ClassByRole[],
+            isLoading: true,
+            error: null,
+        };
+    }
+
+    if (roleInfo.isOwner) {
+        return {
+            ...ownerResult,
+            classes: ownerResult.classes as ClassByRole[],
+        };
+    }
+    if (roleInfo.isAdmin) {
+        return {
+            ...adminResult,
+            classes: adminResult.classes as ClassByRole[],
+        };
+    }
+
+    // Only owners and admins can see archived classes
     return {
         classes: [] as ClassByRole[],
         isLoading: false,

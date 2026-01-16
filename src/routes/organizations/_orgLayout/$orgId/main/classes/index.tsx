@@ -8,11 +8,13 @@ import {
     Grid3x3Icon,
     ListIcon,
     BookOpen,
+    ArchiveIcon,
 } from "lucide-react";
 import { ClassGrid } from "./-components/class-grid";
 import { ClassList } from "./-components/class-list";
 import { ClassNoClasses } from "./-components/class-no-classes";
-import { useClassesByRole } from "@/hooks/use-class-hooks";
+import { useClassesByRole, useArchivedClassesByRole } from "@/hooks/use-class-hooks";
+import { CreateClassDialog } from "./-components/create-class-dialog";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/main/classes/"
@@ -23,10 +25,11 @@ export const Route = createFileRoute(
 function RouteComponent() {
     const { orgId } = useParams({ strict: false });
     const { classes, isLoading } = useClassesByRole(orgId);
+    const { classes: archivedClasses, isLoading: isLoadingArchived } = useArchivedClassesByRole(orgId);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <BookOpen className="size-12 md:size-16 text-primary" />
@@ -58,27 +61,75 @@ function RouteComponent() {
                             <ListIcon />
                         </Button>
                     </div>
-                    <Button size="lg">
-                        <PlusIcon />
-                        <span className="sr-only">Create Class</span>
-                        <span className="hidden md:block">Create Class</span>
-                    </Button>
+                    {orgId && (
+                        <CreateClassDialog orgId={orgId}>
+                            <Button size="lg">
+                                <PlusIcon />
+                                <span className="sr-only">Create Class</span>
+                                <span className="hidden md:block">Create Class</span>
+                            </Button>
+                        </CreateClassDialog>
+                    )}
                 </div>
             </div>
 
-            {classes.length === 0 && !isLoading ? (
-                <ClassNoClasses />
-            ) : viewMode === "grid" ? (
-                <ClassGrid
-                    classes={classes}
-                    isLoading={isLoading}
-                />
-            ) : (
-                <ClassList
-                    classes={classes}
-                    isLoading={isLoading}
-                />
-            )}
+            {/* Active Classes Section */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                    <BookOpen className="size-5 text-primary" />
+                    <h2 className="text-lg font-semibold">
+                        Active Classes
+                        {classes.length > 0 && (
+                            <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                ({classes.length})
+                            </span>
+                        )}
+                    </h2>
+                </div>
+                {classes.length === 0 && !isLoading ? (
+                    <ClassNoClasses />
+                ) : viewMode === "grid" ? (
+                    <ClassGrid
+                        classes={classes}
+                        isLoading={isLoading}
+                    />
+                ) : (
+                    <ClassList
+                        classes={classes}
+                        isLoading={isLoading}
+                    />
+                )}
+            </div>
+
+            {/* Archived Classes Section */}
+            {archivedClasses.length > 0 || isLoadingArchived ? (
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                        <ArchiveIcon className="size-5 text-muted-foreground" />
+                        <h2 className="text-lg font-semibold">
+                            Archived Classes
+                            {archivedClasses.length > 0 && (
+                                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                    ({archivedClasses.length})
+                                </span>
+                            )}
+                        </h2>
+                    </div>
+                    {archivedClasses.length === 0 && !isLoadingArchived ? (
+                        <p className="text-sm text-muted-foreground">No archived classes</p>
+                    ) : viewMode === "grid" ? (
+                        <ClassGrid
+                            classes={archivedClasses}
+                            isLoading={isLoadingArchived}
+                        />
+                    ) : (
+                        <ClassList
+                            classes={archivedClasses}
+                            isLoading={isLoadingArchived}
+                        />
+                    )}
+                </div>
+            ) : null}
         </div>
     );
 }
