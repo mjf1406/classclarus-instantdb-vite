@@ -1,6 +1,5 @@
 /** @format */
 
-import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { useOrganizationById } from "./use-organization-hooks";
