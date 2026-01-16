@@ -3,7 +3,6 @@
 import { redirect } from "@tanstack/react-router";
 import type { AuthContextValue } from "@/components/auth/auth-provider";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
-import { db } from "@/lib/db/db";
 
 /**
  * Check if a route is publicly accessible (no authentication required)
@@ -52,11 +51,12 @@ export function checkOrgAccess(
  * - They are a member (teacher, assistant teacher, student, or parent)
  * - The class belongs to an organization they have access to
  */
-export async function checkClassAccess(
+export function checkClassAccess(
     classId: string,
     userId: string | undefined,
-    userOrganizations: OrganizationWithRelations[]
-): Promise<boolean> {
+    userOrganizations: OrganizationWithRelations[],
+    classIds: string[]
+): boolean {
     if (!classId || !userId) {
         return false;
     }
@@ -70,63 +70,18 @@ export async function checkClassAccess(
         }
     }
 
-    // Second check: direct class membership
-    // Query the class to check if user is directly linked
-    const classQuery = {
-        classes: {
-            $: { where: { id: classId } },
-            owner: {},
-            classAdmins: {},
-            classTeachers: {},
-            classAssistantTeachers: {},
-            classStudents: {},
-            classParents: {},
-        },
-    };
-
-    const { data } = await db.queryOnce(classQuery);
-    const classEntity = data?.classes?.[0];
-
-    if (!classEntity) {
-        return false;
-    }
-
-    // Check if user is linked in any role
-    const isOwner = classEntity.owner?.id === userId;
-    const isAdmin = classEntity.classAdmins?.some(
-        (admin: { id: string }) => admin.id === userId
-    );
-    const isTeacher = classEntity.classTeachers?.some(
-        (teacher: { id: string }) => teacher.id === userId
-    );
-    const isAssistantTeacher = classEntity.classAssistantTeachers?.some(
-        (at: { id: string }) => at.id === userId
-    );
-    const isStudent = classEntity.classStudents?.some(
-        (student: { id: string }) => student.id === userId
-    );
-    const isParent = classEntity.classParents?.some(
-        (parent: { id: string }) => parent.id === userId
-    );
-
-    return (
-        isOwner ||
-        isAdmin ||
-        isTeacher ||
-        isAssistantTeacher ||
-        isStudent ||
-        isParent
-    );
+    // Second check: direct class membership (from pre-loaded classIds)
+    return classIds.includes(classId);
 }
 
 /**
  * Determine if user is authorized for a specific route
  * Returns true if authorized, false if not authorized
  */
-export async function isAuthorizedForRoute(
+export function isAuthorizedForRoute(
     pathname: string,
     authContext: AuthContextValue | undefined
-): Promise<boolean> {
+): boolean {
     // If no auth context, user is not authenticated (handled separately)
     if (!authContext || !authContext.user?.id) {
         return false;
@@ -154,10 +109,11 @@ export async function isAuthorizedForRoute(
         const classId = pathParts[classIndex + 1];
         if (classId && classId !== "index") {
             // Check if user has access to this class
-            const hasAccess = await checkClassAccess(
+            const hasAccess = checkClassAccess(
                 classId,
                 authContext.user.id,
-                authContext.organizations
+                authContext.organizations,
+                authContext.classIds
             );
             if (!hasAccess) {
                 return false;
@@ -226,19 +182,20 @@ export function requireOrgAccess(
  * Require class access - throws redirect if user doesn't have access
  * Use this in beforeLoad for class-scoped routes
  */
-export async function requireClassAccess(
+export function requireClassAccess(
     classId: string,
     context: { auth: AuthContextValue | undefined },
     location: { href: string }
-): Promise<void> {
+): void {
     // First ensure user is authenticated
     requireAuth(context, location);
 
     const userId = context.auth!.user?.id;
-    const hasAccess = await checkClassAccess(
+    const hasAccess = checkClassAccess(
         classId,
         userId,
-        context.auth!.organizations
+        context.auth!.organizations,
+        context.auth!.classIds
     );
 
     if (!hasAccess) {

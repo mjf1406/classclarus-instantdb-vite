@@ -42,7 +42,7 @@ import {
 import { requireAuth, requireClassAccess } from "@/lib/auth-utils";
 
 export const Route = createFileRoute("/classes/_classesLayout")({
-    beforeLoad: async ({ context, location, params }) => {
+    beforeLoad: ({ context, location, params }) => {
         // First ensure user is authenticated
         requireAuth(context, location);
 
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/classes/_classesLayout")({
         // (The index route doesn't have a classId, so we skip the check)
         const classId = (params as { classId?: string }).classId;
         if (classId) {
-            await requireClassAccess(classId, context, location);
+            requireClassAccess(classId, context, location);
         }
     },
     component: RouteComponent,

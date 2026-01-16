@@ -23,6 +23,7 @@ export interface AuthContextValue {
     };
     isLoading: boolean;
     organizations: OrganizationWithRelations[];
+    classIds: string[];
     error: { message: string } | null | undefined;
 }
 
@@ -64,12 +65,61 @@ export default function AuthProvider({
         error: orgError,
     } = useOrganizationsByUserId(user?.id);
 
+    // Query user's children for parent role
+    const { data: userWithChildrenData, isLoading: userChildrenLoading } =
+        db.useQuery(
+            hasValidUser
+                ? {
+                      $users: {
+                          $: { where: { id: user.id } },
+                          children: {},
+                      },
+                  }
+                : null
+        );
+
+    const childrenIds =
+        userWithChildrenData?.$users?.[0]?.children?.map((c) => c.id) || [];
+
+    // Query class IDs where user is a member
+    const { data: classData, isLoading: classLoading } = db.useQuery(
+        hasValidUser
+            ? {
+                  classes: {
+                      $: {
+                          where: {
+                              or: [
+                                  { "owner.id": user.id },
+                                  { "classAdmins.id": user.id },
+                                  { "classTeachers.id": user.id },
+                                  { "classAssistantTeachers.id": user.id },
+                                  { "classStudents.id": user.id },
+                                  { "classParents.id": user.id },
+                                  ...(childrenIds.length > 0
+                                      ? [
+                                            {
+                                                "classStudents.id": {
+                                                    $in: childrenIds,
+                                                },
+                                            },
+                                        ]
+                                      : []),
+                              ],
+                          },
+                      },
+                  },
+              }
+            : null
+    );
+
+    const classIds = classData?.classes?.map((c) => c.id) || [];
+
     // If there's no user, we're done loading (no user = not authenticated, not loading)
     // If there is a user, wait for all queries to complete
     const isLoading = authLoading
         ? true
         : hasValidUser
-          ? dataLoading || orgLoading
+          ? dataLoading || orgLoading || userChildrenLoading || classLoading
           : false;
 
     const value: AuthContextValue = {
@@ -90,6 +140,7 @@ export default function AuthProvider({
         },
         isLoading,
         organizations,
+        classIds,
         error: orgError,
     };
 
