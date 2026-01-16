@@ -13,7 +13,8 @@
         "pps": "npm run ps && npm run pp",
         "bs": "npm run build && npm run preview",
         "gr": "tsr generate",
-        "watch": "tsr watch"
+        "watch": "tsr watch",
+        "ctu": "tsx scripts/create-test-users.ts"
     },
     "devDependencies": {
         "@tanstack/router-cli": "^1.146.2",
@@ -21,6 +22,7 @@
         "@types/node": "^25.0.5",
         "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
+        "dotenv": "^17.2.3",
         "typescript": "~5.9.3",
         "vite": "^7.1.2",
         "wrangler": "^4.59.2"
