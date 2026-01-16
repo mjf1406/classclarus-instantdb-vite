@@ -19,7 +19,10 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             // Validate code format
             if (!code || code.length !== 6) {
                 return c.json(
-                    { error: "Invalid code format", message: "Code must be exactly 6 characters" },
+                    {
+                        error: "Invalid code format",
+                        message: "Code must be exactly 6 characters",
+                    },
                     400
                 );
             }
@@ -28,7 +31,10 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             const allowedPattern = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
             if (!allowedPattern.test(code)) {
                 return c.json(
-                    { error: "Invalid code format", message: "Code contains invalid characters" },
+                    {
+                        error: "Invalid code format",
+                        message: "Code contains invalid characters",
+                    },
                     400
                 );
             }
@@ -50,7 +56,6 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                     owner: {},
                     organization: {},
                 },
-            },
             };
 
             const classResult = await dbAdmin.query(classQuery);
@@ -59,7 +64,11 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
 
             if (!classEntity) {
                 return c.json(
-                    { error: "Code not found", message: "Invalid class join code. Please check and try again." },
+                    {
+                        error: "Code not found",
+                        message:
+                            "Invalid class join code. Please check and try again.",
+                    },
                     404
                 );
             }
@@ -78,7 +87,13 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 role = "parent";
                 linkLabel = "classParents";
             } else {
-                return c.json({ error: "Invalid code", message: "Code does not match any role" }, 400);
+                return c.json(
+                    {
+                        error: "Invalid code",
+                        message: "Code does not match any role",
+                    },
+                    400
+                );
             }
 
             // Check if user is already a member of this class
@@ -107,20 +122,30 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             const userClassData = userClassesResult.data?.$users?.[0];
 
             const isAlreadyStudent = userClassData?.studentClasses?.some(
-                (cls: InstaQLEntity<AppSchema, "classes">) => cls.id === classEntity.id
+                (cls: InstaQLEntity<AppSchema, "classes">) =>
+                    cls.id === classEntity.id
             );
             const isAlreadyTeacher = userClassData?.teacherClasses?.some(
-                (cls: InstaQLEntity<AppSchema, "classes">) => cls.id === classEntity.id
+                (cls: InstaQLEntity<AppSchema, "classes">) =>
+                    cls.id === classEntity.id
             );
             const isAlreadyParent = userClassData?.parentClasses?.some(
-                (cls: InstaQLEntity<AppSchema, "classes">) => cls.id === classEntity.id
+                (cls: InstaQLEntity<AppSchema, "classes">) =>
+                    cls.id === classEntity.id
             );
             const isAlreadyAdmin = userClassData?.adminClasses?.some(
-                (cls: InstaQLEntity<AppSchema, "classes">) => cls.id === classEntity.id
+                (cls: InstaQLEntity<AppSchema, "classes">) =>
+                    cls.id === classEntity.id
             );
             const isOwner = classEntity.owner?.id === userId;
 
-            if (isOwner || isAlreadyAdmin || isAlreadyStudent || isAlreadyTeacher || isAlreadyParent) {
+            if (
+                isOwner ||
+                isAlreadyAdmin ||
+                isAlreadyStudent ||
+                isAlreadyTeacher ||
+                isAlreadyParent
+            ) {
                 return c.json(
                     {
                         error: "Already a member",
@@ -152,7 +177,10 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             return c.json(
                 {
                     error: "Server error",
-                    message: error instanceof Error ? error.message : "An unexpected error occurred",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "An unexpected error occurred",
                 },
                 500
             );
