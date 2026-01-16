@@ -56,6 +56,7 @@ export function CreateOrgDialog({ children }: CreateOrgDialogProps) {
             const now = new Date();
 
             // Single transaction - create organization with code directly
+            // Creator is set as both owner and admin
             db.transact([
                 db.tx.organizations[orgId].create({
                     name: name.trim(),
@@ -66,6 +67,7 @@ export function CreateOrgDialog({ children }: CreateOrgDialogProps) {
                     code: newCode,
                 }),
                 db.tx.organizations[orgId].link({ owner: user.id }),
+                db.tx.organizations[orgId].link({ admins: user.id }),
             ]);
 
             // Reset form and close dialog

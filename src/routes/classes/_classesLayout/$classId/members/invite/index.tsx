@@ -48,7 +48,7 @@ function RouteComponent() {
     });
 
     const isLoading = classLoading;
-    const hasPermission = roleInfo.isOwner || roleInfo.isAdmin;
+    const hasPermission = roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
 
     const handleCopySuccess = (type: "student" | "teacher" | "parent") => {
         setCopySuccess((prev) => ({ ...prev, [type]: true }));
@@ -77,7 +77,7 @@ function RouteComponent() {
                     <CardContent className="py-6">
                         <p className="text-sm text-muted-foreground text-center">
                             You don't have permission to invite members. Only
-                            class owners and admins can manage join codes.
+                            class owners, admins, and teachers can manage join codes.
                         </p>
                     </CardContent>
                 </Card>

@@ -62,7 +62,7 @@ export function HomeSelection() {
                             <Button
                                 key={option.title}
                                 size="lg"
-                                variant="outline"
+                                variant="secondary"
                                 className="w-full justify-start gap-3 h-auto py-4"
                                 onClick={() => handleSelect(option.route)}
                             >

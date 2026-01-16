@@ -55,6 +55,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
             return {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,
+                settingsItem: nav.settingsItem,
                 isLoading: false,
             };
         }

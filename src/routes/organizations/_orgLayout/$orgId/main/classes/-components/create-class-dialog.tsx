@@ -5,6 +5,8 @@ import { id } from "@instantdb/react";
 import { db } from "@/lib/db/db";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { generateJoinCode } from "@/lib/invite-utils";
+import { useOrganizationById } from "@/hooks/use-organization-hooks";
+import { useOrgRole } from "@/routes/organizations/-components/navigation/use-org-role";
 import {
     Dialog,
     DialogContent,
@@ -15,7 +17,13 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldError,
+    FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { OrgIconSelector } from "@/components/ui/org-icon-selector";
@@ -33,15 +41,29 @@ interface CreateClassDialogProps {
     orgId?: string; // Optional - if provided, use it; if not, show selector
 }
 
-export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClassDialogProps) {
+export function CreateClassDialog({
+    children,
+    orgId: providedOrgId,
+}: CreateClassDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [icon, setIcon] = useState<string | undefined>(undefined);
-    const [selectedOrgId, setSelectedOrgId] = useState<string>(providedOrgId || "");
+    const [selectedOrgId, setSelectedOrgId] = useState<string>(
+        providedOrgId || ""
+    );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user, organizations } = useAuthContext();
+
+    // Get the final organization ID (provided or selected)
+    const finalOrgId = providedOrgId || selectedOrgId;
+
+    // Query organization with relations to get owner and admins
+    const { organization } = useOrganizationById(finalOrgId);
+
+    // Determine user's role in the organization
+    const roleInfo = useOrgRole(organization);
 
     // Auto-select org if there's only one and no orgId provided
     useEffect(() => {
@@ -59,7 +81,6 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
             return;
         }
 
-        const finalOrgId = providedOrgId || selectedOrgId;
         if (!finalOrgId) {
             setError("Please select an organization");
             return;
@@ -80,23 +101,52 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
             const parentCode = generateJoinCode();
             const now = new Date();
 
-            // Single transaction - create class with codes directly
-            db.transact([
-                db.tx.classes[classId].create({
-                    name: name.trim(),
-                    description: description.trim() || undefined,
-                    icon: icon || undefined,
-                    created: now,
-                    updated: now,
-                    archivedAt: null,
-                    studentCode,
-                    teacherCode,
-                    parentCode,
-                }),
-                db.tx.classes[classId].link({ owner: user.id }),
-                db.tx.classes[classId].link({ classTeachers: user.id }),
-                db.tx.classes[classId].link({ organization: finalOrgId }),
-            ]);
+            // Build transaction array based on user's role
+            const createTx = db.tx.classes[classId].create({
+                name: name.trim(),
+                description: description.trim() || undefined,
+                icon: icon || undefined,
+                created: now,
+                updated: now,
+                archivedAt: null,
+                studentCode,
+                teacherCode,
+                parentCode,
+            });
+
+            // If user is an orgTeacher, set orgOwner as classOwner and orgAdmins as classAdmins
+            if (roleInfo.isTeacher && organization) {
+                // Validate that organization has an owner
+                if (!organization.owner?.id) {
+                    setError("Organization owner not found");
+                    setIsSubmitting(false);
+                    return;
+                }
+
+                // Build transaction array for orgTeacher
+                const txArray = [
+                    createTx,
+                    db.tx.classes[classId].link({ classTeachers: user.id }),
+                    db.tx.classes[classId].link({
+                        owner: organization.owner.id,
+                    }),
+                    // Link all org admins as class admins (if any exist)
+                    ...(organization.admins?.map((admin) =>
+                        db.tx.classes[classId].link({ classAdmins: admin.id })
+                    ) || []),
+                    db.tx.classes[classId].link({ organization: finalOrgId }),
+                ];
+
+                db.transact(txArray);
+            } else {
+                // Existing behavior for owners/admins: user is owner and classTeacher
+                db.transact([
+                    createTx,
+                    db.tx.classes[classId].link({ owner: user.id }),
+                    db.tx.classes[classId].link({ classTeachers: user.id }),
+                    db.tx.classes[classId].link({ organization: finalOrgId }),
+                ]);
+            }
 
             // Reset form and close dialog
             setName("");
@@ -107,7 +157,9 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
             }
             setOpen(false);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to create class");
+            setError(
+                err instanceof Error ? err.message : "Failed to create class"
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -135,7 +187,10 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
     // If no orgId provided and no organizations, show message
     if (!providedOrgId && organizations.length === 0) {
         return (
-            <Dialog open={open} onOpenChange={handleOpenChange}>
+            <Dialog
+                open={open}
+                onOpenChange={handleOpenChange}
+            >
                 <DialogTrigger asChild>{children}</DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
@@ -146,7 +201,10 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" asChild>
+                        <Button
+                            variant="outline"
+                            asChild
+                        >
                             <Link to="/organizations">Go to Organizations</Link>
                         </Button>
                     </DialogFooter>
@@ -156,14 +214,18 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
     }
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
+        <Dialog
+            open={open}
+            onOpenChange={handleOpenChange}
+        >
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>Create Class</DialogTitle>
                         <DialogDescription>
-                            Create a new class to manage students and assignments.
+                            Create a new class to manage students and
+                            assignments.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
@@ -216,12 +278,16 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="class-description">Description</FieldLabel>
+                            <FieldLabel htmlFor="class-description">
+                                Description
+                            </FieldLabel>
                             <FieldContent>
                                 <Textarea
                                     id="class-description"
                                     value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    onChange={(e) =>
+                                        setDescription(e.target.value)
+                                    }
                                     placeholder="A brief description of your class"
                                     rows={3}
                                     disabled={isSubmitting}
@@ -254,7 +320,10 @@ export function CreateClassDialog({ children, orgId: providedOrgId }: CreateClas
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? "Creating..." : "Create Class"}
                         </Button>
                     </DialogFooter>
