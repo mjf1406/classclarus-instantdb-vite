@@ -3,7 +3,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { UserPlus, Check } from "lucide-react";
 import { useState } from "react";
-import { db } from "@/lib/db/db";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "../../../-components/navigation/use-class-role";
 import {
@@ -16,7 +15,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StudentIcon, TeacherIcon, ParentIcon } from "@/components/icons/role-icons";
+import {
+    StudentIcon,
+    TeacherIcon,
+    ParentIcon,
+} from "@/components/icons/role-icons";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/invite/"
@@ -27,7 +30,8 @@ export const Route = createFileRoute(
 function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
-    const { class: classEntity, isLoading: classLoading } = useClassById(classId);
+    const { class: classEntity, isLoading: classLoading } =
+        useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
     // Get codes directly from class entity (already loaded via useClassById)
