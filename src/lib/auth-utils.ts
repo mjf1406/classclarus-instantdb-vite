@@ -134,8 +134,20 @@ export function requireAuth(
     context: { auth: AuthContextValue | undefined },
     location: { href: string }
 ): void {
-    // Check if user is authenticated
-    if (!context.auth || !context.auth.user?.id) {
+    // If auth context is not yet available (undefined), don't redirect
+    // The route will load and the component will handle the loading state
+    if (!context.auth) {
+        return;
+    }
+
+    // If auth is still loading, don't redirect yet
+    // The route will load and show the loading state
+    if (context.auth.isLoading) {
+        return;
+    }
+
+    // Now we know auth is loaded - check if user is authenticated
+    if (!context.auth.user?.id) {
         // User is not authenticated - redirect to login page
         throw redirect({
             to: "/",
@@ -144,14 +156,6 @@ export function requireAuth(
                 redirect: location.href,
             },
         });
-    }
-
-    // Wait for auth to finish loading
-    if (context.auth.isLoading) {
-        // If still loading, we can't make authorization decisions yet
-        // In practice, this should be rare, but we'll allow it to proceed
-        // The component will handle the loading state
-        return;
     }
 }
 
