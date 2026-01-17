@@ -35,7 +35,7 @@ export async function autoJoinPendingClasses(
             },
         });
 
-        const pendingMembers = (data?.pendingMembers as PendingMember[]) || [];
+        const pendingMembers = (data?.pendingMembers as unknown as PendingMember[]) || [];
 
         if (pendingMembers.length === 0) {
             return;

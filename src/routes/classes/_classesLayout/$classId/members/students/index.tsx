@@ -76,11 +76,9 @@ type PendingMember = InstaQLEntity<
 function PendingStudentCard({
     pendingMember,
     canManage,
-    classId,
 }: {
     pendingMember: PendingMember;
     canManage: boolean;
-    classId: string;
 }) {
     const handleRemove = async () => {
         if (!confirm("Remove this pending invitation?")) {
@@ -454,7 +452,7 @@ function RouteComponent() {
         pendingMembers: {
             $: {
                 where: {
-                    class: { id: classId },
+                    "class.id": classId,
                     role: "student",
                 },
             },
@@ -462,7 +460,7 @@ function RouteComponent() {
         },
     });
 
-    const pendingMembers = (pendingData?.pendingMembers as PendingMember[]) || [];
+    const pendingMembers = (pendingData?.pendingMembers as unknown as PendingMember[]) || [];
 
     return (
         <RestrictedRoute
@@ -511,7 +509,6 @@ function RouteComponent() {
                                             key={pending.id}
                                             pendingMember={pending}
                                             canManage={canManage}
-                                            classId={classId}
                                         />
                                     ))}
                                 </div>

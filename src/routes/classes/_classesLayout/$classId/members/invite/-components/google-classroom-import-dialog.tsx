@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { db } from "@/lib/db/db";
 
 interface GoogleClassroomClass {
     id: string;
@@ -59,7 +58,6 @@ export function GoogleClassroomImportDialog({
         skipped: number;
         pending: number;
     } | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
 
     // Check if Google is connected
     useEffect(() => {
@@ -79,18 +77,15 @@ export function GoogleClassroomImportDialog({
             });
 
             if (response.ok) {
-                setIsConnected(true);
                 setStep("select");
                 await loadClasses();
             } else if (response.status === 401) {
-                setIsConnected(false);
                 setStep("connect");
             } else {
                 throw new Error("Failed to check connection");
             }
         } catch (err) {
             console.error("Error checking connection:", err);
-            setIsConnected(false);
             setStep("connect");
         }
     };

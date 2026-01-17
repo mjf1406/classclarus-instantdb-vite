@@ -76,6 +76,9 @@ function handleGoogleSuccess(
 
                 // Auto-join pending classes
                 // Extract email from JWT token
+                if (!credentialResponse.credential) {
+                    return;
+                }
                 const decoded = jwtDecode<{ email?: string }>(
                     credentialResponse.credential
                 );
