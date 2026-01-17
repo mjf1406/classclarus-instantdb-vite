@@ -10,7 +10,7 @@ export type Env = {
     UPSTASH_REDIS_REST_TOKEN?: string;
     GC_CLIENT?: string;
     GC_SECRET?: string;
-    GC_REDIRET_URI?: string;
+    GC_REDIRECT_URI?: string;
 };
 
 // Variables stored in Hono context via c.set()

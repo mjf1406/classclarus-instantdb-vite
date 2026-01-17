@@ -1,6 +1,7 @@
 /** @format */
 
 import { Hono } from "hono";
+import { id } from "@instantdb/admin";
 import { initDbAdmin } from "../../../src/lib/db/db-admin";
 import type { HonoContext } from "../types";
 import type { Env } from "../types";
@@ -41,11 +42,11 @@ function extractUserIdFromState(state: string): string | null {
 function getGoogleCredentials(env: Env) {
     const clientId = env.GC_CLIENT;
     const clientSecret = env.GC_SECRET;
-    const redirectUri = env.GC_REDIRET_URI;
+    const redirectUri = env.GC_REDIRECT_URI;
 
     if (!clientId || !clientSecret || !redirectUri) {
         throw new Error(
-            "Google OAuth credentials not configured. Please set GC_CLIENT, GC_SECRET, and GC_REDIRET_URI environment variables."
+            "Google OAuth credentials not configured. Please set GC_CLIENT, GC_SECRET, and GC_REDIRECT_URI environment variables."
         );
     }
 
@@ -696,20 +697,81 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 .map((p: any) => (p.email || "").toLowerCase().trim())
                 .filter((email: string) => email.length > 0);
 
-            const existingEmails = new Set([
+            const existingEmailsInClass = new Set([
                 ...existingStudentEmails,
                 ...existingPendingEmails,
             ]);
 
-
-            // Filter out students who already exist
-            const newStudents = students.filter(
-                (s: any) => s.email && !existingEmails.has(s.email.toLowerCase().trim())
+            // Query for existing users with matching emails
+            const studentEmails = students
+                .map((s: any) => s.email.toLowerCase().trim())
+                .filter((email: string) => email.length > 0);
+            
+            const existingUsersQuery = await dbAdmin.query({
+                $users: {
+                    $: {
+                        where: {
+                            email: { $in: studentEmails },
+                        },
+                    },
+                },
+            });
+            const existingUsers = existingUsersQuery.$users || [];
+            const existingUserEmails = new Set(
+                existingUsers.map((u: any) => (u.email || "").toLowerCase().trim())
             );
 
-            // Create pending members
-            const transactions = newStudents.map((student: any) => {
-                const pendingMemberId = `pending_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+            // Categorize students
+            const studentsInClass = students.filter((s: any) =>
+                existingEmailsInClass.has(s.email.toLowerCase().trim())
+            );
+            const studentsAsUsers = students.filter(
+                (s: any) =>
+                    existingUserEmails.has(s.email.toLowerCase().trim()) &&
+                    !existingEmailsInClass.has(s.email.toLowerCase().trim())
+            );
+            const newStudents = students.filter(
+                (s: any) =>
+                    !existingUserEmails.has(s.email.toLowerCase().trim()) &&
+                    !existingEmailsInClass.has(s.email.toLowerCase().trim())
+            );
+
+            console.log("[Google Classroom Import] Student categorization:", {
+                total: students.length,
+                inClass: studentsInClass.length,
+                asUsers: studentsAsUsers.length,
+                new: newStudents.length,
+            });
+
+            // Determine link label based on role
+            let linkLabel: "classStudents" | "classTeachers" | "classGuardians";
+            if (role === "student") {
+                linkLabel = "classStudents";
+            } else if (role === "teacher") {
+                linkLabel = "classTeachers";
+            } else {
+                linkLabel = "classGuardians";
+            }
+
+            // Add existing users directly to class
+            const addUserTransactions = studentsAsUsers
+                .map((student: any) => {
+                    const user = existingUsers.find(
+                        (u: any) =>
+                            (u.email || "").toLowerCase().trim() ===
+                            student.email.toLowerCase().trim()
+                    );
+                    if (!user) return null;
+
+                    return dbAdmin.tx.classes[targetClassId].link({
+                        [linkLabel]: user.id,
+                    });
+                })
+                .filter((tx): tx is NonNullable<typeof tx> => tx !== null);
+
+            // Create pending members for new students
+            const pendingMemberTransactions = newStudents.map((student: any) => {
+                const pendingMemberId = id();
                 return dbAdmin.tx.pendingMembers[pendingMemberId].create({
                     email: student.email,
                     firstName: student.firstName || undefined,
@@ -722,15 +784,21 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 });
             });
 
-            if (transactions.length > 0) {
-                await dbAdmin.transact(transactions);
+            // Execute all transactions
+            const allTransactions = [
+                ...addUserTransactions,
+                ...pendingMemberTransactions,
+            ];
+            if (allTransactions.length > 0) {
+                await dbAdmin.transact(allTransactions);
             }
 
             return c.json({
                 success: true,
-                imported: newStudents.length,
-                skipped: students.length - newStudents.length,
+                imported: studentsAsUsers.length + newStudents.length,
+                added: studentsAsUsers.length,
                 pending: newStudents.length,
+                skipped: studentsInClass.length,
             });
         } catch (error) {
             console.error("[Google Classroom Import] Error:", error);

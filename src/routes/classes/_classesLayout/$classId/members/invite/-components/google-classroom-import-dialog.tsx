@@ -55,8 +55,9 @@ export function GoogleClassroomImportDialog({
     const [students, setStudents] = useState<StudentPreview[]>([]);
     const [importResult, setImportResult] = useState<{
         imported: number;
-        skipped: number;
+        added: number;
         pending: number;
+        skipped: number;
     } | null>(null);
 
     // Check if Google is connected
@@ -447,11 +448,23 @@ export function GoogleClassroomImportDialog({
                                 <AlertDescription>
                                     Successfully imported {importResult.imported} student
                                     {importResult.imported !== 1 ? "s" : ""}!
+                                    {importResult.added > 0 && (
+                                        <span className="block mt-1">
+                                            {importResult.added} student
+                                            {importResult.added !== 1 ? "s" : ""} {importResult.added === 1 ? "was" : "were"} added directly to the class.
+                                        </span>
+                                    )}
+                                    {importResult.pending > 0 && (
+                                        <span className="block mt-1">
+                                            {importResult.pending} student
+                                            {importResult.pending !== 1 ? "s" : ""} {importResult.pending === 1 ? "was" : "were"} added as pending members.
+                                        </span>
+                                    )}
                                     {importResult.skipped > 0 && (
                                         <span className="block mt-1">
                                             {importResult.skipped} student
                                             {importResult.skipped !== 1 ? "s" : ""} already
-                                            exist{importResult.skipped === 1 ? "s" : ""} and
+                                            exist{importResult.skipped === 1 ? "s" : ""} in the class and
                                             {importResult.skipped === 1 ? " was" : " were"}{" "}
                                             skipped.
                                         </span>
