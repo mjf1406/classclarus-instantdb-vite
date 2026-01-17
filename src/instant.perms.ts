@@ -110,6 +110,14 @@ const userClassAssistantTeacherRelationships = {
         "auth.id in data.ref('classes.classAssistantTeachers.id')",
     isAdminOfMyClassAsAssistant:
         "auth.id in data.ref('adminClasses.classAssistantTeachers.id')",
+    isStudentInMyClassAsAssistant:
+        "auth.id in data.ref('studentClasses.classAssistantTeachers.id')",
+    isTeacherInMyClassAsAssistant:
+        "auth.id in data.ref('teacherClasses.classAssistantTeachers.id')",
+    isAssistantTeacherInMyClassAsAssistant:
+        "auth.id in data.ref('assistantTeacherClasses.classAssistantTeachers.id')",
+    isGuardianInMyClassAsAssistant:
+        "auth.id in data.ref('guardianClasses.classAssistantTeachers.id')",
 };
 
 // User Class Relationships - As Guardian (teachers/assistant teachers only, NOT students)
@@ -200,12 +208,14 @@ const USER_ALL_CLASS_RELATIONSHIPS = [
     "isTeacherInMyClassAsTeacher",
     "isAssistantTeacherInMyClassAsTeacher",
     "isGuardianInMyClassAsTeacher",
-    // "isStudentInMyClassAsGuardian", // REMOVED - guardians can only see their own children's info
     "isTeacherInMyClassAsGuardian",
     "isAssistantTeacherInMyClassAsGuardian",
     "isTeacherInMyClassAsStudent",
     "isAssistantTeacherInMyClassAsStudent",
-    // "isGuardianInMyClassAsStudent", // REMOVED - students can only see their own guardians' info
+    "isStudentInMyClassAsAssistant",
+    "isTeacherInMyClassAsAssistant",
+    "isAssistantTeacherInMyClassAsAssistant",
+    "isGuardianInMyClassAsAssistant",
     "isTeacherInMyOrgAsAdmin",
     "isTeacherInMyOrgAsOwner",
     "isOwnerOfMyClass",
