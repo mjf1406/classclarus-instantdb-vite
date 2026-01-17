@@ -90,6 +90,39 @@ export function GoogleClassroomImportDialog({
         }
     };
 
+    const handleDisconnect = async () => {
+        if (!user?.refresh_token) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch("/api/google-classroom/disconnect", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    token: user.refresh_token,
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to disconnect");
+            }
+
+            // Reset state and go to connect step
+            setStep("connect");
+            setClasses([]);
+            setSelectedClassId("");
+            setStudents([]);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to disconnect");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleConnect = async () => {
         if (!user?.refresh_token) {
             setError("You must be logged in to connect Google Classroom");
@@ -317,9 +350,20 @@ export function GoogleClassroomImportDialog({
 
                     {step === "select" && (
                         <div className="space-y-4">
-                            <p className="text-sm text-muted-foreground">
-                                Select a Google Classroom class to import students from.
-                            </p>
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">
+                                    Select a Google Classroom class to import students from.
+                                </p>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleDisconnect}
+                                    disabled={isLoading}
+                                    className="text-xs"
+                                >
+                                    Reconnect
+                                </Button>
+                            </div>
                             {isLoading ? (
                                 <div className="flex items-center justify-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -435,6 +479,14 @@ export function GoogleClassroomImportDialog({
                                 disabled={isLoading}
                             >
                                 Refresh
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={handleDisconnect}
+                                disabled={isLoading}
+                                className="text-xs"
+                            >
+                                Reconnect
                             </Button>
                         </>
                     )}

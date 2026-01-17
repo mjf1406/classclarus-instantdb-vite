@@ -745,4 +745,38 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
             );
         }
     });
+
+    // POST /api/google-classroom/disconnect - Disconnect Google Classroom
+    app.post("/api/google-classroom/disconnect", async (c) => {
+        try {
+            const dbAdmin = c.get("dbAdmin") as ReturnType<
+                typeof initDbAdmin
+            >;
+            const userId = c.get("userId") as string;
+
+            // Clear the refresh token
+            await dbAdmin.transact([
+                dbAdmin.tx.$users[userId].update({
+                    googleRefreshToken: undefined,
+                }),
+            ]);
+
+            return c.json({
+                success: true,
+                message: "Google Classroom disconnected successfully",
+            });
+        } catch (error) {
+            console.error("[Google Classroom Disconnect] Error:", error);
+            return c.json(
+                {
+                    error: "Failed to disconnect",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "Unknown error",
+                },
+                500
+            );
+        }
+    });
 }
