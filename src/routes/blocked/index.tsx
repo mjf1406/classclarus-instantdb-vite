@@ -1,6 +1,6 @@
 /** @format */
 
-import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
     Card,
     CardContent,
