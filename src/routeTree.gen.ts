@@ -52,6 +52,7 @@ import { Route as ClassesClassesLayoutClassIdMembersInviteIndexRouteImport } fro
 import { Route as ClassesClassesLayoutClassIdMembersGuardiansIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/guardians/index'
 import { Route as ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/assistant-teachers/index'
 import { Route as ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/admins/index'
+import { Route as ClassesClassesLayoutClassIdMainStudentDashboardsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/student-dashboards/index'
 import { Route as ClassesClassesLayoutClassIdMainSettingsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/settings/index'
 import { Route as ClassesClassesLayoutClassIdMainPointsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/points/index'
 import { Route as ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/noise-monitor/index'
@@ -305,6 +306,12 @@ const ClassesClassesLayoutClassIdMembersAdminsIndexRoute =
     path: '/$classId/members/admins/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute =
+  ClassesClassesLayoutClassIdMainStudentDashboardsIndexRouteImport.update({
+    id: '/$classId/main/student-dashboards/',
+    path: '/$classId/main/student-dashboards/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 const ClassesClassesLayoutClassIdMainSettingsIndexRoute =
   ClassesClassesLayoutClassIdMainSettingsIndexRouteImport.update({
     id: '/$classId/main/settings/',
@@ -367,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  '/classes/$classId/main/student-dashboards': typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   '/classes/$classId/members/guardians': typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -415,6 +423,7 @@ export interface FileRoutesByTo {
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  '/classes/$classId/main/student-dashboards': typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   '/classes/$classId/members/guardians': typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -466,6 +475,7 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/main/noise-monitor/': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/_classesLayout/$classId/main/points/': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/_classesLayout/$classId/main/settings/': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  '/classes/_classesLayout/$classId/main/student-dashboards/': typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   '/classes/_classesLayout/$classId/members/admins/': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/_classesLayout/$classId/members/assistant-teachers/': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   '/classes/_classesLayout/$classId/members/guardians/': typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -518,6 +528,7 @@ export interface FileRouteTypes {
     | '/classes/$classId/main/noise-monitor'
     | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
+    | '/classes/$classId/main/student-dashboards'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
     | '/classes/$classId/members/guardians'
@@ -566,6 +577,7 @@ export interface FileRouteTypes {
     | '/classes/$classId/main/noise-monitor'
     | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
+    | '/classes/$classId/main/student-dashboards'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
     | '/classes/$classId/members/guardians'
@@ -616,6 +628,7 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/main/noise-monitor/'
     | '/classes/_classesLayout/$classId/main/points/'
     | '/classes/_classesLayout/$classId/main/settings/'
+    | '/classes/_classesLayout/$classId/main/student-dashboards/'
     | '/classes/_classesLayout/$classId/members/admins/'
     | '/classes/_classesLayout/$classId/members/assistant-teachers/'
     | '/classes/_classesLayout/$classId/members/guardians/'
@@ -953,6 +966,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
+    '/classes/_classesLayout/$classId/main/student-dashboards/': {
+      id: '/classes/_classesLayout/$classId/main/student-dashboards/'
+      path: '/$classId/main/student-dashboards'
+      fullPath: '/classes/$classId/main/student-dashboards'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/classes/_classesLayout/$classId/main/settings/': {
       id: '/classes/_classesLayout/$classId/main/settings/'
       path: '/$classId/main/settings'
@@ -1008,6 +1028,7 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute: typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   ClassesClassesLayoutClassIdMainPointsIndexRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   ClassesClassesLayoutClassIdMainSettingsIndexRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
+  ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute: typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute: typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   ClassesClassesLayoutClassIdMembersGuardiansIndexRoute: typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -1049,6 +1070,8 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
     ClassesClassesLayoutClassIdMainPointsIndexRoute,
   ClassesClassesLayoutClassIdMainSettingsIndexRoute:
     ClassesClassesLayoutClassIdMainSettingsIndexRoute,
+  ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute:
+    ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute,
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute:
     ClassesClassesLayoutClassIdMembersAdminsIndexRoute,
   ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute:
