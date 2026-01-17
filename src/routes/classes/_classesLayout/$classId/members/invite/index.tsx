@@ -6,6 +6,7 @@ import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { Card, CardContent } from "@/components/ui/card";
 import { InviteCodesTabs } from "./-components/invite-codes-tabs";
+import { RestrictedRoute } from "@/components/auth/restricted-route";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/invite/"
@@ -32,35 +33,6 @@ function RouteComponent() {
         // This callback can be used for additional actions if needed
     };
 
-    if (!hasPermission) {
-        return (
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <UserPlus className="size-12 md:size-16 text-primary" />
-                        <div>
-                            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                                Invite Members
-                            </h1>
-                            <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                                Invite new members to your class
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <Card>
-                    <CardContent className="py-6">
-                        <p className="text-sm text-muted-foreground text-center">
-                            You don't have permission to invite members. Only
-                            class owners, admins, and teachers can manage join
-                            codes.
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
     const codes = classEntityWithCodes
         ? {
               student: classEntityWithCodes.studentCode || null,
@@ -70,26 +42,59 @@ function RouteComponent() {
         : { student: null, teacher: null, guardian: null };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <UserPlus className="size-12 md:size-16 text-primary" />
-                    <div>
-                        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                            Invite Members
-                        </h1>
-                        <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                            Share join codes to invite members to your class
-                        </p>
+        <RestrictedRoute
+            role={roleInfo.role}
+            isLoading={isLoading}
+            backUrl={classId ? `/classes/${classId}` : "/classes"}
+        >
+            {!hasPermission ? (
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <UserPlus className="size-12 md:size-16 text-primary" />
+                            <div>
+                                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                                    Invite Members
+                                </h1>
+                                <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
+                                    Invite new members to your class
+                                </p>
+                            </div>
+                        </div>
                     </div>
+                    <Card>
+                        <CardContent className="py-6">
+                            <p className="text-sm text-muted-foreground text-center">
+                                You don't have permission to invite members. Only
+                                class owners, admins, and teachers can manage join
+                                codes.
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
-            </div>
+            ) : (
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <UserPlus className="size-12 md:size-16 text-primary" />
+                            <div>
+                                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                                    Invite Members
+                                </h1>
+                                <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
+                                    Share join codes to invite members to your class
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-            <InviteCodesTabs
-                codes={codes}
-                isLoading={isLoading}
-                onCopySuccess={handleCopySuccess}
-            />
-        </div>
+                    <InviteCodesTabs
+                        codes={codes}
+                        isLoading={isLoading}
+                        onCopySuccess={handleCopySuccess}
+                    />
+                </div>
+            )}
+        </RestrictedRoute>
     );
 }

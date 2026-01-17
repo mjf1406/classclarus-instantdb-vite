@@ -3,6 +3,63 @@
 import { redirect } from "@tanstack/react-router";
 import type { AuthContextValue } from "@/components/auth/auth-provider";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
+import type { ClassRole } from "@/hooks/use-class-role";
+import type { OrgRole } from "@/hooks/use-org-role";
+
+/**
+ * Roles that are restricted from accessing certain routes
+ * Students and guardians can only access home and dashboard
+ */
+export const RESTRICTED_ROLES = ["student", "guardian"] as const;
+export type RestrictedRole = (typeof RESTRICTED_ROLES)[number];
+
+/**
+ * Check if a role is a restricted role (student or guardian)
+ */
+export function isRestrictedRole(role: ClassRole | OrgRole | null): boolean {
+    if (!role) return false;
+    return RESTRICTED_ROLES.includes(role as RestrictedRole);
+}
+
+/**
+ * Routes that students and guardians ARE allowed to access
+ * These are relative path patterns after the $classId or $orgId segment
+ */
+export const ALLOWED_RESTRICTED_PATHS = [
+    "", // home/index
+    "/", // home/index with trailing slash
+    "/main/dashboard", // dashboard
+    "/main/dashboard/", // dashboard with trailing slash
+] as const;
+
+/**
+ * Check if a pathname is allowed for restricted roles (students/guardians)
+ * @param pathname - The full pathname (e.g., /classes/123/members/students)
+ * @param entityType - "class" or "org"
+ * @param entityId - The class or org ID
+ */
+export function isPathAllowedForRestrictedRole(
+    pathname: string,
+    entityType: "class" | "org",
+    entityId: string
+): boolean {
+    const basePath =
+        entityType === "class"
+            ? `/classes/${entityId}`
+            : `/organizations/${entityId}`;
+
+    // Get the path after the entity ID
+    const relativePath = pathname.replace(basePath, "");
+
+    // Normalize the path - remove trailing slashes for comparison
+    const normalizedPath = relativePath.replace(/\/$/, "") || "";
+
+    // Check if this path is in the allowed list
+    return ALLOWED_RESTRICTED_PATHS.some((allowed) => {
+        const normalizedAllowed = allowed.replace(/\/$/, "") || "";
+        return normalizedPath === normalizedAllowed;
+    });
+}
 
 /**
  * Check if a route is publicly accessible (no authentication required)

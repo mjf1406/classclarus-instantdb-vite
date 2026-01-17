@@ -20,6 +20,9 @@ import {
 import { CreateClassDialog } from "./-components/create-class-dialog";
 import { Link } from "@tanstack/react-router";
 import { UserPlus, LogIn } from "lucide-react";
+import { useOrganizationById } from "@/hooks/use-organization-hooks";
+import { useOrgRole } from "@/hooks/use-org-role";
+import { RestrictedRoute } from "@/components/auth/restricted-route";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/main/classes/"
@@ -33,9 +36,17 @@ function RouteComponent() {
     const { classes: archivedClasses, isLoading: isLoadingArchived } =
         useArchivedClassesByRole(orgId);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const { organization, isLoading: orgLoading } = useOrganizationById(orgId);
+    const roleInfo = useOrgRole(organization);
 
     return (
-        <div className="space-y-8">
+        <RestrictedRoute
+            role={roleInfo.role}
+            isLoading={orgLoading}
+            restrictNullRole
+            backUrl={orgId ? `/organizations/${orgId}` : "/organizations"}
+        >
+            <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <BookOpen className="size-12 md:size-16 text-primary" />
@@ -180,6 +191,7 @@ function RouteComponent() {
                     )}
                 </div>
             ) : null}
-        </div>
+            </div>
+        </RestrictedRoute>
     );
 }

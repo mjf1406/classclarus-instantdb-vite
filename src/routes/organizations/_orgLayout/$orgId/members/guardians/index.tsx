@@ -46,6 +46,7 @@ import {
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { RoleManager } from "@/components/members/role-manager";
+import { RestrictedRoute } from "@/components/auth/restricted-route";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/members/guardians/"
@@ -395,7 +396,7 @@ function RouteComponent() {
     const params = useParams({ strict: false });
     const orgId = params.orgId;
     const { users, isLoading } = useOrgClassRoleMembers(orgId, "classGuardians");
-    const { organization } = useOrganizationById(orgId);
+    const { organization, isLoading: orgLoading } = useOrganizationById(orgId);
     const roleInfo = useOrgRole(organization);
 
     const canManage = roleInfo.isOwner || roleInfo.isAdmin;
@@ -439,50 +440,57 @@ function RouteComponent() {
     }, [classes]);
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <GuardianIcon className="size-12 md:size-16 text-primary" />
-                    <div>
-                        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                            Guardians
-                        </h1>
-                        <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                            View guardians in classes within this organization
-                        </p>
+        <RestrictedRoute
+            role={roleInfo.role}
+            isLoading={orgLoading}
+            restrictNullRole
+            backUrl={orgId ? `/organizations/${orgId}` : "/organizations"}
+        >
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <GuardianIcon className="size-12 md:size-16 text-primary" />
+                        <div>
+                            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                                Guardians
+                            </h1>
+                            <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
+                                View guardians in classes within this organization
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {isLoading ? (
-                <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <Skeleton key={i} className="h-20 w-full" />
-                    ))}
-                </div>
-            ) : users.length === 0 ? (
-                <Card>
-                    <CardContent className="py-12 text-center">
-                        <Users className="size-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">
-                            No guardians found in any classes within this
-                            organization.
-                        </p>
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="space-y-3">
-                    {users.map(({ user, classes: userClasses }) => (
-                        <GuardianCard
-                            key={user.id}
-                            guardian={user}
-                            classes={userClasses}
-                            canManage={canManage}
-                            orgStudents={orgStudents}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
+                {isLoading ? (
+                    <div className="space-y-3">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <Skeleton key={i} className="h-20 w-full" />
+                        ))}
+                    </div>
+                ) : users.length === 0 ? (
+                    <Card>
+                        <CardContent className="py-12 text-center">
+                            <Users className="size-12 mx-auto text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground">
+                                No guardians found in any classes within this
+                                organization.
+                            </p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="space-y-3">
+                        {users.map(({ user, classes: userClasses }) => (
+                            <GuardianCard
+                                key={user.id}
+                                guardian={user}
+                                classes={userClasses}
+                                canManage={canManage}
+                                orgStudents={orgStudents}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </RestrictedRoute>
     );
 }

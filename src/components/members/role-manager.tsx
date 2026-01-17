@@ -36,6 +36,7 @@ import {
     StudentIcon,
     GuardianIcon,
 } from "@/components/icons/role-icons";
+import { isRestrictedRole } from "@/lib/auth-utils";
 
 type User = InstaQLEntity<AppSchema, "$users">;
 
@@ -148,8 +149,18 @@ export function RoleManager({
         (contextType === "org" &&
             orgEntity?.admins?.some((a) => a.id === user.id));
 
+    // Check if current user is a student or guardian (restricted role)
+    const isCurrentUserStudent =
+        contextType === "class" &&
+        classEntity?.classStudents?.some((s) => s.id === currentUser?.id);
+    const isCurrentUserGuardian =
+        contextType === "class" &&
+        classEntity?.classGuardians?.some((g) => g.id === currentUser?.id);
+    const isCurrentUserRestricted = isCurrentUserStudent || isCurrentUserGuardian;
+
     // If managed user is an admin and current user is not owner, don't allow role changes
-    const canChangeRoles = !isManagedUserAdmin || isCurrentUserOwner;
+    // Also, students and guardians should never see the manage roles button
+    const canChangeRoles = !isCurrentUserRestricted && (!isManagedUserAdmin || isCurrentUserOwner);
 
     // Get current roles
     const currentRoles = new Set<RoleType>();

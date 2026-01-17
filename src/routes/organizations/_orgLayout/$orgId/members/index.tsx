@@ -3,6 +3,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Users } from "lucide-react";
 import { useOrganizationById } from "@/hooks/use-organization-hooks";
+import { useOrgRole } from "@/hooks/use-org-role";
 import { useParams } from "@tanstack/react-router";
 import {
     Collapsible,
@@ -23,6 +24,7 @@ import {
     StudentIcon,
 } from "@/components/icons/role-icons";
 import { useOrgClassRoleMembers } from "@/hooks/use-org-class-role-members";
+import { RestrictedRoute } from "@/components/auth/restricted-route";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/members/"
@@ -33,7 +35,8 @@ export const Route = createFileRoute(
 function RouteComponent() {
     const params = useParams({ strict: false });
     const orgId = params.orgId;
-    const { organization } = useOrganizationById(orgId);
+    const { organization, isLoading: orgLoading } = useOrganizationById(orgId);
+    const roleInfo = useOrgRole(organization);
 
     const { users: students, isLoading: studentsLoading } =
         useOrgClassRoleMembers(orgId, "classStudents");
@@ -112,22 +115,28 @@ function RouteComponent() {
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Users className="size-12 md:size-16 text-primary" />
-                    <div>
-                        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                            All Members
-                        </h1>
-                        <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                            View and manage all organization members
-                        </p>
+        <RestrictedRoute
+            role={roleInfo.role}
+            isLoading={orgLoading}
+            restrictNullRole
+            backUrl={orgId ? `/organizations/${orgId}` : "/organizations"}
+        >
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Users className="size-12 md:size-16 text-primary" />
+                        <div>
+                            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                                All Members
+                            </h1>
+                            <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
+                                View and manage all organization members
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="space-y-4">
+                <div className="space-y-4">
                 {sections.map((section) => {
                     const Icon = section.icon;
                     return (
@@ -333,7 +342,8 @@ function RouteComponent() {
                         </Collapsible>
                     );
                 })}
+                </div>
             </div>
-        </div>
+        </RestrictedRoute>
     );
 }

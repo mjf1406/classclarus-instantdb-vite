@@ -19,6 +19,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { RestrictedRoute } from "@/components/auth/restricted-route";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/members/assistant-teachers/"
@@ -33,13 +34,19 @@ function RouteComponent() {
         orgId,
         "classAssistantTeachers"
     );
-    const { organization } = useOrganizationById(orgId);
+    const { organization, isLoading: orgLoading } = useOrganizationById(orgId);
     const roleInfo = useOrgRole(organization);
 
     const canManage = roleInfo.isOwner || roleInfo.isAdmin;
 
     return (
-        <div className="space-y-6">
+        <RestrictedRoute
+            role={roleInfo.role}
+            isLoading={orgLoading}
+            restrictNullRole
+            backUrl={orgId ? `/organizations/${orgId}` : "/organizations"}
+        >
+            <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <AssistantTeacherIcon className="size-12 md:size-16 text-primary" />
@@ -177,7 +184,8 @@ function RouteComponent() {
                         );
                     })}
                 </div>
-            )}
-        </div>
+                )}
+            </div>
+        </RestrictedRoute>
     );
 }

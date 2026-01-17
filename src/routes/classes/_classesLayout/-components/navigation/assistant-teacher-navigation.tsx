@@ -1,6 +1,6 @@
 /** @format */
 
-import { Home } from "lucide-react";
+import { Home, LayoutDashboard } from "lucide-react";
 import type { NavigationItem } from "./owner-navigation";
 
 export function getAssistantTeacherNavigation(classId: string): {
@@ -14,6 +14,13 @@ export function getAssistantTeacherNavigation(classId: string): {
                 description: "That's this page!",
                 url: `/classes/${classId}`,
                 icon: Home,
+            },
+            {
+                title: "Dashboard",
+                description:
+                    "Access analytics, insights, and key metrics for your class",
+                url: `/classes/${classId}/main/dashboard`,
+                icon: LayoutDashboard,
             },
         ],
         memberItems: [],
