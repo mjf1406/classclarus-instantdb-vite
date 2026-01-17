@@ -609,19 +609,33 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
             );
 
             // Fetch students from Google Classroom
+            console.log("[Google Classroom Import] Fetching students from classroom:", classroomId);
             const studentsData = await makeClassroomRequest(
                 `/courses/${classroomId}/students`,
                 accessToken
             );
+            console.log("[Google Classroom Import] Students data received:", {
+                studentCount: studentsData.students?.length || 0,
+                students: studentsData.students?.map((s: any) => ({
+                    userId: s.userId,
+                    name: s.profile?.name?.fullName,
+                })),
+            });
 
             // Fetch email for each student using userProfiles endpoint
+            console.log("[Google Classroom Import] Fetching user profiles for", studentsData.students?.length || 0, "students");
             const studentsWithEmails = await Promise.all(
                 (studentsData.students || []).map(async (student: any) => {
                     try {
+                        console.log(`[Google Classroom Import] Fetching profile for userId: ${student.userId}`);
                         const userProfile = await makeClassroomRequest(
                             `/userProfiles/${student.userId}`,
                             accessToken
                         );
+                        console.log(`[Google Classroom Import] Profile fetched for ${student.userId}:`, {
+                            email: userProfile.emailAddress,
+                            hasEmail: !!userProfile.emailAddress,
+                        });
                         return {
                             email: (userProfile.emailAddress || "").toLowerCase().trim(),
                             firstName: student.profile?.name?.givenName || "",
@@ -630,7 +644,7 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                     } catch (error) {
                         console.error(
                             `[Google Classroom Import] Failed to fetch profile for user ${student.userId}:`,
-                            error
+                            error instanceof Error ? error.message : String(error)
                         );
                         // Return student without email if profile fetch fails
                         return {
@@ -642,8 +656,16 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 })
             );
 
+            console.log("[Google Classroom Import] Students with emails:", {
+                total: studentsWithEmails.length,
+                withEmail: studentsWithEmails.filter((s: any) => s.email).length,
+                withoutEmail: studentsWithEmails.filter((s: any) => !s.email).length,
+                emails: studentsWithEmails.map((s: any) => s.email),
+            });
+
             // Filter out students without valid email addresses
             const students = studentsWithEmails.filter((s: any) => s.email && s.email.length > 0);
+            console.log("[Google Classroom Import] Filtered students (with valid emails):", students.length);
 
             // Get existing class members and pending members
             const existingMembersQuery = await dbAdmin.query({
