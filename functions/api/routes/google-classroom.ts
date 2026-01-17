@@ -223,23 +223,73 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
             const error = c.req.query("error");
 
             if (error) {
-                return c.redirect(
-                    `/?google-error=${encodeURIComponent(error)}`
-                );
+                return c.html(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Google Classroom Connection Error</title>
+                    </head>
+                    <body>
+                        <script>
+                            if (window.opener) {
+                                window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(error)} }, '*');
+                                window.close();
+                            } else {
+                                window.location.href = '/?google-error=${encodeURIComponent(error)}';
+                            }
+                        </script>
+                        <p>Connection failed. This window will close automatically...</p>
+                    </body>
+                    </html>
+                `);
             }
 
             if (!code || !state) {
-                return c.redirect(
-                    `/?google-error=${encodeURIComponent("Missing authorization code or state")}`
-                );
+                const errorMsg = "Missing authorization code or state";
+                return c.html(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Google Classroom Connection Error</title>
+                    </head>
+                    <body>
+                        <script>
+                            if (window.opener) {
+                                window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(errorMsg)} }, '*');
+                                window.close();
+                            } else {
+                                window.location.href = '/?google-error=${encodeURIComponent(errorMsg)}';
+                            }
+                        </script>
+                        <p>Connection failed. This window will close automatically...</p>
+                    </body>
+                    </html>
+                `);
             }
 
             // Extract user ID from state
             const userId = extractUserIdFromState(state);
             if (!userId) {
-                return c.redirect(
-                    `/?google-error=${encodeURIComponent("Invalid state token")}`
-                );
+                const errorMsg = "Invalid state token";
+                return c.html(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Google Classroom Connection Error</title>
+                    </head>
+                    <body>
+                        <script>
+                            if (window.opener) {
+                                window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(errorMsg)} }, '*');
+                                window.close();
+                            } else {
+                                window.location.href = '/?google-error=${encodeURIComponent(errorMsg)}';
+                            }
+                        </script>
+                        <p>Connection failed. This window will close automatically...</p>
+                    </body>
+                    </html>
+                `);
             }
 
             const { clientId, clientSecret, redirectUri } =
@@ -261,15 +311,51 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 }),
             ]);
 
-            // Redirect to success page (frontend will handle this)
-            return c.redirect(`/?google-connected=true`);
+            // Return HTML page that closes the popup and notifies parent
+            return c.html(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Google Classroom Connected</title>
+                </head>
+                <body>
+                    <script>
+                        // Notify parent window that connection succeeded
+                        if (window.opener) {
+                            window.opener.postMessage({ type: 'google-classroom-connected', success: true }, '*');
+                            window.close();
+                        } else {
+                            // If popup was blocked or closed, redirect
+                            window.location.href = '/?google-connected=true';
+                        }
+                    </script>
+                    <p>Connection successful! This window will close automatically...</p>
+                </body>
+                </html>
+            `);
         } catch (error) {
             console.error("[Google Classroom Callback] Error:", error);
             const errorMessage =
                 error instanceof Error ? error.message : "Unknown error";
-            return c.redirect(
-                `/?google-error=${encodeURIComponent(errorMessage)}`
-            );
+            return c.html(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Google Classroom Connection Error</title>
+                </head>
+                <body>
+                    <script>
+                        if (window.opener) {
+                            window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(errorMessage)} }, '*');
+                            window.close();
+                        } else {
+                            window.location.href = '/?google-error=${encodeURIComponent(errorMessage)}';
+                        }
+                    </script>
+                    <p>Connection failed. This window will close automatically...</p>
+                </body>
+                </html>
+            `);
         }
     });
 

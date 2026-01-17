@@ -447,20 +447,17 @@ function RouteComponent() {
     const canManage =
         roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
 
-    // Query pending members
-    const { data: pendingData } = db.useQuery({
-        pendingMembers: {
-            $: {
-                where: {
-                    "class.id": classId,
-                    role: "student",
-                },
-            },
-            class: {},
+    // Query class with pendingMembers link, then filter by role client-side
+    const { data: classData } = db.useQuery({
+        classes: {
+            $: { where: { id: classId } },
+            pendingMembers: {},
         },
     });
 
-    const pendingMembers = (pendingData?.pendingMembers as unknown as PendingMember[]) || [];
+    const pendingMembers = (
+        (classData?.classes?.[0]?.pendingMembers as unknown as PendingMember[]) || []
+    ).filter((pm) => pm.role === "student");
 
     return (
         <RestrictedRoute

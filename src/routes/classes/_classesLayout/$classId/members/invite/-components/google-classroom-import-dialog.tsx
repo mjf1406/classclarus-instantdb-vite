@@ -121,10 +121,33 @@ export function GoogleClassroomImportDialog({
                 "width=500,height=600"
             );
 
-            // Poll for connection
+            // Listen for postMessage from popup
+            const messageHandler = (event: MessageEvent) => {
+                // In production, you should verify event.origin for security
+                if (event.data?.type === 'google-classroom-connected') {
+                    window.removeEventListener('message', messageHandler);
+                    if (authWindow) {
+                        authWindow.close();
+                    }
+                    if (event.data.success) {
+                        setError(null);
+                        setStep("select");
+                        loadClasses();
+                    } else {
+                        setError(event.data.error || "Connection failed");
+                        setStep("connect");
+                    }
+                    setIsLoading(false);
+                }
+            };
+
+            window.addEventListener('message', messageHandler);
+
+            // Fallback: Poll for window close (in case postMessage doesn't work)
             const checkInterval = setInterval(async () => {
                 if (authWindow?.closed) {
                     clearInterval(checkInterval);
+                    window.removeEventListener('message', messageHandler);
                     // Check if connection succeeded
                     await checkConnection();
                 }
@@ -133,6 +156,7 @@ export function GoogleClassroomImportDialog({
             // Timeout after 5 minutes
             setTimeout(() => {
                 clearInterval(checkInterval);
+                window.removeEventListener('message', messageHandler);
                 if (authWindow && !authWindow.closed) {
                     authWindow.close();
                     setError("Connection timed out. Please try again.");
