@@ -3,18 +3,20 @@
 import { useParams } from "@tanstack/react-router";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
-import { getOwnerNavigation } from "./owner-navigation";
-import { getAdminNavigation } from "./admin-navigation";
-import { getTeacherNavigation } from "./teacher-navigation";
-import { getAssistantTeacherNavigation } from "./assistant-teacher-navigation";
-import { getStudentNavigation } from "./student-navigation";
-import { getGuardianNavigation } from "./guardian-navigation";
-import type { NavigationItem } from "./owner-navigation";
+import { getOwnerNavigation } from "../roles/admin-owner/owner-navigation";
+import { getAdminNavigation } from "../roles/admin-owner/admin-navigation";
+import { getTeacherNavigation } from "../roles/teacher/teacher-navigation";
+import { getAssistantTeacherNavigation } from "../roles/assistant-teacher/assistant-teacher-navigation";
+import { getStudentNavigation } from "../roles/student/student-navigation";
+import { getGuardianNavigation } from "../roles/guardian/guardian-navigation";
+import type { NavigationItem } from "./types";
 
 export interface RoleBasedNavigationResult {
     mainItems: NavigationItem[];
     memberItems: NavigationItem[];
     settingsItem?: NavigationItem;
+    classManagementItems?: NavigationItem[];
+    randomItems?: NavigationItem[];
     isLoading: boolean;
 }
 
@@ -39,6 +41,8 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,
                 settingsItem: nav.settingsItem,
+                classManagementItems: nav.classManagementItems,
+                randomItems: nav.randomItems,
                 isLoading: false,
             };
         }
@@ -47,6 +51,8 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
             return {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,
+                classManagementItems: nav.classManagementItems,
+                randomItems: nav.randomItems,
                 isLoading: false,
             };
         }
@@ -56,6 +62,8 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,
                 settingsItem: nav.settingsItem,
+                classManagementItems: nav.classManagementItems,
+                randomItems: nav.randomItems,
                 isLoading: false,
             };
         }
@@ -64,6 +72,8 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
             return {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,
+                classManagementItems: nav.classManagementItems,
+                randomItems: nav.randomItems,
                 isLoading: false,
             };
         }

@@ -37,7 +37,7 @@ interface RestrictedRouteProps {
  * A wrapper component that blocks students and guardians from accessing restricted routes.
  * Only allows access for owners, admins, teachers, and assistant teachers.
  * 
- * For class routes: blocks students and guardians
+ * For class routes: blocks students and guardians (allows owners, admins, teachers, assistant teachers)
  * For org routes (with restrictNullRole=true): blocks anyone without an org role
  * 
  * Usage:

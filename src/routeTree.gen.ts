@@ -26,7 +26,14 @@ import { Route as OrganizationsOrgLayoutOrgIdIndexRouteImport } from './routes/o
 import { Route as ClassesClassesLayoutMembersIndexRouteImport } from './routes/classes/_classesLayout/members/index'
 import { Route as ClassesClassesLayoutClassIdIndexRouteImport } from './routes/classes/_classesLayout/$classId/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/index'
+import { Route as ClassesClassesLayoutClassIdTasksIndexRouteImport } from './routes/classes/_classesLayout/$classId/tasks/index'
+import { Route as ClassesClassesLayoutClassIdReadingIndexRouteImport } from './routes/classes/_classesLayout/$classId/reading/index'
+import { Route as ClassesClassesLayoutClassIdRandomToolsIndexRouteImport } from './routes/classes/_classesLayout/$classId/random-tools/index'
 import { Route as ClassesClassesLayoutClassIdMembersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/index'
+import { Route as ClassesClassesLayoutClassIdGradebookIndexRouteImport } from './routes/classes/_classesLayout/$classId/gradebook/index'
+import { Route as ClassesClassesLayoutClassIdExpectationsIndexRouteImport } from './routes/classes/_classesLayout/$classId/expectations/index'
+import { Route as ClassesClassesLayoutClassIdAttendanceIndexRouteImport } from './routes/classes/_classesLayout/$classId/attendance/index'
+import { Route as ClassesClassesLayoutClassIdAssignmentsIndexRouteImport } from './routes/classes/_classesLayout/$classId/assignments/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersTeachersIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/teachers/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersStudentsIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/students/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersInviteIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/invite/index'
@@ -36,6 +43,9 @@ import { Route as OrganizationsOrgLayoutOrgIdMembersAdminsIndexRouteImport } fro
 import { Route as OrganizationsOrgLayoutOrgIdMainSettingsIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/main/settings/index'
 import { Route as OrganizationsOrgLayoutOrgIdMainDashboardIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/main/dashboard/index'
 import { Route as OrganizationsOrgLayoutOrgIdMainClassesIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/main/classes/index'
+import { Route as ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRouteImport } from './routes/classes/_classesLayout/$classId/random-tools/randomizer/index'
+import { Route as ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRouteImport } from './routes/classes/_classesLayout/$classId/random-tools/random-event/index'
+import { Route as ClassesClassesLayoutClassIdRandomToolsAssignersIndexRouteImport } from './routes/classes/_classesLayout/$classId/random-tools/assigners/index'
 import { Route as ClassesClassesLayoutClassIdMembersTeachersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/teachers/index'
 import { Route as ClassesClassesLayoutClassIdMembersStudentsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/students/index'
 import { Route as ClassesClassesLayoutClassIdMembersInviteIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/invite/index'
@@ -43,7 +53,9 @@ import { Route as ClassesClassesLayoutClassIdMembersGuardiansIndexRouteImport } 
 import { Route as ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/assistant-teachers/index'
 import { Route as ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/admins/index'
 import { Route as ClassesClassesLayoutClassIdMainSettingsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/settings/index'
+import { Route as ClassesClassesLayoutClassIdMainPointsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/points/index'
 import { Route as ClassesClassesLayoutClassIdMainDashboardIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/dashboard/index'
+import { Route as ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/classroom-screen/index'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -136,10 +148,52 @@ const OrganizationsOrgLayoutOrgIdMembersIndexRoute =
     path: '/$orgId/members/',
     getParentRoute: () => OrganizationsOrgLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdTasksIndexRoute =
+  ClassesClassesLayoutClassIdTasksIndexRouteImport.update({
+    id: '/$classId/tasks/',
+    path: '/$classId/tasks/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdReadingIndexRoute =
+  ClassesClassesLayoutClassIdReadingIndexRouteImport.update({
+    id: '/$classId/reading/',
+    path: '/$classId/reading/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdRandomToolsIndexRoute =
+  ClassesClassesLayoutClassIdRandomToolsIndexRouteImport.update({
+    id: '/$classId/random-tools/',
+    path: '/$classId/random-tools/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 const ClassesClassesLayoutClassIdMembersIndexRoute =
   ClassesClassesLayoutClassIdMembersIndexRouteImport.update({
     id: '/$classId/members/',
     path: '/$classId/members/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdGradebookIndexRoute =
+  ClassesClassesLayoutClassIdGradebookIndexRouteImport.update({
+    id: '/$classId/gradebook/',
+    path: '/$classId/gradebook/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdExpectationsIndexRoute =
+  ClassesClassesLayoutClassIdExpectationsIndexRouteImport.update({
+    id: '/$classId/expectations/',
+    path: '/$classId/expectations/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdAttendanceIndexRoute =
+  ClassesClassesLayoutClassIdAttendanceIndexRouteImport.update({
+    id: '/$classId/attendance/',
+    path: '/$classId/attendance/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdAssignmentsIndexRoute =
+  ClassesClassesLayoutClassIdAssignmentsIndexRouteImport.update({
+    id: '/$classId/assignments/',
+    path: '/$classId/assignments/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
 const OrganizationsOrgLayoutOrgIdMembersTeachersIndexRoute =
@@ -196,6 +250,24 @@ const OrganizationsOrgLayoutOrgIdMainClassesIndexRoute =
     path: '/$orgId/main/classes/',
     getParentRoute: () => OrganizationsOrgLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute =
+  ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRouteImport.update({
+    id: '/$classId/random-tools/randomizer/',
+    path: '/$classId/random-tools/randomizer/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute =
+  ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRouteImport.update({
+    id: '/$classId/random-tools/random-event/',
+    path: '/$classId/random-tools/random-event/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute =
+  ClassesClassesLayoutClassIdRandomToolsAssignersIndexRouteImport.update({
+    id: '/$classId/random-tools/assigners/',
+    path: '/$classId/random-tools/assigners/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 const ClassesClassesLayoutClassIdMembersTeachersIndexRoute =
   ClassesClassesLayoutClassIdMembersTeachersIndexRouteImport.update({
     id: '/$classId/members/teachers/',
@@ -238,10 +310,22 @@ const ClassesClassesLayoutClassIdMainSettingsIndexRoute =
     path: '/$classId/main/settings/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdMainPointsIndexRoute =
+  ClassesClassesLayoutClassIdMainPointsIndexRouteImport.update({
+    id: '/$classId/main/points/',
+    path: '/$classId/main/points/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 const ClassesClassesLayoutClassIdMainDashboardIndexRoute =
   ClassesClassesLayoutClassIdMainDashboardIndexRouteImport.update({
     id: '/$classId/main/dashboard/',
     path: '/$classId/main/dashboard/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute =
+  ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport.update({
+    id: '/$classId/main/classroom-screen/',
+    path: '/$classId/main/classroom-screen/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
 
@@ -262,9 +346,18 @@ export interface FileRoutesByFullPath {
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdIndexRoute
+  '/classes/$classId/assignments': typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
+  '/classes/$classId/attendance': typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
+  '/classes/$classId/expectations': typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
+  '/classes/$classId/gradebook': typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
+  '/classes/$classId/random-tools': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
+  '/classes/$classId/reading': typeof ClassesClassesLayoutClassIdReadingIndexRoute
+  '/classes/$classId/tasks': typeof ClassesClassesLayoutClassIdTasksIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -272,6 +365,9 @@ export interface FileRoutesByFullPath {
   '/classes/$classId/members/invite': typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
   '/classes/$classId/members/students': typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
   '/classes/$classId/members/teachers': typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
+  '/classes/$classId/random-tools/assigners': typeof ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute
+  '/classes/$classId/random-tools/random-event': typeof ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute
+  '/classes/$classId/random-tools/randomizer': typeof ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute
   '/organizations/$orgId/main/classes': typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRoute
   '/organizations/$orgId/main/dashboard': typeof OrganizationsOrgLayoutOrgIdMainDashboardIndexRoute
   '/organizations/$orgId/main/settings': typeof OrganizationsOrgLayoutOrgIdMainSettingsIndexRoute
@@ -297,9 +393,18 @@ export interface FileRoutesByTo {
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdIndexRoute
+  '/classes/$classId/assignments': typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
+  '/classes/$classId/attendance': typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
+  '/classes/$classId/expectations': typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
+  '/classes/$classId/gradebook': typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
+  '/classes/$classId/random-tools': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
+  '/classes/$classId/reading': typeof ClassesClassesLayoutClassIdReadingIndexRoute
+  '/classes/$classId/tasks': typeof ClassesClassesLayoutClassIdTasksIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -307,6 +412,9 @@ export interface FileRoutesByTo {
   '/classes/$classId/members/invite': typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
   '/classes/$classId/members/students': typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
   '/classes/$classId/members/teachers': typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
+  '/classes/$classId/random-tools/assigners': typeof ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute
+  '/classes/$classId/random-tools/random-event': typeof ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute
+  '/classes/$classId/random-tools/randomizer': typeof ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute
   '/organizations/$orgId/main/classes': typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRoute
   '/organizations/$orgId/main/dashboard': typeof OrganizationsOrgLayoutOrgIdMainDashboardIndexRoute
   '/organizations/$orgId/main/settings': typeof OrganizationsOrgLayoutOrgIdMainSettingsIndexRoute
@@ -335,9 +443,18 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/_classesLayout/members/': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/_orgLayout/$orgId/': typeof OrganizationsOrgLayoutOrgIdIndexRoute
+  '/classes/_classesLayout/$classId/assignments/': typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
+  '/classes/_classesLayout/$classId/attendance/': typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
+  '/classes/_classesLayout/$classId/expectations/': typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
+  '/classes/_classesLayout/$classId/gradebook/': typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   '/classes/_classesLayout/$classId/members/': typeof ClassesClassesLayoutClassIdMembersIndexRoute
+  '/classes/_classesLayout/$classId/random-tools/': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
+  '/classes/_classesLayout/$classId/reading/': typeof ClassesClassesLayoutClassIdReadingIndexRoute
+  '/classes/_classesLayout/$classId/tasks/': typeof ClassesClassesLayoutClassIdTasksIndexRoute
   '/organizations/_orgLayout/$orgId/members/': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/_classesLayout/$classId/main/classroom-screen/': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/_classesLayout/$classId/main/dashboard/': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/_classesLayout/$classId/main/points/': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/_classesLayout/$classId/main/settings/': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/_classesLayout/$classId/members/admins/': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/_classesLayout/$classId/members/assistant-teachers/': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -345,6 +462,9 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/members/invite/': typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
   '/classes/_classesLayout/$classId/members/students/': typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
   '/classes/_classesLayout/$classId/members/teachers/': typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
+  '/classes/_classesLayout/$classId/random-tools/assigners/': typeof ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute
+  '/classes/_classesLayout/$classId/random-tools/random-event/': typeof ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute
+  '/classes/_classesLayout/$classId/random-tools/randomizer/': typeof ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute
   '/organizations/_orgLayout/$orgId/main/classes/': typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRoute
   '/organizations/_orgLayout/$orgId/main/dashboard/': typeof OrganizationsOrgLayoutOrgIdMainDashboardIndexRoute
   '/organizations/_orgLayout/$orgId/main/settings/': typeof OrganizationsOrgLayoutOrgIdMainSettingsIndexRoute
@@ -374,9 +494,18 @@ export interface FileRouteTypes {
     | '/classes/$classId'
     | '/classes/members'
     | '/organizations/$orgId'
+    | '/classes/$classId/assignments'
+    | '/classes/$classId/attendance'
+    | '/classes/$classId/expectations'
+    | '/classes/$classId/gradebook'
     | '/classes/$classId/members'
+    | '/classes/$classId/random-tools'
+    | '/classes/$classId/reading'
+    | '/classes/$classId/tasks'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
+    | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
@@ -384,6 +513,9 @@ export interface FileRouteTypes {
     | '/classes/$classId/members/invite'
     | '/classes/$classId/members/students'
     | '/classes/$classId/members/teachers'
+    | '/classes/$classId/random-tools/assigners'
+    | '/classes/$classId/random-tools/random-event'
+    | '/classes/$classId/random-tools/randomizer'
     | '/organizations/$orgId/main/classes'
     | '/organizations/$orgId/main/dashboard'
     | '/organizations/$orgId/main/settings'
@@ -409,9 +541,18 @@ export interface FileRouteTypes {
     | '/classes/$classId'
     | '/classes/members'
     | '/organizations/$orgId'
+    | '/classes/$classId/assignments'
+    | '/classes/$classId/attendance'
+    | '/classes/$classId/expectations'
+    | '/classes/$classId/gradebook'
     | '/classes/$classId/members'
+    | '/classes/$classId/random-tools'
+    | '/classes/$classId/reading'
+    | '/classes/$classId/tasks'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
+    | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
@@ -419,6 +560,9 @@ export interface FileRouteTypes {
     | '/classes/$classId/members/invite'
     | '/classes/$classId/members/students'
     | '/classes/$classId/members/teachers'
+    | '/classes/$classId/random-tools/assigners'
+    | '/classes/$classId/random-tools/random-event'
+    | '/classes/$classId/random-tools/randomizer'
     | '/organizations/$orgId/main/classes'
     | '/organizations/$orgId/main/dashboard'
     | '/organizations/$orgId/main/settings'
@@ -446,9 +590,18 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/'
     | '/classes/_classesLayout/members/'
     | '/organizations/_orgLayout/$orgId/'
+    | '/classes/_classesLayout/$classId/assignments/'
+    | '/classes/_classesLayout/$classId/attendance/'
+    | '/classes/_classesLayout/$classId/expectations/'
+    | '/classes/_classesLayout/$classId/gradebook/'
     | '/classes/_classesLayout/$classId/members/'
+    | '/classes/_classesLayout/$classId/random-tools/'
+    | '/classes/_classesLayout/$classId/reading/'
+    | '/classes/_classesLayout/$classId/tasks/'
     | '/organizations/_orgLayout/$orgId/members/'
+    | '/classes/_classesLayout/$classId/main/classroom-screen/'
     | '/classes/_classesLayout/$classId/main/dashboard/'
+    | '/classes/_classesLayout/$classId/main/points/'
     | '/classes/_classesLayout/$classId/main/settings/'
     | '/classes/_classesLayout/$classId/members/admins/'
     | '/classes/_classesLayout/$classId/members/assistant-teachers/'
@@ -456,6 +609,9 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/members/invite/'
     | '/classes/_classesLayout/$classId/members/students/'
     | '/classes/_classesLayout/$classId/members/teachers/'
+    | '/classes/_classesLayout/$classId/random-tools/assigners/'
+    | '/classes/_classesLayout/$classId/random-tools/random-event/'
+    | '/classes/_classesLayout/$classId/random-tools/randomizer/'
     | '/organizations/_orgLayout/$orgId/main/classes/'
     | '/organizations/_orgLayout/$orgId/main/dashboard/'
     | '/organizations/_orgLayout/$orgId/main/settings/'
@@ -602,11 +758,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganizationsOrgLayoutOrgIdMembersIndexRouteImport
       parentRoute: typeof OrganizationsOrgLayoutRoute
     }
+    '/classes/_classesLayout/$classId/tasks/': {
+      id: '/classes/_classesLayout/$classId/tasks/'
+      path: '/$classId/tasks'
+      fullPath: '/classes/$classId/tasks'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdTasksIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/reading/': {
+      id: '/classes/_classesLayout/$classId/reading/'
+      path: '/$classId/reading'
+      fullPath: '/classes/$classId/reading'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdReadingIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/random-tools/': {
+      id: '/classes/_classesLayout/$classId/random-tools/'
+      path: '/$classId/random-tools'
+      fullPath: '/classes/$classId/random-tools'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdRandomToolsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/classes/_classesLayout/$classId/members/': {
       id: '/classes/_classesLayout/$classId/members/'
       path: '/$classId/members'
       fullPath: '/classes/$classId/members'
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/gradebook/': {
+      id: '/classes/_classesLayout/$classId/gradebook/'
+      path: '/$classId/gradebook'
+      fullPath: '/classes/$classId/gradebook'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdGradebookIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/expectations/': {
+      id: '/classes/_classesLayout/$classId/expectations/'
+      path: '/$classId/expectations'
+      fullPath: '/classes/$classId/expectations'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdExpectationsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/attendance/': {
+      id: '/classes/_classesLayout/$classId/attendance/'
+      path: '/$classId/attendance'
+      fullPath: '/classes/$classId/attendance'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdAttendanceIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/assignments/': {
+      id: '/classes/_classesLayout/$classId/assignments/'
+      path: '/$classId/assignments'
+      fullPath: '/classes/$classId/assignments'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdAssignmentsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
     '/organizations/_orgLayout/$orgId/members/teachers/': {
@@ -672,6 +877,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganizationsOrgLayoutOrgIdMainClassesIndexRouteImport
       parentRoute: typeof OrganizationsOrgLayoutRoute
     }
+    '/classes/_classesLayout/$classId/random-tools/randomizer/': {
+      id: '/classes/_classesLayout/$classId/random-tools/randomizer/'
+      path: '/$classId/random-tools/randomizer'
+      fullPath: '/classes/$classId/random-tools/randomizer'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/random-tools/random-event/': {
+      id: '/classes/_classesLayout/$classId/random-tools/random-event/'
+      path: '/$classId/random-tools/random-event'
+      fullPath: '/classes/$classId/random-tools/random-event'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/random-tools/assigners/': {
+      id: '/classes/_classesLayout/$classId/random-tools/assigners/'
+      path: '/$classId/random-tools/assigners'
+      fullPath: '/classes/$classId/random-tools/assigners'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdRandomToolsAssignersIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/classes/_classesLayout/$classId/members/teachers/': {
       id: '/classes/_classesLayout/$classId/members/teachers/'
       path: '/$classId/members/teachers'
@@ -721,11 +947,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
+    '/classes/_classesLayout/$classId/main/points/': {
+      id: '/classes/_classesLayout/$classId/main/points/'
+      path: '/$classId/main/points'
+      fullPath: '/classes/$classId/main/points'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/classes/_classesLayout/$classId/main/dashboard/': {
       id: '/classes/_classesLayout/$classId/main/dashboard/'
       path: '/$classId/main/dashboard'
       fullPath: '/classes/$classId/main/dashboard'
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/main/classroom-screen/': {
+      id: '/classes/_classesLayout/$classId/main/classroom-screen/'
+      path: '/$classId/main/classroom-screen'
+      fullPath: '/classes/$classId/main/classroom-screen'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
   }
@@ -735,8 +975,17 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutIndexRoute: typeof ClassesClassesLayoutIndexRoute
   ClassesClassesLayoutClassIdIndexRoute: typeof ClassesClassesLayoutClassIdIndexRoute
   ClassesClassesLayoutMembersIndexRoute: typeof ClassesClassesLayoutMembersIndexRoute
+  ClassesClassesLayoutClassIdAssignmentsIndexRoute: typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
+  ClassesClassesLayoutClassIdAttendanceIndexRoute: typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
+  ClassesClassesLayoutClassIdExpectationsIndexRoute: typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
+  ClassesClassesLayoutClassIdGradebookIndexRoute: typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   ClassesClassesLayoutClassIdMembersIndexRoute: typeof ClassesClassesLayoutClassIdMembersIndexRoute
+  ClassesClassesLayoutClassIdRandomToolsIndexRoute: typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
+  ClassesClassesLayoutClassIdReadingIndexRoute: typeof ClassesClassesLayoutClassIdReadingIndexRoute
+  ClassesClassesLayoutClassIdTasksIndexRoute: typeof ClassesClassesLayoutClassIdTasksIndexRoute
+  ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   ClassesClassesLayoutClassIdMainDashboardIndexRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  ClassesClassesLayoutClassIdMainPointsIndexRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   ClassesClassesLayoutClassIdMainSettingsIndexRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute: typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -744,16 +993,37 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutClassIdMembersInviteIndexRoute: typeof ClassesClassesLayoutClassIdMembersInviteIndexRoute
   ClassesClassesLayoutClassIdMembersStudentsIndexRoute: typeof ClassesClassesLayoutClassIdMembersStudentsIndexRoute
   ClassesClassesLayoutClassIdMembersTeachersIndexRoute: typeof ClassesClassesLayoutClassIdMembersTeachersIndexRoute
+  ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute: typeof ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute
+  ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute: typeof ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute
+  ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute: typeof ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute
 }
 
 const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
   ClassesClassesLayoutIndexRoute: ClassesClassesLayoutIndexRoute,
   ClassesClassesLayoutClassIdIndexRoute: ClassesClassesLayoutClassIdIndexRoute,
   ClassesClassesLayoutMembersIndexRoute: ClassesClassesLayoutMembersIndexRoute,
+  ClassesClassesLayoutClassIdAssignmentsIndexRoute:
+    ClassesClassesLayoutClassIdAssignmentsIndexRoute,
+  ClassesClassesLayoutClassIdAttendanceIndexRoute:
+    ClassesClassesLayoutClassIdAttendanceIndexRoute,
+  ClassesClassesLayoutClassIdExpectationsIndexRoute:
+    ClassesClassesLayoutClassIdExpectationsIndexRoute,
+  ClassesClassesLayoutClassIdGradebookIndexRoute:
+    ClassesClassesLayoutClassIdGradebookIndexRoute,
   ClassesClassesLayoutClassIdMembersIndexRoute:
     ClassesClassesLayoutClassIdMembersIndexRoute,
+  ClassesClassesLayoutClassIdRandomToolsIndexRoute:
+    ClassesClassesLayoutClassIdRandomToolsIndexRoute,
+  ClassesClassesLayoutClassIdReadingIndexRoute:
+    ClassesClassesLayoutClassIdReadingIndexRoute,
+  ClassesClassesLayoutClassIdTasksIndexRoute:
+    ClassesClassesLayoutClassIdTasksIndexRoute,
+  ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute:
+    ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute,
   ClassesClassesLayoutClassIdMainDashboardIndexRoute:
     ClassesClassesLayoutClassIdMainDashboardIndexRoute,
+  ClassesClassesLayoutClassIdMainPointsIndexRoute:
+    ClassesClassesLayoutClassIdMainPointsIndexRoute,
   ClassesClassesLayoutClassIdMainSettingsIndexRoute:
     ClassesClassesLayoutClassIdMainSettingsIndexRoute,
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute:
@@ -768,6 +1038,12 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
     ClassesClassesLayoutClassIdMembersStudentsIndexRoute,
   ClassesClassesLayoutClassIdMembersTeachersIndexRoute:
     ClassesClassesLayoutClassIdMembersTeachersIndexRoute,
+  ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute:
+    ClassesClassesLayoutClassIdRandomToolsAssignersIndexRoute,
+  ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute:
+    ClassesClassesLayoutClassIdRandomToolsRandomEventIndexRoute,
+  ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute:
+    ClassesClassesLayoutClassIdRandomToolsRandomizerIndexRoute,
 }
 
 const ClassesClassesLayoutRouteWithChildren =

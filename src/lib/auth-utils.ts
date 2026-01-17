@@ -8,13 +8,13 @@ import type { OrgRole } from "@/hooks/use-org-role";
 
 /**
  * Roles that are restricted from accessing certain routes
- * Students, guardians, and assistant teachers can only access home and dashboard
+ * Students and guardians can only access home and dashboard
  */
-export const RESTRICTED_ROLES = ["student", "guardian", "assistant-teacher"] as const;
+export const RESTRICTED_ROLES = ["student", "guardian"] as const;
 export type RestrictedRole = (typeof RESTRICTED_ROLES)[number];
 
 /**
- * Check if a role is a restricted role (student, guardian, or assistant-teacher)
+ * Check if a role is a restricted role (student or guardian)
  */
 export function isRestrictedRole(role: ClassRole | OrgRole | null): boolean {
     if (!role) return false;

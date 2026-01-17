@@ -19,13 +19,20 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useRef } from "react";
 import { useRoleBasedNavigation } from "../navigation/role-based-navigation";
 import type { LucideIcon } from "lucide-react";
-import { Home, BookOpen, Book } from "lucide-react";
-import { cn, isRouteActive } from "@/lib/utils";
+import { Home, BookOpen, Book, ChevronUp, ChevronDown } from "lucide-react";
 
 const STORAGE_KEY_PREFIX = "class-sidebar-preference-";
 
@@ -42,8 +49,14 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
     const lastRouteRef = useRef<string>(currentRoute);
     const programmaticStateRef = useRef<boolean | null>(open);
     const isAdjustingRef = useRef(false);
-    const { mainItems, memberItems, settingsItem, isLoading } =
-        useRoleBasedNavigation();
+    const {
+        mainItems,
+        memberItems,
+        settingsItem,
+        classManagementItems,
+        randomItems,
+        isLoading,
+    } = useRoleBasedNavigation();
 
     // Close sidebar on mobile when a link is clicked
     const handleLinkClick = React.useCallback(() => {
@@ -141,54 +154,206 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                                   ]
                                                 : []),
                                         ]}
-                                        showLabel={true}
-                                        label="Class"
+                                        showLabel={false}
                                         onLinkClick={handleLinkClick}
                                     />
                                 )}
+                                {classManagementItems &&
+                                    classManagementItems.length > 0 && (
+                                        <SidebarGroup>
+                                            <SidebarMenu>
+                                                <Collapsible
+                                                    defaultOpen={true}
+                                                    className="group/collapsible"
+                                                >
+                                                    <SidebarMenuItem>
+                                                        <CollapsibleTrigger asChild>
+                                                            <SidebarMenuButton>
+                                                                Class Management
+                                                                <ChevronDown className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                                                                <ChevronUp className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                                                            </SidebarMenuButton>
+                                                        </CollapsibleTrigger>
+                                                        <CollapsibleContent>
+                                                            <SidebarMenuSub>
+                                                                {classManagementItems.map(
+                                                                    (item) => {
+                                                                        const Icon =
+                                                                            item.icon as LucideIcon;
+                                                                        const isActive =
+                                                                            isRouteActive(
+                                                                                location.pathname,
+                                                                                item.url
+                                                                            );
+                                                                        return (
+                                                                            <SidebarMenuSubItem
+                                                                                key={
+                                                                                    item.url
+                                                                                }
+                                                                            >
+                                                                                <SidebarMenuSubButton
+                                                                                    asChild
+                                                                                    isActive={
+                                                                                        isActive
+                                                                                    }
+                                                                                    className="[&>svg]:opacity-100 [&>svg]:visible [&>svg]:text-foreground"
+                                                                                >
+                                                                                    <Link
+                                                                                        to={
+                                                                                            item.url as any
+                                                                                        }
+                                                                                        onClick={
+                                                                                            handleLinkClick
+                                                                                        }
+                                                                                    >
+                                                                                        <Icon />
+                                                                                        <span>
+                                                                                            {
+                                                                                                item.title
+                                                                                            }
+                                                                                        </span>
+                                                                                    </Link>
+                                                                                </SidebarMenuSubButton>
+                                                                            </SidebarMenuSubItem>
+                                                                        );
+                                                                    }
+                                                                )}
+                                                            </SidebarMenuSub>
+                                                        </CollapsibleContent>
+                                                    </SidebarMenuItem>
+                                                </Collapsible>
+                                            </SidebarMenu>
+                                        </SidebarGroup>
+                                    )}
                                 {memberItems.length > 0 && (
                                     <SidebarGroup>
-                                        <SidebarGroupLabel>
-                                            Class Members
-                                        </SidebarGroupLabel>
                                         <SidebarMenu>
-                                            {memberItems.map((item) => {
-                                                const Icon =
-                                                    item.icon as LucideIcon;
-                                                const isActive = isRouteActive(
-                                                    location.pathname,
-                                                    item.url
-                                                );
-                                                return (
-                                                    <SidebarMenuItem
-                                                        key={item.url}
-                                                    >
-                                                        <SidebarMenuButton
-                                                            asChild
-                                                            tooltip={item.title}
-                                                            isActive={isActive}
-                                                            className={cn(
-                                                                isActive &&
-                                                                    "bg-primary/30! text-black!"
-                                                            )}
-                                                        >
-                                                            <Link
-                                                                to={
-                                                                    item.url as any
-                                                                }
-                                                                onClick={
-                                                                    handleLinkClick
-                                                                }
-                                                            >
-                                                                <Icon />
-                                                                <span>
-                                                                    {item.title}
-                                                                </span>
-                                                            </Link>
+                                            <Collapsible
+                                                defaultOpen={false}
+                                                className="group/collapsible"
+                                            >
+                                                <SidebarMenuItem>
+                                                    <CollapsibleTrigger asChild>
+                                                        <SidebarMenuButton>
+                                                            Class Members
+                                                            <ChevronDown className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                                                            <ChevronUp className="ml-auto group-data-[state=open]/collapsible:hidden" />
                                                         </SidebarMenuButton>
-                                                    </SidebarMenuItem>
-                                                );
-                                            })}
+                                                    </CollapsibleTrigger>
+                                                    <CollapsibleContent>
+                                                        <SidebarMenuSub>
+                                                            {memberItems.map(
+                                                                (item) => {
+                                                                    const Icon =
+                                                                        item.icon as LucideIcon;
+                                                                    const isActive =
+                                                                        isRouteActive(
+                                                                            location.pathname,
+                                                                            item.url
+                                                                        );
+                                                                    return (
+                                                                        <SidebarMenuSubItem
+                                                                            key={
+                                                                                item.url
+                                                                            }
+                                                                        >
+                                                                            <SidebarMenuSubButton
+                                                                                asChild
+                                                                                isActive={
+                                                                                    isActive
+                                                                                }
+                                                                                className="[&>svg]:opacity-100 [&>svg]:visible [&>svg]:text-foreground"
+                                                                            >
+                                                                                <Link
+                                                                                    to={
+                                                                                        item.url as any
+                                                                                    }
+                                                                                    onClick={
+                                                                                        handleLinkClick
+                                                                                    }
+                                                                                >
+                                                                                    <Icon />
+                                                                                    <span>
+                                                                                        {
+                                                                                            item.title
+                                                                                        }
+                                                                                    </span>
+                                                                                </Link>
+                                                                            </SidebarMenuSubButton>
+                                                                        </SidebarMenuSubItem>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </SidebarMenuSub>
+                                                    </CollapsibleContent>
+                                                </SidebarMenuItem>
+                                            </Collapsible>
+                                        </SidebarMenu>
+                                    </SidebarGroup>
+                                )}
+                                {randomItems && randomItems.length > 0 && (
+                                    <SidebarGroup>
+                                        <SidebarMenu>
+                                            <Collapsible
+                                                defaultOpen={true}
+                                                className="group/collapsible"
+                                            >
+                                                <SidebarMenuItem>
+                                                    <CollapsibleTrigger asChild>
+                                                        <SidebarMenuButton>
+                                                            Random Tools
+                                                            <ChevronDown className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                                                            <ChevronUp className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                                                        </SidebarMenuButton>
+                                                    </CollapsibleTrigger>
+                                                    <CollapsibleContent>
+                                                        <SidebarMenuSub>
+                                                            {randomItems.map(
+                                                                (item) => {
+                                                                    const Icon =
+                                                                        item.icon as LucideIcon;
+                                                                    const isActive =
+                                                                        isRouteActive(
+                                                                            location.pathname,
+                                                                            item.url
+                                                                        );
+                                                                    return (
+                                                                        <SidebarMenuSubItem
+                                                                            key={
+                                                                                item.url
+                                                                            }
+                                                                        >
+                                                                            <SidebarMenuSubButton
+                                                                                asChild
+                                                                                isActive={
+                                                                                    isActive
+                                                                                }
+                                                                                className="[&>svg]:opacity-100 [&>svg]:visible [&>svg]:text-foreground"
+                                                                            >
+                                                                                <Link
+                                                                                    to={
+                                                                                        item.url as any
+                                                                                    }
+                                                                                    onClick={
+                                                                                        handleLinkClick
+                                                                                    }
+                                                                                >
+                                                                                    <Icon />
+                                                                                    <span>
+                                                                                        {
+                                                                                            item.title
+                                                                                        }
+                                                                                    </span>
+                                                                                </Link>
+                                                                            </SidebarMenuSubButton>
+                                                                        </SidebarMenuSubItem>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </SidebarMenuSub>
+                                                    </CollapsibleContent>
+                                                </SidebarMenuItem>
+                                            </Collapsible>
                                         </SidebarMenu>
                                     </SidebarGroup>
                                 )}
