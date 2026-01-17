@@ -631,21 +631,18 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                     classStudents: {
                         $: {},
                     },
-                },
-                pendingMembers: {
-                    $: {
-                        where: {
-                            class: { id: targetClassId },
-                            role: role,
-                        },
-                    },
+                    pendingMembers: {},
                 },
             });
 
             const existingStudents =
                 existingMembersQuery.classes?.[0]?.classStudents || [];
-            const existingPendingMembers =
-                existingMembersQuery.pendingMembers || [];
+            const classWithMembers = existingMembersQuery.classes?.[0];
+            const allPendingMembers = classWithMembers?.pendingMembers || [];
+            // Filter by role client-side since we can't filter linked entities in where clause
+            const existingPendingMembers = allPendingMembers.filter(
+                (p: any) => p.role === role
+            );
 
             const existingEmails = new Set([
                 ...existingStudents.map((s: any) =>
