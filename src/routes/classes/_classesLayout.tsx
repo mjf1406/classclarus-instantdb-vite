@@ -229,7 +229,7 @@ function RouteComponent() {
                                             <BreadcrumbItem>
                                                 <BreadcrumbLink asChild>
                                                     <Link
-                                                        to={`/organizations/${organization.id}`}
+                                                        to={`/organizations/${organization.id}` as any}
                                                         className="flex items-center"
                                                     >
                                                         <span className="block max-w-[60px] truncate lg:max-w-none lg:overflow-visible lg:whitespace-normal">

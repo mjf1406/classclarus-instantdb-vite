@@ -168,11 +168,23 @@ export function requireOrgAccess(
     context: { auth: AuthContextValue | undefined },
     location: { href: string }
 ): void {
+    // If auth context is not yet available (undefined), don't check access yet
+    // The route will load and the component will handle the loading state
+    if (!context.auth) {
+        return;
+    }
+
+    // If auth is still loading, don't check access yet
+    // The organizations array might still be loading
+    if (context.auth.isLoading) {
+        return;
+    }
+
     // First ensure user is authenticated
     requireAuth(context, location);
 
     // Check if user has access to this organization
-    const hasAccess = checkOrgAccess(orgId, context.auth!.organizations);
+    const hasAccess = checkOrgAccess(orgId, context.auth.organizations);
 
     if (!hasAccess) {
         // User is authenticated but not authorized - redirect to blocked page
@@ -191,15 +203,27 @@ export function requireClassAccess(
     context: { auth: AuthContextValue | undefined },
     location: { href: string }
 ): void {
+    // If auth context is not yet available (undefined), don't check access yet
+    // The route will load and the component will handle the loading state
+    if (!context.auth) {
+        return;
+    }
+
+    // If auth is still loading, don't check access yet
+    // The organizations and classIds arrays might still be loading
+    if (context.auth.isLoading) {
+        return;
+    }
+
     // First ensure user is authenticated
     requireAuth(context, location);
 
-    const userId = context.auth!.user?.id;
+    const userId = context.auth.user?.id;
     const hasAccess = checkClassAccess(
         classId,
         userId,
-        context.auth!.organizations,
-        context.auth!.classIds
+        context.auth.organizations,
+        context.auth.classIds
     );
 
     if (!hasAccess) {
