@@ -11,9 +11,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { GoogleOAuthButton } from "@/components/auth/google-oauth";
 import { MagicCodeAuth } from "@/components/auth/magic-code-auth";
-import TryAsGuestButton from "@/components/auth/guest-auth";
-import GuestDescription from "@/components/guest/guest-description";
-import GuestLimitations from "@/components/guest/guest-limitations-section";
+// import TryAsGuestButton from "@/components/auth/guest-auth";
+// import GuestDescription from "@/components/guest/guest-description";
+// import GuestLimitations from "@/components/guest/guest-limitations-section";
 
 export function LoginCard() {
     return (
@@ -47,9 +47,9 @@ export function LoginCard() {
                     <span className="text-xs text-muted-foreground">OR</span>
                     <Separator className="flex-1" />
                 </div>
-                <TryAsGuestButton />
-                <GuestDescription />
-                <GuestLimitations />
+                {/* <TryAsGuestButton /> */}
+                {/* <GuestDescription /> */}
+                {/* <GuestLimitations /> */}
                 <div className="pt-4 mt-4 border-t">
                     <p className="text-xs text-center text-muted-foreground">
                         This is the ClassClarus app.{" "}
