@@ -153,6 +153,12 @@ const userOrgRelationships = {
     isTeacherInMyOrgAsOwner:
         "auth.id in data.ref('teacherOrganizations.owner.id')",
 };
+// Add after organizationRoleBinds
+const pendingMemberBinds = {
+    isClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isClassOwner: "auth.id == data.ref('class.owner.id')",
+};
 
 // ============================================================
 //                  COMBINED BIND OBJECTS
@@ -322,12 +328,15 @@ const rules = {
 
     pendingMembers: {
         allow: {
-            create: "isAuthenticated && (isOwner || isClassAdmin || isTeacher)",
-            view: "isAuthenticated && (isOwner || isClassAdmin || isTeacher)",
+            create: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher)",
+            view: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher)",
             update: "false",
-            delete: "isAuthenticated && (isOwner || isClassAdmin || isTeacher)",
+            delete: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher)",
         },
-        bind: bindObjectToArray(allDataBinds),
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...pendingMemberBinds,
+        }),
     },
 } satisfies InstantRules;
 

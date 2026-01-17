@@ -4,16 +4,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { StudentIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
+import { usePendingMembers } from "@/hooks/use-pending-members";
 import { useParams } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X, MoreVertical, Clock, GraduationCap } from "lucide-react";
+import { Users, Plus, X, MoreVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState } from "react";
 import { KickUserDialog } from "@/components/members/kick-user-dialog";
+import { PendingStudentCard } from "@/components/members/pending-student-card";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -65,88 +67,6 @@ type UserQueryResult = {
     $users: UserWithGuardians[];
 };
 
-type PendingMember = InstaQLEntity<
-    AppSchema,
-    "pendingMembers",
-    {
-        class: {};
-    }
->;
-
-function PendingStudentCard({
-    pendingMember,
-    canManage,
-}: {
-    pendingMember: PendingMember;
-    canManage: boolean;
-}) {
-    const handleRemove = async () => {
-        if (!confirm("Remove this pending invitation?")) {
-            return;
-        }
-        try {
-            db.transact([db.tx.pendingMembers[pendingMember.id].delete()]);
-        } catch (err) {
-            console.error("Failed to remove pending member:", err);
-            alert("Failed to remove pending invitation");
-        }
-    };
-
-    const displayName =
-        `${pendingMember.firstName || ""} ${pendingMember.lastName || ""}`.trim() ||
-        pendingMember.email ||
-        "Unknown";
-    const initials = displayName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-
-    const sourceBadge = {
-        google_classroom: { label: "Google Classroom", icon: GraduationCap },
-        manual: { label: "Manual", icon: Users },
-        csv: { label: "CSV", icon: Users },
-    }[pendingMember.source || "manual"] || { label: "Unknown", icon: Users };
-
-    return (
-        <Card>
-            <CardContent className="py-4">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center size-10 rounded-full bg-muted">
-                        <span className="text-sm font-medium">{initials}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{displayName}</div>
-                        <div className="text-sm text-muted-foreground truncate">
-                            {pendingMember.email}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                                <Clock className="size-3 mr-1" />
-                                Pending
-                            </Badge>
-                            <Badge variant="secondary" className="text-xs">
-                                {sourceBadge.label}
-                            </Badge>
-                        </div>
-                    </div>
-                    {canManage && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={handleRemove}
-                        >
-                            <X className="size-4" />
-                            <span className="sr-only">Remove</span>
-                        </Button>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
 
 function StudentCard({
     student,
@@ -448,17 +368,8 @@ function RouteComponent() {
     const canManage =
         roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
 
-    // Query class with pendingMembers link, then filter by role client-side
-    const { data: classData } = db.useQuery({
-        classes: {
-            $: { where: { id: classId } },
-            pendingMembers: {},
-        },
-    });
-
-    const pendingMembers = (
-        (classData?.classes?.[0]?.pendingMembers as unknown as PendingMember[]) || []
-    ).filter((pm) => pm.role === "student");
+    // Use hook to fetch pending members filtered by student role
+    const { pendingMembers } = usePendingMembers(classId, "student");
 
     return (
         <RestrictedRoute
