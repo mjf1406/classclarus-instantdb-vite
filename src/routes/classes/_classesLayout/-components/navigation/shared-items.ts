@@ -1,6 +1,6 @@
 /** @format */
 
-import { Home, LayoutDashboard, UserPlus, Settings, Award, Monitor } from "lucide-react";
+import { Home, LayoutDashboard, UserPlus, Settings, Award, Monitor, Volume2 } from "lucide-react";
 import {
     AdminIcon,
     TeacherIcon,
@@ -39,6 +39,13 @@ export function getMainItems(classId: string): NavigationItem[] {
                 "Display and manage your classroom screen for your class",
             url: `/classes/${classId}/main/classroom-screen`,
             icon: Monitor,
+        },
+        {
+            title: "Noise Monitor",
+            description:
+                "Monitor and manage classroom noise levels",
+            url: `/classes/${classId}/main/noise-monitor`,
+            icon: Volume2,
         },
     ];
 }

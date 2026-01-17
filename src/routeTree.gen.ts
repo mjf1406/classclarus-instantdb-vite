@@ -54,6 +54,7 @@ import { Route as ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteI
 import { Route as ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/admins/index'
 import { Route as ClassesClassesLayoutClassIdMainSettingsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/settings/index'
 import { Route as ClassesClassesLayoutClassIdMainPointsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/points/index'
+import { Route as ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/noise-monitor/index'
 import { Route as ClassesClassesLayoutClassIdMainDashboardIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/dashboard/index'
 import { Route as ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/classroom-screen/index'
 
@@ -316,6 +317,12 @@ const ClassesClassesLayoutClassIdMainPointsIndexRoute =
     path: '/$classId/main/points/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute =
+  ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport.update({
+    id: '/$classId/main/noise-monitor/',
+    path: '/$classId/main/noise-monitor/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 const ClassesClassesLayoutClassIdMainDashboardIndexRoute =
   ClassesClassesLayoutClassIdMainDashboardIndexRouteImport.update({
     id: '/$classId/main/dashboard/',
@@ -357,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
@@ -404,6 +412,7 @@ export interface FileRoutesByTo {
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
@@ -454,6 +463,7 @@ export interface FileRoutesById {
   '/organizations/_orgLayout/$orgId/members/': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
   '/classes/_classesLayout/$classId/main/classroom-screen/': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/_classesLayout/$classId/main/dashboard/': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  '/classes/_classesLayout/$classId/main/noise-monitor/': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/_classesLayout/$classId/main/points/': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/_classesLayout/$classId/main/settings/': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/_classesLayout/$classId/members/admins/': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
@@ -505,6 +515,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/members'
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
+    | '/classes/$classId/main/noise-monitor'
     | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
     | '/classes/$classId/members/admins'
@@ -552,6 +563,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/members'
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
+    | '/classes/$classId/main/noise-monitor'
     | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
     | '/classes/$classId/members/admins'
@@ -601,6 +613,7 @@ export interface FileRouteTypes {
     | '/organizations/_orgLayout/$orgId/members/'
     | '/classes/_classesLayout/$classId/main/classroom-screen/'
     | '/classes/_classesLayout/$classId/main/dashboard/'
+    | '/classes/_classesLayout/$classId/main/noise-monitor/'
     | '/classes/_classesLayout/$classId/main/points/'
     | '/classes/_classesLayout/$classId/main/settings/'
     | '/classes/_classesLayout/$classId/members/admins/'
@@ -954,6 +967,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
+    '/classes/_classesLayout/$classId/main/noise-monitor/': {
+      id: '/classes/_classesLayout/$classId/main/noise-monitor/'
+      path: '/$classId/main/noise-monitor'
+      fullPath: '/classes/$classId/main/noise-monitor'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/classes/_classesLayout/$classId/main/dashboard/': {
       id: '/classes/_classesLayout/$classId/main/dashboard/'
       path: '/$classId/main/dashboard'
@@ -985,6 +1005,7 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutClassIdTasksIndexRoute: typeof ClassesClassesLayoutClassIdTasksIndexRoute
   ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   ClassesClassesLayoutClassIdMainDashboardIndexRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
+  ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute: typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   ClassesClassesLayoutClassIdMainPointsIndexRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   ClassesClassesLayoutClassIdMainSettingsIndexRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
@@ -1022,6 +1043,8 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
     ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute,
   ClassesClassesLayoutClassIdMainDashboardIndexRoute:
     ClassesClassesLayoutClassIdMainDashboardIndexRoute,
+  ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute:
+    ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute,
   ClassesClassesLayoutClassIdMainPointsIndexRoute:
     ClassesClassesLayoutClassIdMainPointsIndexRoute,
   ClassesClassesLayoutClassIdMainSettingsIndexRoute:
