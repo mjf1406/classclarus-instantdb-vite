@@ -29,7 +29,6 @@ export const Route = createFileRoute("/classes/_classesLayout/")({
 
 function RouteComponent() {
     const { classes, isLoading } = useAllUserClasses();
-    console.log("🚀 ~ RouteComponent ~ classes:", classes);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     // Separate active and archived classes
