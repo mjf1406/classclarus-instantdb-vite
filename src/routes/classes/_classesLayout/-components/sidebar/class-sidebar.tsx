@@ -33,6 +33,7 @@ import { useEffect, useRef } from "react";
 import { useRoleBasedNavigation } from "../navigation/role-based-navigation";
 import type { LucideIcon } from "lucide-react";
 import { Home, BookOpen, Book, ChevronUp, ChevronDown } from "lucide-react";
+import { isRouteActive } from "@/lib/utils";
 
 const STORAGE_KEY_PREFIX = "class-sidebar-preference-";
 
