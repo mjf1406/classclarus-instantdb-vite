@@ -103,7 +103,14 @@ interface AccessDeniedProps {
 }
 
 function AccessDenied({ role, onNavigateBack }: AccessDeniedProps) {
-    const roleLabel = role === "student" ? "Students" : "Guardians";
+    const roleLabel = 
+        role === "student" 
+            ? "Students" 
+            : role === "guardian"
+              ? "Guardians"
+              : role === "assistant-teacher"
+                ? "Assistant Teachers"
+                : "Members";
 
     return (
         <div className="flex items-center justify-center min-h-[400px] p-4">

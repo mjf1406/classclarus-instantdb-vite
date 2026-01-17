@@ -148,17 +148,20 @@ export function RoleManager({
         (contextType === "org" &&
             orgEntity?.admins?.some((a) => a.id === user.id));
 
-    // Check if current user is a student or guardian (restricted role)
+    // Check if current user is a student, guardian, or assistant teacher (restricted role)
     const isCurrentUserStudent =
         contextType === "class" &&
         classEntity?.classStudents?.some((s) => s.id === currentUser?.id);
     const isCurrentUserGuardian =
         contextType === "class" &&
         classEntity?.classGuardians?.some((g) => g.id === currentUser?.id);
-    const isCurrentUserRestricted = isCurrentUserStudent || isCurrentUserGuardian;
+    const isCurrentUserAssistantTeacher =
+        contextType === "class" &&
+        classEntity?.classAssistantTeachers?.some((at) => at.id === currentUser?.id);
+    const isCurrentUserRestricted = isCurrentUserStudent || isCurrentUserGuardian || isCurrentUserAssistantTeacher;
 
     // If managed user is an admin and current user is not owner, don't allow role changes
-    // Also, students and guardians should never see the manage roles button
+    // Also, students, guardians, and assistant teachers should never see the manage roles button
     const canChangeRoles = !isCurrentUserRestricted && (!isManagedUserAdmin || isCurrentUserOwner);
 
     // Get current roles
