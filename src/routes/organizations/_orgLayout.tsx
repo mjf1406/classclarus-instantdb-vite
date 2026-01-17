@@ -1,7 +1,5 @@
 /** @format */
 
-import { useAuthContext } from "@/components/auth/auth-provider";
-import LoadingPage from "@/components/loading/loading-page";
 import {
     createFileRoute,
     Link,
@@ -54,7 +52,6 @@ export const Route = createFileRoute("/organizations/_orgLayout")({
 });
 
 function RouteComponent() {
-    const { isLoading: authLoading } = useAuthContext();
     const params = useParams({ strict: false });
     const location = useLocation();
     const isIndexRoute = !params.orgId;
@@ -140,9 +137,6 @@ function RouteComponent() {
 
     const breadcrumbSegments = getBreadcrumbSegments();
 
-    if (authLoading) {
-        return <LoadingPage />;
-    }
     // This is where the sidebar layout when viewing a single organization goes
     return (
         <SidebarProvider defaultOpen={!isIndexRoute}>

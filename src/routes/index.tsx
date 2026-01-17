@@ -8,7 +8,6 @@ import {
 } from "@tanstack/react-router";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { ThemeSwitcher } from "@/components/themes/theme-switcher";
-import LoadingPage from "@/components/loading/loading-page";
 import { LoginCard } from "@/routes/login/-components/login-card";
 import { HomeSelection } from "./-components/home-selection";
 import { LogoBig } from "@/components/brand/logo";
@@ -33,10 +32,6 @@ function Index() {
             navigate({ to: search.redirect as string });
         }
     }, [user, isLoading, search.redirect, navigate]);
-
-    if (isLoading) {
-        return <LoadingPage />;
-    }
 
     // If user is authenticated, show home selection (no auto-redirect)
     return (

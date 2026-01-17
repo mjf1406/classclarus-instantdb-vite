@@ -1,7 +1,6 @@
 /** @format */
 
 import { useAuthContext } from "@/components/auth/auth-provider";
-import LoadingPage from "@/components/loading/loading-page";
 import {
     createFileRoute,
     Link,
@@ -59,7 +58,7 @@ export const Route = createFileRoute("/classes/_classesLayout")({
 });
 
 function RouteComponent() {
-    const { isLoading: authLoading, organizations, user } = useAuthContext();
+    const { organizations, user } = useAuthContext();
     const params = useParams({ strict: false });
     const location = useLocation();
     const isIndexRoute = !params.classId;
@@ -177,9 +176,6 @@ function RouteComponent() {
 
     const breadcrumbSegments = getBreadcrumbSegments();
 
-    if (authLoading) {
-        return <LoadingPage />;
-    }
     // This is where the sidebar layout when viewing a single class goes
     return (
         <SidebarProvider defaultOpen={!isIndexRoute}>

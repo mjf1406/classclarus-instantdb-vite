@@ -11,18 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import { ImageSkeleton } from "@/components/ui/image-skeleton";
-import LoadingPage from "@/components/loading/loading-page";
 
 export const Route = createFileRoute("/blocked/")({
     component: Blocked,
 });
 
 function Blocked() {
-    const { isLoading: isRouteLoading } = useRouterState();
-
-    if (isRouteLoading) {
-        return <LoadingPage />;
-    }
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
             <Card className="w-full max-w-md">

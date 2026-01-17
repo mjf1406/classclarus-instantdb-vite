@@ -10,6 +10,7 @@ import { routeTree } from "./routeTree.gen";
 import type { AuthContextValue } from "./components/auth/auth-provider";
 import { useAuthContext } from "./components/auth/auth-provider";
 import AuthProvider from "./components/auth/auth-provider";
+import PendingComponent from "./components/loading/pending-components";
 
 // Define router context type
 export interface MyRouterContext {
@@ -24,6 +25,11 @@ const router = createRouter({
         // We'll be passing down the auth state from within a React component
         auth: undefined!,
     },
+    defaultPreload: "viewport",
+    // defaultPreloadMaxAge: 60, // TypeScript says this does not exist on this object
+    defaultPendingComponent: PendingComponent,
+    defaultPendingMs: 50,
+    defaultPendingMinMs: 300,
 });
 
 // Register the router instance for type safety

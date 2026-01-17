@@ -3,6 +3,7 @@
 import logo from "/brand/icon-left-of-text-different-sizes-removebg-preview.webp";
 import icon from "/brand/icon-removebg.webp";
 import textLogo from "/brand/text-removebg-preview.webp";
+import logoXS from "/brand/icon-removebg-xs.webp";
 import { ImageSkeleton } from "../ui/image-skeleton";
 
 export function LogoBig() {
@@ -50,6 +51,20 @@ export function TextLogo({ className }: { className?: string } = {}) {
         <ImageSkeleton
             src={textLogo}
             alt="ClassClarus Text Logo"
+            width={width}
+            height={height}
+            className={className}
+        />
+    );
+}
+
+export function LogoXS({ className }: { className?: string } = {}) {
+    const width = className ? undefined : 172;
+    const height = className ? undefined : 155;
+    return (
+        <ImageSkeleton
+            src={logoXS}
+            alt="ClassClarus Logo"
             width={width}
             height={height}
             className={className}
