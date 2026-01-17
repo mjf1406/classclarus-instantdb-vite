@@ -40,6 +40,7 @@ const _schema = i.schema({
             name: i.string(),
             description: i.string().optional(),
             icon: i.string().optional(),
+            year: i.number().indexed().optional(),
             created: i.date(),
             updated: i.date(),
             archivedAt: i.date().indexed().optional(), // null = active, date = archived

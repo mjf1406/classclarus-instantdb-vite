@@ -48,6 +48,7 @@ export function CreateClassDialog({
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [year, setYear] = useState<number | undefined>(undefined);
     const [icon, setIcon] = useState<string | undefined>(undefined);
     const [selectedOrgId, setSelectedOrgId] = useState<string>(
         providedOrgId || ""
@@ -106,6 +107,7 @@ export function CreateClassDialog({
                 name: name.trim(),
                 description: description.trim() || undefined,
                 icon: icon || undefined,
+                year: year || undefined,
                 created: now,
                 updated: now,
                 archivedAt: null,
@@ -153,6 +155,7 @@ export function CreateClassDialog({
             // Reset form and close dialog
             setName("");
             setDescription("");
+            setYear(undefined);
             setIcon(undefined);
             if (!providedOrgId) {
                 setSelectedOrgId("");
@@ -178,6 +181,7 @@ export function CreateClassDialog({
             // Reset form when closing
             setName("");
             setDescription("");
+            setYear(undefined);
             setIcon(undefined);
             if (!providedOrgId) {
                 setSelectedOrgId("");
@@ -296,6 +300,31 @@ export function CreateClassDialog({
                                 />
                                 <FieldDescription>
                                     Optional description for your class
+                                </FieldDescription>
+                            </FieldContent>
+                        </Field>
+
+                        <Field>
+                            <FieldLabel htmlFor="class-year">Year</FieldLabel>
+                            <FieldContent>
+                                <Input
+                                    id="class-year"
+                                    type="number"
+                                    value={year ?? ""}
+                                    onChange={(e) =>
+                                        setYear(
+                                            e.target.value
+                                                ? Number(e.target.value)
+                                                : undefined
+                                        )
+                                    }
+                                    placeholder="2024"
+                                    min={2000}
+                                    max={2100}
+                                    disabled={isSubmitting}
+                                />
+                                <FieldDescription>
+                                    Optional: The academic year for this class
                                 </FieldDescription>
                             </FieldContent>
                         </Field>

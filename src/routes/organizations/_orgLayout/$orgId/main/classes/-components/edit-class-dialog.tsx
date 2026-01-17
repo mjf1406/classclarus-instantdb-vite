@@ -42,6 +42,7 @@ export function EditClassDialog({
     const [description, setDescription] = useState(
         classEntity.description || ""
     );
+    const [year, setYear] = useState<number | undefined>(classEntity.year);
     const [icon, setIcon] = useState(classEntity.icon);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -52,6 +53,7 @@ export function EditClassDialog({
         if (newOpen) {
             setName(classEntity.name);
             setDescription(classEntity.description || "");
+            setYear(classEntity.year);
             setIcon(classEntity.icon);
             setError(null);
         }
@@ -76,6 +78,7 @@ export function EditClassDialog({
                     name: name.trim(),
                     description: description.trim() || undefined,
                     icon: icon || undefined,
+                    year: year || undefined,
                     updated: now,
                 }),
             ]);
@@ -163,6 +166,33 @@ export function EditClassDialog({
                                         />
                                         <FieldDescription>
                                             Optional description for your class
+                                        </FieldDescription>
+                                    </FieldContent>
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="edit-class-year">
+                                        Year
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="edit-class-year"
+                                            type="number"
+                                            value={year ?? ""}
+                                            onChange={(e) =>
+                                                setYear(
+                                                    e.target.value
+                                                        ? Number(e.target.value)
+                                                        : undefined
+                                                )
+                                            }
+                                            placeholder="2024"
+                                            min={2000}
+                                            max={2100}
+                                            disabled={isSubmitting}
+                                        />
+                                        <FieldDescription>
+                                            Optional: The academic year for this class
                                         </FieldDescription>
                                     </FieldContent>
                                 </Field>
@@ -264,6 +294,33 @@ export function EditClassDialog({
                                     />
                                     <FieldDescription>
                                         Optional description for your class
+                                    </FieldDescription>
+                                </FieldContent>
+                            </Field>
+
+                            <Field>
+                                <FieldLabel htmlFor="edit-class-year">
+                                    Year
+                                </FieldLabel>
+                                <FieldContent>
+                                    <Input
+                                        id="edit-class-year"
+                                        type="number"
+                                        value={year ?? ""}
+                                        onChange={(e) =>
+                                            setYear(
+                                                e.target.value
+                                                    ? Number(e.target.value)
+                                                    : undefined
+                                            )
+                                        }
+                                        placeholder="2024"
+                                        min={2000}
+                                        max={2100}
+                                        disabled={isSubmitting}
+                                    />
+                                    <FieldDescription>
+                                        Optional: The academic year for this class
                                     </FieldDescription>
                                 </FieldContent>
                             </Field>
