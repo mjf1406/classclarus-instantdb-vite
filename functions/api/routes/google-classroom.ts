@@ -614,22 +614,36 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 accessToken
             );
 
-            // Debug: Log the raw response structure
-            console.log("[Google Classroom Import] Raw students data:", JSON.stringify(studentsData, null, 2));
+            // Fetch email for each student using userProfiles endpoint
+            const studentsWithEmails = await Promise.all(
+                (studentsData.students || []).map(async (student: any) => {
+                    try {
+                        const userProfile = await makeClassroomRequest(
+                            `/userProfiles/${student.userId}`,
+                            accessToken
+                        );
+                        return {
+                            email: (userProfile.emailAddress || "").toLowerCase().trim(),
+                            firstName: student.profile?.name?.givenName || "",
+                            lastName: student.profile?.name?.familyName || "",
+                        };
+                    } catch (error) {
+                        console.error(
+                            `[Google Classroom Import] Failed to fetch profile for user ${student.userId}:`,
+                            error
+                        );
+                        // Return student without email if profile fetch fails
+                        return {
+                            email: "",
+                            firstName: student.profile?.name?.givenName || "",
+                            lastName: student.profile?.name?.familyName || "",
+                        };
+                    }
+                })
+            );
 
-            const students =
-                studentsData.students?.map((student: any) => {
-                    const profile = student.profile || {};
-                    // Debug: Log individual student structure
-                    console.log("[Google Classroom Import] Student profile:", JSON.stringify(profile, null, 2));
-                    
-                    const email = profile.emailAddress || profile.email || "";
-                    return {
-                        email: email.toLowerCase().trim(),
-                        firstName: profile.name?.givenName || "",
-                        lastName: profile.name?.familyName || "",
-                    };
-                }) || [];
+            // Filter out students without valid email addresses
+            const students = studentsWithEmails.filter((s: any) => s.email && s.email.length > 0);
 
             // Get existing class members and pending members
             const existingMembersQuery = await dbAdmin.query({
@@ -664,15 +678,6 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 ...existingPendingEmails,
             ]);
 
-            // Debug logging
-            console.log("[Google Classroom Import] Debug info:", {
-                totalStudentsFromGoogle: students.length,
-                existingStudentsCount: existingStudents.length,
-                existingPendingMembersCount: existingPendingMembers.length,
-                existingStudentEmails: Array.from(existingStudentEmails),
-                existingPendingEmails: Array.from(existingPendingEmails),
-                googleStudentEmails: students.map((s: any) => s.email),
-            });
 
             // Filter out students who already exist
             const newStudents = students.filter(
