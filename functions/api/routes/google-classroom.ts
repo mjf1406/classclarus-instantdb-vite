@@ -12,6 +12,7 @@ const GOOGLE_CLASSROOM_API_BASE = "https://classroom.googleapis.com/v1";
 const SCOPES = [
     "https://www.googleapis.com/auth/classroom.courses.readonly",
     "https://www.googleapis.com/auth/classroom.rosters.readonly",
+    "https://www.googleapis.com/auth/classroom.profile.emails",
 ].join(" ");
 
 // Generate a state token with user ID encoded
