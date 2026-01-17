@@ -4,9 +4,9 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite --port 3000 --host",
+        "d": "vite --port 3000 --host",
         "df": "wrangler pages dev dist",
-        "build": "tsc && vite build",
+        "b": "tsc && vite build",
         "preview": "vite preview",
         "ps": "npx instant-cli@latest push schema",
         "pp": "npx instant-cli@latest push perms",

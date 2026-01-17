@@ -36,7 +36,6 @@ import {
     StudentIcon,
     GuardianIcon,
 } from "@/components/icons/role-icons";
-import { isRestrictedRole } from "@/lib/auth-utils";
 
 type User = InstaQLEntity<AppSchema, "$users">;
 
