@@ -41,12 +41,12 @@ function NotFound() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                     <Button
-                        asChild
                         variant="default"
                         className="w-full"
                         size="lg"
+                        onClick={() => window.history.back()}
                     >
-                        <Link to="/organizations">Go to Organizations</Link>
+                        Go Back
                     </Button>
                     <Button
                         asChild

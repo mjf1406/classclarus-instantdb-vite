@@ -1,14 +1,14 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { CalendarCheck } from "lucide-react";
+import { Target } from "lucide-react";
 import { UnderConstruction } from "@/components/under-construction";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 
 export const Route = createFileRoute(
-    "/classes/_classesLayout/$classId/attendance/"
+    "/classes/_classesLayout/$classId/class-management/expectations/"
 )({
     component: RouteComponent,
 });
@@ -28,13 +28,13 @@ function RouteComponent() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <CalendarCheck className="size-12 md:size-16 text-primary" />
+                        <Target className="size-12 md:size-16 text-primary" />
                         <div>
                             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                                Attendance
+                                Expectations
                             </h1>
                             <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                                Manage attendance for your class
+                                View and manage expectations for your class
                             </p>
                         </div>
                     </div>

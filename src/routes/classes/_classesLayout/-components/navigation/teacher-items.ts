@@ -10,6 +10,8 @@ import {
     Dice6,
     BookOpen,
     CalendarCheck,
+    UserCircle,
+    Network,
 } from "lucide-react";
 import type { NavigationItem } from "./types";
 
@@ -18,38 +20,52 @@ export function getClassManagementItems(classId: string): NavigationItem[] {
         {
             title: "Assignments",
             description: "Manage assignments for your class",
-            url: `/classes/${classId}/assignments`,
+            url: `/classes/${classId}/class-management/assignments`,
             icon: FileText,
         },
         {
             title: "Attendance",
             description: "Manage attendance for your class",
-            url: `/classes/${classId}/attendance`,
+            url: `/classes/${classId}/class-management/attendance`,
             icon: CalendarCheck,
         },
         {
             title: "Gradebook",
             description: "View and manage gradebook for your class",
-            url: `/classes/${classId}/gradebook`,
+            url: `/classes/${classId}/class-management/gradebook`,
             icon: BookOpenCheck,
         },
         {
             title: "Tasks",
             description: "View and manage tasks for your class",
-            url: `/classes/${classId}/tasks`,
+            url: `/classes/${classId}/class-management/tasks`,
             icon: CheckSquare,
         },
         {
             title: "Expectations",
             description: "View and manage expectations for your class",
-            url: `/classes/${classId}/expectations`,
+            url: `/classes/${classId}/class-management/expectations`,
             icon: Target,
         },
         {
             title: "Reading",
             description: "View and manage reading for your class",
-            url: `/classes/${classId}/reading`,
+            url: `/classes/${classId}/class-management/reading`,
             icon: BookOpen,
+        },
+        {
+            title: "Student Dashboards",
+            description:
+                "Preview and configure student dashboard views",
+            url: `/classes/${classId}/class-management/student-dashboards`,
+            icon: UserCircle,
+        },
+        {
+            title: "Groups & Teams",
+            description:
+                "Manage student groups and teams for your class",
+            url: `/classes/${classId}/class-management/groups-and-teams`,
+            icon: Network,
         },
     ];
 }

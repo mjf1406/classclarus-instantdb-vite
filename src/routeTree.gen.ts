@@ -26,14 +26,8 @@ import { Route as OrganizationsOrgLayoutOrgIdIndexRouteImport } from './routes/o
 import { Route as ClassesClassesLayoutMembersIndexRouteImport } from './routes/classes/_classesLayout/members/index'
 import { Route as ClassesClassesLayoutClassIdIndexRouteImport } from './routes/classes/_classesLayout/$classId/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/index'
-import { Route as ClassesClassesLayoutClassIdTasksIndexRouteImport } from './routes/classes/_classesLayout/$classId/tasks/index'
-import { Route as ClassesClassesLayoutClassIdReadingIndexRouteImport } from './routes/classes/_classesLayout/$classId/reading/index'
 import { Route as ClassesClassesLayoutClassIdRandomToolsIndexRouteImport } from './routes/classes/_classesLayout/$classId/random-tools/index'
 import { Route as ClassesClassesLayoutClassIdMembersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/index'
-import { Route as ClassesClassesLayoutClassIdGradebookIndexRouteImport } from './routes/classes/_classesLayout/$classId/gradebook/index'
-import { Route as ClassesClassesLayoutClassIdExpectationsIndexRouteImport } from './routes/classes/_classesLayout/$classId/expectations/index'
-import { Route as ClassesClassesLayoutClassIdAttendanceIndexRouteImport } from './routes/classes/_classesLayout/$classId/attendance/index'
-import { Route as ClassesClassesLayoutClassIdAssignmentsIndexRouteImport } from './routes/classes/_classesLayout/$classId/assignments/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersTeachersIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/teachers/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersStudentsIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/students/index'
 import { Route as OrganizationsOrgLayoutOrgIdMembersInviteIndexRouteImport } from './routes/organizations/_orgLayout/$orgId/members/invite/index'
@@ -52,12 +46,19 @@ import { Route as ClassesClassesLayoutClassIdMembersInviteIndexRouteImport } fro
 import { Route as ClassesClassesLayoutClassIdMembersGuardiansIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/guardians/index'
 import { Route as ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/assistant-teachers/index'
 import { Route as ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/admins/index'
-import { Route as ClassesClassesLayoutClassIdMainStudentDashboardsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/student-dashboards/index'
 import { Route as ClassesClassesLayoutClassIdMainSettingsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/settings/index'
 import { Route as ClassesClassesLayoutClassIdMainPointsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/points/index'
 import { Route as ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/noise-monitor/index'
 import { Route as ClassesClassesLayoutClassIdMainDashboardIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/dashboard/index'
 import { Route as ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/classroom-screen/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementTasksIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/tasks/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/student-dashboards/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementReadingIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/reading/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/groups-and-teams/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementGradebookIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/gradebook/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementExpectationsIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/expectations/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementAttendanceIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/attendance/index'
+import { Route as ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/assignments/index'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -150,18 +151,6 @@ const OrganizationsOrgLayoutOrgIdMembersIndexRoute =
     path: '/$orgId/members/',
     getParentRoute: () => OrganizationsOrgLayoutRoute,
   } as any)
-const ClassesClassesLayoutClassIdTasksIndexRoute =
-  ClassesClassesLayoutClassIdTasksIndexRouteImport.update({
-    id: '/$classId/tasks/',
-    path: '/$classId/tasks/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
-const ClassesClassesLayoutClassIdReadingIndexRoute =
-  ClassesClassesLayoutClassIdReadingIndexRouteImport.update({
-    id: '/$classId/reading/',
-    path: '/$classId/reading/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
 const ClassesClassesLayoutClassIdRandomToolsIndexRoute =
   ClassesClassesLayoutClassIdRandomToolsIndexRouteImport.update({
     id: '/$classId/random-tools/',
@@ -172,30 +161,6 @@ const ClassesClassesLayoutClassIdMembersIndexRoute =
   ClassesClassesLayoutClassIdMembersIndexRouteImport.update({
     id: '/$classId/members/',
     path: '/$classId/members/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
-const ClassesClassesLayoutClassIdGradebookIndexRoute =
-  ClassesClassesLayoutClassIdGradebookIndexRouteImport.update({
-    id: '/$classId/gradebook/',
-    path: '/$classId/gradebook/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
-const ClassesClassesLayoutClassIdExpectationsIndexRoute =
-  ClassesClassesLayoutClassIdExpectationsIndexRouteImport.update({
-    id: '/$classId/expectations/',
-    path: '/$classId/expectations/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
-const ClassesClassesLayoutClassIdAttendanceIndexRoute =
-  ClassesClassesLayoutClassIdAttendanceIndexRouteImport.update({
-    id: '/$classId/attendance/',
-    path: '/$classId/attendance/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
-const ClassesClassesLayoutClassIdAssignmentsIndexRoute =
-  ClassesClassesLayoutClassIdAssignmentsIndexRouteImport.update({
-    id: '/$classId/assignments/',
-    path: '/$classId/assignments/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
 const OrganizationsOrgLayoutOrgIdMembersTeachersIndexRoute =
@@ -306,12 +271,6 @@ const ClassesClassesLayoutClassIdMembersAdminsIndexRoute =
     path: '/$classId/members/admins/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
-const ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute =
-  ClassesClassesLayoutClassIdMainStudentDashboardsIndexRouteImport.update({
-    id: '/$classId/main/student-dashboards/',
-    path: '/$classId/main/student-dashboards/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
 const ClassesClassesLayoutClassIdMainSettingsIndexRoute =
   ClassesClassesLayoutClassIdMainSettingsIndexRouteImport.update({
     id: '/$classId/main/settings/',
@@ -342,6 +301,60 @@ const ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute =
     path: '/$classId/main/classroom-screen/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdClassManagementTasksIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementTasksIndexRouteImport.update({
+    id: '/$classId/class-management/tasks/',
+    path: '/$classId/class-management/tasks/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRouteImport.update(
+    {
+      id: '/$classId/class-management/student-dashboards/',
+      path: '/$classId/class-management/student-dashboards/',
+      getParentRoute: () => ClassesClassesLayoutRoute,
+    } as any,
+  )
+const ClassesClassesLayoutClassIdClassManagementReadingIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementReadingIndexRouteImport.update({
+    id: '/$classId/class-management/reading/',
+    path: '/$classId/class-management/reading/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRouteImport.update(
+    {
+      id: '/$classId/class-management/groups-and-teams/',
+      path: '/$classId/class-management/groups-and-teams/',
+      getParentRoute: () => ClassesClassesLayoutRoute,
+    } as any,
+  )
+const ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementGradebookIndexRouteImport.update({
+    id: '/$classId/class-management/gradebook/',
+    path: '/$classId/class-management/gradebook/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementExpectationsIndexRouteImport.update(
+    {
+      id: '/$classId/class-management/expectations/',
+      path: '/$classId/class-management/expectations/',
+      getParentRoute: () => ClassesClassesLayoutRoute,
+    } as any,
+  )
+const ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementAttendanceIndexRouteImport.update({
+    id: '/$classId/class-management/attendance/',
+    path: '/$classId/class-management/attendance/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute =
+  ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRouteImport.update({
+    id: '/$classId/class-management/assignments/',
+    path: '/$classId/class-management/assignments/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -360,21 +373,22 @@ export interface FileRoutesByFullPath {
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdIndexRoute
-  '/classes/$classId/assignments': typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
-  '/classes/$classId/attendance': typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
-  '/classes/$classId/expectations': typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
-  '/classes/$classId/gradebook': typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/classes/$classId/random-tools': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
-  '/classes/$classId/reading': typeof ClassesClassesLayoutClassIdReadingIndexRoute
-  '/classes/$classId/tasks': typeof ClassesClassesLayoutClassIdTasksIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/class-management/assignments': typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
+  '/classes/$classId/class-management/attendance': typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
+  '/classes/$classId/class-management/expectations': typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
+  '/classes/$classId/class-management/gradebook': typeof ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute
+  '/classes/$classId/class-management/groups-and-teams': typeof ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute
+  '/classes/$classId/class-management/reading': typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
+  '/classes/$classId/class-management/student-dashboards': typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
+  '/classes/$classId/class-management/tasks': typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
-  '/classes/$classId/main/student-dashboards': typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   '/classes/$classId/members/guardians': typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -409,21 +423,22 @@ export interface FileRoutesByTo {
   '/classes/$classId': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/members': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/$orgId': typeof OrganizationsOrgLayoutOrgIdIndexRoute
-  '/classes/$classId/assignments': typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
-  '/classes/$classId/attendance': typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
-  '/classes/$classId/expectations': typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
-  '/classes/$classId/gradebook': typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/classes/$classId/random-tools': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
-  '/classes/$classId/reading': typeof ClassesClassesLayoutClassIdReadingIndexRoute
-  '/classes/$classId/tasks': typeof ClassesClassesLayoutClassIdTasksIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/class-management/assignments': typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
+  '/classes/$classId/class-management/attendance': typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
+  '/classes/$classId/class-management/expectations': typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
+  '/classes/$classId/class-management/gradebook': typeof ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute
+  '/classes/$classId/class-management/groups-and-teams': typeof ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute
+  '/classes/$classId/class-management/reading': typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
+  '/classes/$classId/class-management/student-dashboards': typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
+  '/classes/$classId/class-management/tasks': typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
-  '/classes/$classId/main/student-dashboards': typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   '/classes/$classId/members/guardians': typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -461,21 +476,22 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/': typeof ClassesClassesLayoutClassIdIndexRoute
   '/classes/_classesLayout/members/': typeof ClassesClassesLayoutMembersIndexRoute
   '/organizations/_orgLayout/$orgId/': typeof OrganizationsOrgLayoutOrgIdIndexRoute
-  '/classes/_classesLayout/$classId/assignments/': typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
-  '/classes/_classesLayout/$classId/attendance/': typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
-  '/classes/_classesLayout/$classId/expectations/': typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
-  '/classes/_classesLayout/$classId/gradebook/': typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   '/classes/_classesLayout/$classId/members/': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/classes/_classesLayout/$classId/random-tools/': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
-  '/classes/_classesLayout/$classId/reading/': typeof ClassesClassesLayoutClassIdReadingIndexRoute
-  '/classes/_classesLayout/$classId/tasks/': typeof ClassesClassesLayoutClassIdTasksIndexRoute
   '/organizations/_orgLayout/$orgId/members/': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/_classesLayout/$classId/class-management/assignments/': typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
+  '/classes/_classesLayout/$classId/class-management/attendance/': typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
+  '/classes/_classesLayout/$classId/class-management/expectations/': typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
+  '/classes/_classesLayout/$classId/class-management/gradebook/': typeof ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute
+  '/classes/_classesLayout/$classId/class-management/groups-and-teams/': typeof ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute
+  '/classes/_classesLayout/$classId/class-management/reading/': typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
+  '/classes/_classesLayout/$classId/class-management/student-dashboards/': typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
+  '/classes/_classesLayout/$classId/class-management/tasks/': typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
   '/classes/_classesLayout/$classId/main/classroom-screen/': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/_classesLayout/$classId/main/dashboard/': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/_classesLayout/$classId/main/noise-monitor/': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   '/classes/_classesLayout/$classId/main/points/': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/_classesLayout/$classId/main/settings/': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
-  '/classes/_classesLayout/$classId/main/student-dashboards/': typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   '/classes/_classesLayout/$classId/members/admins/': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/_classesLayout/$classId/members/assistant-teachers/': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   '/classes/_classesLayout/$classId/members/guardians/': typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -514,21 +530,22 @@ export interface FileRouteTypes {
     | '/classes/$classId'
     | '/classes/members'
     | '/organizations/$orgId'
-    | '/classes/$classId/assignments'
-    | '/classes/$classId/attendance'
-    | '/classes/$classId/expectations'
-    | '/classes/$classId/gradebook'
     | '/classes/$classId/members'
     | '/classes/$classId/random-tools'
-    | '/classes/$classId/reading'
-    | '/classes/$classId/tasks'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/class-management/assignments'
+    | '/classes/$classId/class-management/attendance'
+    | '/classes/$classId/class-management/expectations'
+    | '/classes/$classId/class-management/gradebook'
+    | '/classes/$classId/class-management/groups-and-teams'
+    | '/classes/$classId/class-management/reading'
+    | '/classes/$classId/class-management/student-dashboards'
+    | '/classes/$classId/class-management/tasks'
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
     | '/classes/$classId/main/noise-monitor'
     | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
-    | '/classes/$classId/main/student-dashboards'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
     | '/classes/$classId/members/guardians'
@@ -563,21 +580,22 @@ export interface FileRouteTypes {
     | '/classes/$classId'
     | '/classes/members'
     | '/organizations/$orgId'
-    | '/classes/$classId/assignments'
-    | '/classes/$classId/attendance'
-    | '/classes/$classId/expectations'
-    | '/classes/$classId/gradebook'
     | '/classes/$classId/members'
     | '/classes/$classId/random-tools'
-    | '/classes/$classId/reading'
-    | '/classes/$classId/tasks'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/class-management/assignments'
+    | '/classes/$classId/class-management/attendance'
+    | '/classes/$classId/class-management/expectations'
+    | '/classes/$classId/class-management/gradebook'
+    | '/classes/$classId/class-management/groups-and-teams'
+    | '/classes/$classId/class-management/reading'
+    | '/classes/$classId/class-management/student-dashboards'
+    | '/classes/$classId/class-management/tasks'
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
     | '/classes/$classId/main/noise-monitor'
     | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
-    | '/classes/$classId/main/student-dashboards'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
     | '/classes/$classId/members/guardians'
@@ -614,21 +632,22 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/'
     | '/classes/_classesLayout/members/'
     | '/organizations/_orgLayout/$orgId/'
-    | '/classes/_classesLayout/$classId/assignments/'
-    | '/classes/_classesLayout/$classId/attendance/'
-    | '/classes/_classesLayout/$classId/expectations/'
-    | '/classes/_classesLayout/$classId/gradebook/'
     | '/classes/_classesLayout/$classId/members/'
     | '/classes/_classesLayout/$classId/random-tools/'
-    | '/classes/_classesLayout/$classId/reading/'
-    | '/classes/_classesLayout/$classId/tasks/'
     | '/organizations/_orgLayout/$orgId/members/'
+    | '/classes/_classesLayout/$classId/class-management/assignments/'
+    | '/classes/_classesLayout/$classId/class-management/attendance/'
+    | '/classes/_classesLayout/$classId/class-management/expectations/'
+    | '/classes/_classesLayout/$classId/class-management/gradebook/'
+    | '/classes/_classesLayout/$classId/class-management/groups-and-teams/'
+    | '/classes/_classesLayout/$classId/class-management/reading/'
+    | '/classes/_classesLayout/$classId/class-management/student-dashboards/'
+    | '/classes/_classesLayout/$classId/class-management/tasks/'
     | '/classes/_classesLayout/$classId/main/classroom-screen/'
     | '/classes/_classesLayout/$classId/main/dashboard/'
     | '/classes/_classesLayout/$classId/main/noise-monitor/'
     | '/classes/_classesLayout/$classId/main/points/'
     | '/classes/_classesLayout/$classId/main/settings/'
-    | '/classes/_classesLayout/$classId/main/student-dashboards/'
     | '/classes/_classesLayout/$classId/members/admins/'
     | '/classes/_classesLayout/$classId/members/assistant-teachers/'
     | '/classes/_classesLayout/$classId/members/guardians/'
@@ -784,20 +803,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrganizationsOrgLayoutOrgIdMembersIndexRouteImport
       parentRoute: typeof OrganizationsOrgLayoutRoute
     }
-    '/classes/_classesLayout/$classId/tasks/': {
-      id: '/classes/_classesLayout/$classId/tasks/'
-      path: '/$classId/tasks'
-      fullPath: '/classes/$classId/tasks'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdTasksIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
-    '/classes/_classesLayout/$classId/reading/': {
-      id: '/classes/_classesLayout/$classId/reading/'
-      path: '/$classId/reading'
-      fullPath: '/classes/$classId/reading'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdReadingIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
     '/classes/_classesLayout/$classId/random-tools/': {
       id: '/classes/_classesLayout/$classId/random-tools/'
       path: '/$classId/random-tools'
@@ -810,34 +815,6 @@ declare module '@tanstack/react-router' {
       path: '/$classId/members'
       fullPath: '/classes/$classId/members'
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
-    '/classes/_classesLayout/$classId/gradebook/': {
-      id: '/classes/_classesLayout/$classId/gradebook/'
-      path: '/$classId/gradebook'
-      fullPath: '/classes/$classId/gradebook'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdGradebookIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
-    '/classes/_classesLayout/$classId/expectations/': {
-      id: '/classes/_classesLayout/$classId/expectations/'
-      path: '/$classId/expectations'
-      fullPath: '/classes/$classId/expectations'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdExpectationsIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
-    '/classes/_classesLayout/$classId/attendance/': {
-      id: '/classes/_classesLayout/$classId/attendance/'
-      path: '/$classId/attendance'
-      fullPath: '/classes/$classId/attendance'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdAttendanceIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
-    '/classes/_classesLayout/$classId/assignments/': {
-      id: '/classes/_classesLayout/$classId/assignments/'
-      path: '/$classId/assignments'
-      fullPath: '/classes/$classId/assignments'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdAssignmentsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
     '/organizations/_orgLayout/$orgId/members/teachers/': {
@@ -966,13 +943,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
-    '/classes/_classesLayout/$classId/main/student-dashboards/': {
-      id: '/classes/_classesLayout/$classId/main/student-dashboards/'
-      path: '/$classId/main/student-dashboards'
-      fullPath: '/classes/$classId/main/student-dashboards'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
     '/classes/_classesLayout/$classId/main/settings/': {
       id: '/classes/_classesLayout/$classId/main/settings/'
       path: '/$classId/main/settings'
@@ -1008,6 +978,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
+    '/classes/_classesLayout/$classId/class-management/tasks/': {
+      id: '/classes/_classesLayout/$classId/class-management/tasks/'
+      path: '/$classId/class-management/tasks'
+      fullPath: '/classes/$classId/class-management/tasks'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/class-management/student-dashboards/': {
+      id: '/classes/_classesLayout/$classId/class-management/student-dashboards/'
+      path: '/$classId/class-management/student-dashboards'
+      fullPath: '/classes/$classId/class-management/student-dashboards'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/class-management/reading/': {
+      id: '/classes/_classesLayout/$classId/class-management/reading/'
+      path: '/$classId/class-management/reading'
+      fullPath: '/classes/$classId/class-management/reading'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/class-management/groups-and-teams/': {
+      id: '/classes/_classesLayout/$classId/class-management/groups-and-teams/'
+      path: '/$classId/class-management/groups-and-teams'
+      fullPath: '/classes/$classId/class-management/groups-and-teams'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/class-management/gradebook/': {
+      id: '/classes/_classesLayout/$classId/class-management/gradebook/'
+      path: '/$classId/class-management/gradebook'
+      fullPath: '/classes/$classId/class-management/gradebook'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementGradebookIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/class-management/expectations/': {
+      id: '/classes/_classesLayout/$classId/class-management/expectations/'
+      path: '/$classId/class-management/expectations'
+      fullPath: '/classes/$classId/class-management/expectations'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/class-management/attendance/': {
+      id: '/classes/_classesLayout/$classId/class-management/attendance/'
+      path: '/$classId/class-management/attendance'
+      fullPath: '/classes/$classId/class-management/attendance'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/class-management/assignments/': {
+      id: '/classes/_classesLayout/$classId/class-management/assignments/'
+      path: '/$classId/class-management/assignments'
+      fullPath: '/classes/$classId/class-management/assignments'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
   }
 }
 
@@ -1015,20 +1041,21 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutIndexRoute: typeof ClassesClassesLayoutIndexRoute
   ClassesClassesLayoutClassIdIndexRoute: typeof ClassesClassesLayoutClassIdIndexRoute
   ClassesClassesLayoutMembersIndexRoute: typeof ClassesClassesLayoutMembersIndexRoute
-  ClassesClassesLayoutClassIdAssignmentsIndexRoute: typeof ClassesClassesLayoutClassIdAssignmentsIndexRoute
-  ClassesClassesLayoutClassIdAttendanceIndexRoute: typeof ClassesClassesLayoutClassIdAttendanceIndexRoute
-  ClassesClassesLayoutClassIdExpectationsIndexRoute: typeof ClassesClassesLayoutClassIdExpectationsIndexRoute
-  ClassesClassesLayoutClassIdGradebookIndexRoute: typeof ClassesClassesLayoutClassIdGradebookIndexRoute
   ClassesClassesLayoutClassIdMembersIndexRoute: typeof ClassesClassesLayoutClassIdMembersIndexRoute
   ClassesClassesLayoutClassIdRandomToolsIndexRoute: typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
-  ClassesClassesLayoutClassIdReadingIndexRoute: typeof ClassesClassesLayoutClassIdReadingIndexRoute
-  ClassesClassesLayoutClassIdTasksIndexRoute: typeof ClassesClassesLayoutClassIdTasksIndexRoute
+  ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
+  ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
+  ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
+  ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute
+  ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute
+  ClassesClassesLayoutClassIdClassManagementReadingIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
+  ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
+  ClassesClassesLayoutClassIdClassManagementTasksIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
   ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   ClassesClassesLayoutClassIdMainDashboardIndexRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute: typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
   ClassesClassesLayoutClassIdMainPointsIndexRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   ClassesClassesLayoutClassIdMainSettingsIndexRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
-  ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute: typeof ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute: typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
   ClassesClassesLayoutClassIdMembersGuardiansIndexRoute: typeof ClassesClassesLayoutClassIdMembersGuardiansIndexRoute
@@ -1044,22 +1071,26 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
   ClassesClassesLayoutIndexRoute: ClassesClassesLayoutIndexRoute,
   ClassesClassesLayoutClassIdIndexRoute: ClassesClassesLayoutClassIdIndexRoute,
   ClassesClassesLayoutMembersIndexRoute: ClassesClassesLayoutMembersIndexRoute,
-  ClassesClassesLayoutClassIdAssignmentsIndexRoute:
-    ClassesClassesLayoutClassIdAssignmentsIndexRoute,
-  ClassesClassesLayoutClassIdAttendanceIndexRoute:
-    ClassesClassesLayoutClassIdAttendanceIndexRoute,
-  ClassesClassesLayoutClassIdExpectationsIndexRoute:
-    ClassesClassesLayoutClassIdExpectationsIndexRoute,
-  ClassesClassesLayoutClassIdGradebookIndexRoute:
-    ClassesClassesLayoutClassIdGradebookIndexRoute,
   ClassesClassesLayoutClassIdMembersIndexRoute:
     ClassesClassesLayoutClassIdMembersIndexRoute,
   ClassesClassesLayoutClassIdRandomToolsIndexRoute:
     ClassesClassesLayoutClassIdRandomToolsIndexRoute,
-  ClassesClassesLayoutClassIdReadingIndexRoute:
-    ClassesClassesLayoutClassIdReadingIndexRoute,
-  ClassesClassesLayoutClassIdTasksIndexRoute:
-    ClassesClassesLayoutClassIdTasksIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementGradebookIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementGroupsAndTeamsIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementReadingIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementReadingIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute,
+  ClassesClassesLayoutClassIdClassManagementTasksIndexRoute:
+    ClassesClassesLayoutClassIdClassManagementTasksIndexRoute,
   ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute:
     ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute,
   ClassesClassesLayoutClassIdMainDashboardIndexRoute:
@@ -1070,8 +1101,6 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
     ClassesClassesLayoutClassIdMainPointsIndexRoute,
   ClassesClassesLayoutClassIdMainSettingsIndexRoute:
     ClassesClassesLayoutClassIdMainSettingsIndexRoute,
-  ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute:
-    ClassesClassesLayoutClassIdMainStudentDashboardsIndexRoute,
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute:
     ClassesClassesLayoutClassIdMembersAdminsIndexRoute,
   ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute:

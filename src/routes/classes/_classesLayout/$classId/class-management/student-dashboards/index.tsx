@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute(
-    "/classes/_classesLayout/$classId/main/student-dashboards/"
+    "/classes/_classesLayout/$classId/class-management/student-dashboards/"
 )({
     component: RouteComponent,
 });
