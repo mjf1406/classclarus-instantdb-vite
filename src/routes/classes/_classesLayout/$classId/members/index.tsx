@@ -82,15 +82,6 @@ function RouteComponent() {
             link: `/classes/${classId}/members/assistant-teachers`,
         },
         {
-            id: "students",
-            title: "Students",
-            icon: StudentIcon,
-            count: students.length,
-            items: students,
-            isLoading: false,
-            link: `/classes/${classId}/members/students`,
-        },
-        {
             id: "guardians",
             title: "Guardians",
             icon: GuardianIcon,
@@ -98,6 +89,15 @@ function RouteComponent() {
             items: guardians,
             isLoading: false,
             link: `/classes/${classId}/members/guardians`,
+        },
+        {
+            id: "students",
+            title: "Students",
+            icon: StudentIcon,
+            count: students.length,
+            items: students,
+            isLoading: false,
+            link: `/classes/${classId}/members/students`,
         },
     ];
 

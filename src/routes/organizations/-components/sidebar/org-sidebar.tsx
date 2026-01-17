@@ -117,15 +117,22 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 {(mainItems.length > 0 || settingsItem) && (
                                     <NavMain
                                         items={[
-                                            ...mainItems.map((item) => ({
-                                                title: item.title,
-                                                url: item.url as any,
-                                                icon: item.icon as LucideIcon,
-                                                isActive: isRouteActive(
-                                                    location.pathname,
-                                                    item.url
-                                                ),
-                                            })),
+                                            ...mainItems
+                                                .map((item) => ({
+                                                    title: item.title,
+                                                    url: item.url as any,
+                                                    icon: item.icon as LucideIcon,
+                                                    isActive: isRouteActive(
+                                                        location.pathname,
+                                                        item.url
+                                                    ),
+                                                }))
+                                                .sort((a, b) => {
+                                                    // Keep "Home" at the top
+                                                    if (a.title === "Home") return -1;
+                                                    if (b.title === "Home") return 1;
+                                                    return a.title.localeCompare(b.title);
+                                                }),
                                             ...(settingsItem
                                                 ? [
                                                       {
@@ -140,7 +147,12 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                       },
                                                   ]
                                                 : []),
-                                        ]}
+                                        ].sort((a, b) => {
+                                            // Keep "Home" at the top
+                                            if (a.title === "Home") return -1;
+                                            if (b.title === "Home") return 1;
+                                            return a.title.localeCompare(b.title);
+                                        })}
                                         showLabel={true}
                                         label="Organization"
                                         onLinkClick={handleLinkClick}
@@ -152,7 +164,28 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                             Organization Members
                                         </SidebarGroupLabel>
                                         <SidebarMenu>
-                                            {memberItems.map((item) => {
+                                            {memberItems
+                                                .sort((a, b) => {
+                                                    // Custom order: invite, all, admin, teacher, assistant teacher, guardian, students
+                                                    const order = [
+                                                        "Invite Members",
+                                                        "All Members",
+                                                        "Admins",
+                                                        "Teachers",
+                                                        "Assistant Teachers",
+                                                        "Guardians",
+                                                        "Students",
+                                                    ];
+                                                    const indexA = order.indexOf(a.title);
+                                                    const indexB = order.indexOf(b.title);
+                                                    if (indexA === -1 && indexB === -1) {
+                                                        return a.title.localeCompare(b.title);
+                                                    }
+                                                    if (indexA === -1) return 1;
+                                                    if (indexB === -1) return -1;
+                                                    return indexA - indexB;
+                                                })
+                                                .map((item) => {
                                                 const Icon =
                                                     item.icon as LucideIcon;
                                                 const isActive = isRouteActive(

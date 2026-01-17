@@ -131,15 +131,22 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                 {(mainItems.length > 0 || settingsItem) && (
                                     <NavMain
                                         items={[
-                                            ...mainItems.map((item) => ({
-                                                title: item.title,
-                                                url: item.url as any,
-                                                icon: item.icon as LucideIcon,
-                                                isActive: isRouteActive(
-                                                    location.pathname,
-                                                    item.url
-                                                ),
-                                            })),
+                                            ...mainItems
+                                                .map((item) => ({
+                                                    title: item.title,
+                                                    url: item.url as any,
+                                                    icon: item.icon as LucideIcon,
+                                                    isActive: isRouteActive(
+                                                        location.pathname,
+                                                        item.url
+                                                    ),
+                                                }))
+                                                .sort((a, b) => {
+                                                    // Keep "Home" at the top
+                                                    if (a.title === "Home") return -1;
+                                                    if (b.title === "Home") return 1;
+                                                    return a.title.localeCompare(b.title);
+                                                }),
                                             ...(settingsItem
                                                 ? [
                                                       {
@@ -154,7 +161,12 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                                       },
                                                   ]
                                                 : []),
-                                        ]}
+                                        ].sort((a, b) => {
+                                            // Keep "Home" at the top
+                                            if (a.title === "Home") return -1;
+                                            if (b.title === "Home") return 1;
+                                            return a.title.localeCompare(b.title);
+                                        })}
                                         showLabel={false}
                                         onLinkClick={handleLinkClick}
                                     />
@@ -177,8 +189,13 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                                         </CollapsibleTrigger>
                                                         <CollapsibleContent>
                                                             <SidebarMenuSub>
-                                                                {classManagementItems.map(
-                                                                    (item) => {
+                                                                {classManagementItems
+                                                                    .sort((a, b) =>
+                                                                        a.title.localeCompare(
+                                                                            b.title
+                                                                        )
+                                                                    )
+                                                                    .map((item) => {
                                                                         const Icon =
                                                                             item.icon as LucideIcon;
                                                                         const isActive =
@@ -243,8 +260,28 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                                     </CollapsibleTrigger>
                                                     <CollapsibleContent>
                                                         <SidebarMenuSub>
-                                                            {memberItems.map(
-                                                                (item) => {
+                                                            {memberItems
+                                                                .sort((a, b) => {
+                                                                    // Custom order: invite, all, admin, teacher, assistant teacher, guardian, students
+                                                                    const order = [
+                                                                        "Invite Members",
+                                                                        "All Members",
+                                                                        "Admins",
+                                                                        "Teachers",
+                                                                        "Assistant Teachers",
+                                                                        "Guardians",
+                                                                        "Students",
+                                                                    ];
+                                                                    const indexA = order.indexOf(a.title);
+                                                                    const indexB = order.indexOf(b.title);
+                                                                    if (indexA === -1 && indexB === -1) {
+                                                                        return a.title.localeCompare(b.title);
+                                                                    }
+                                                                    if (indexA === -1) return 1;
+                                                                    if (indexB === -1) return -1;
+                                                                    return indexA - indexB;
+                                                                })
+                                                                .map((item) => {
                                                                     const Icon =
                                                                         item.icon as LucideIcon;
                                                                     const isActive =
@@ -309,8 +346,13 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                                     </CollapsibleTrigger>
                                                     <CollapsibleContent>
                                                         <SidebarMenuSub>
-                                                            {randomItems.map(
-                                                                (item) => {
+                                                            {randomItems
+                                                                .sort((a, b) =>
+                                                                    a.title.localeCompare(
+                                                                        b.title
+                                                                    )
+                                                                )
+                                                                .map((item) => {
                                                                     const Icon =
                                                                         item.icon as LucideIcon;
                                                                     const isActive =

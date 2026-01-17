@@ -34,9 +34,9 @@ export function getMainItems(classId: string): NavigationItem[] {
             icon: Award,
         },
         {
-            title: "Classroom Screen",
+            title: "Screen",
             description:
-                "Display and manage classroom screen for your class",
+                "Display and manage your classroom screen for your class",
             url: `/classes/${classId}/main/classroom-screen`,
             icon: Monitor,
         },

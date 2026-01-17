@@ -130,7 +130,28 @@ function RouteComponent() {
                 <div>
                     <h2 className="text-2xl font-semibold mb-2">Members</h2>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {memberItems.map((item: NavigationItem) => {
+                        {memberItems
+                            .sort((a, b) => {
+                                // Custom order: invite, all, admin, teacher, assistant teacher, guardian, students
+                                const order = [
+                                    "Invite Members",
+                                    "All Members",
+                                    "Admins",
+                                    "Teachers",
+                                    "Assistant Teachers",
+                                    "Guardians",
+                                    "Students",
+                                ];
+                                const indexA = order.indexOf(a.title);
+                                const indexB = order.indexOf(b.title);
+                                if (indexA === -1 && indexB === -1) {
+                                    return a.title.localeCompare(b.title);
+                                }
+                                if (indexA === -1) return 1;
+                                if (indexB === -1) return -1;
+                                return indexA - indexB;
+                            })
+                            .map((item: NavigationItem) => {
                             const Icon = item.icon;
                             return (
                                 <Link

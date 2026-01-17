@@ -31,10 +31,10 @@ function RouteComponent() {
                         <Monitor className="size-12 md:size-16 text-primary" />
                         <div>
                             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                                Classroom Screen
+                                Screen
                             </h1>
                             <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                                Display and manage classroom screen for your class
+                                Display and manage your classroom screen for your class
                             </p>
                         </div>
                     </div>
