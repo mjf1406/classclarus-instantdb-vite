@@ -9,10 +9,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X } from "lucide-react";
+import { Users, Plus, X, MoreVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState } from "react";
+import { KickUserDialog } from "@/components/members/kick-user-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Dialog,
     DialogContent,
@@ -38,6 +44,7 @@ import {
 } from "@/components/ui/field";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { RoleManager } from "@/components/members/role-manager";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/guardians/"
@@ -61,10 +68,12 @@ function GuardianCard({
     guardian,
     canManage,
     classStudents,
+    classId,
 }: {
     guardian: InstaQLEntity<AppSchema, "$users">;
     canManage: boolean;
     classStudents: InstaQLEntity<AppSchema, "$users">[];
+    classId: string;
 }) {
     const [open, setOpen] = useState(false);
     const [selectedChildId, setSelectedChildId] = useState<string>("");
@@ -154,6 +163,31 @@ function GuardianCard({
                                 </div>
                             )}
                         </div>
+                        {canManage && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                    >
+                                        <MoreVertical className="size-4" />
+                                        <span className="sr-only">
+                                            More options
+                                        </span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <KickUserDialog
+                                        user={guardian}
+                                        contextType="class"
+                                        contextId={classId}
+                                        canKick={canManage}
+                                        asDropdownItem
+                                    />
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
 
                     {children.length > 0 && (
@@ -195,7 +229,13 @@ function GuardianCard({
                     )}
 
                     {canManage && (
-                        <div className="ml-14">
+                        <div className="ml-14 space-y-2">
+                            <RoleManager
+                                user={guardian}
+                                contextType="class"
+                                contextId={classId}
+                                canManage={canManage}
+                            />
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
                                     <Button
@@ -309,6 +349,11 @@ function GuardianCard({
 function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
+    
+    if (!classId) {
+        return null;
+    }
+    
     const { class: classEntity, isLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
@@ -356,6 +401,7 @@ function RouteComponent() {
                             guardian={guardian}
                             canManage={canManage}
                             classStudents={students}
+                            classId={classId}
                         />
                     ))}
                 </div>

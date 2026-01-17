@@ -35,6 +35,7 @@ import {
     TeacherBadge,
 } from "@/components/icons/role-icons";
 import { requireAuth, requireOrgAccess } from "@/lib/auth-utils";
+import { LeaveOrgDialog } from "@/routes/organizations/-components/leave-org-dialog";
 
 export const Route = createFileRoute("/organizations/_orgLayout")({
     beforeLoad: ({ context, location, params }) => {
@@ -250,34 +251,39 @@ function RouteComponent() {
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                     {organization?.name && (
-                        <div className="flex items-center gap-2 -mb-2">
-                            <RenderLogo
-                                icon={organization?.icon}
-                                size="size-12"
-                                rounded="full"
-                                alt={organization?.name}
-                            />
+                        <div className="flex items-center justify-between gap-2 -mb-2">
                             <div className="flex items-center gap-2">
-                                {organization.name.length > 10 ? (
-                                    <span className="text-2xl font-medium truncate">
-                                        {organization.name}
-                                    </span>
-                                ) : (
-                                    <span className="text-2xl font-medium">
-                                        {organization.name}
-                                    </span>
-                                )}
-                                {(() => {
-                                    const RoleBadge = roleInfo.isOwner
-                                        ? OwnerBadge
-                                        : roleInfo.isAdmin
-                                          ? AdminBadge
-                                          : roleInfo.isTeacher
-                                            ? TeacherBadge
-                                            : null;
-                                    return RoleBadge ? <RoleBadge /> : null;
-                                })()}
+                                <RenderLogo
+                                    icon={organization?.icon}
+                                    size="size-12"
+                                    rounded="full"
+                                    alt={organization?.name}
+                                />
+                                <div className="flex items-center gap-2">
+                                    {organization.name.length > 10 ? (
+                                        <span className="text-2xl font-medium truncate">
+                                            {organization.name}
+                                        </span>
+                                    ) : (
+                                        <span className="text-2xl font-medium">
+                                            {organization.name}
+                                        </span>
+                                    )}
+                                    {(() => {
+                                        const RoleBadge = roleInfo.isOwner
+                                            ? OwnerBadge
+                                            : roleInfo.isAdmin
+                                              ? AdminBadge
+                                              : roleInfo.isTeacher
+                                                ? TeacherBadge
+                                                : null;
+                                        return RoleBadge ? <RoleBadge /> : null;
+                                    })()}
+                                </div>
                             </div>
+                            {!roleInfo.isOwner && organization && (
+                                <LeaveOrgDialog organization={organization} />
+                            )}
                         </div>
                     )}
                     <Outlet />

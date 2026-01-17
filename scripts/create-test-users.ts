@@ -14,7 +14,7 @@ config({ path: resolve(__dirname, "../.env") });
 
 // Fallback config - set CLASS_ID here if you don't want to be prompted
 const CONFIG = {
-    CLASS_ID: "de95bdf2-3404-4be1-8773-9a89c654557f", // Set this to skip prompting
+    CLASS_ID: "", // Set this to skip prompting
 };
 
 /**
@@ -120,6 +120,18 @@ async function createTestUsers() {
             adminDb.tx.classes[classId].link({
                 classAssistantTeachers: assistantTeacherId,
             }),
+            // Link existing student to class
+            adminDb.tx.classes[classId].link({
+                classStudents: "6b09717e-c9be-49e2-b61e-4880a5fe9f7c",
+            }),
+            // Link existing parent to class as guardian
+            adminDb.tx.classes[classId].link({
+                classGuardians: "1261489c-3620-442e-b037-bf7617b5d538",
+            }),
+            // Link parent to student
+            adminDb.tx.$users["1261489c-3620-442e-b037-bf7617b5d538"].link({
+                children: "6b09717e-c9be-49e2-b61e-4880a5fe9f7c",
+            }),
         ];
 
         // Execute all transactions
@@ -136,6 +148,15 @@ async function createTestUsers() {
         console.log(`   - 1 teacher (TestTeacher 1)`);
         console.log(`   - 1 assistant teacher (TestAssistantTeacher 1)`);
         console.log(`   All linked to class: ${classId}`);
+        console.log(
+            `   - Added student (6b09717e-c9be-49e2-b61e-4880a5fe9f7c) to class as student`
+        );
+        console.log(
+            `   - Added parent (1261489c-3620-442e-b037-bf7617b5d538) to class as guardian`
+        );
+        console.log(
+            `   - Linked parent (1261489c-3620-442e-b037-bf7617b5d538) to student (6b09717e-c9be-49e2-b61e-4880a5fe9f7c)`
+        );
     } catch (error) {
         console.error("❌ Error creating test users:", error);
         if (error instanceof Error) {

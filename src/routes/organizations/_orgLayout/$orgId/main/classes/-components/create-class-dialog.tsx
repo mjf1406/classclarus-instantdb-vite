@@ -127,6 +127,7 @@ export function CreateClassDialog({
                 const txArray = [
                     createTx,
                     db.tx.classes[classId].link({ classTeachers: user.id }),
+                    db.tx.classes[classId].link({ classAdmins: user.id }), // Creator is always an admin
                     db.tx.classes[classId].link({
                         owner: organization.owner.id,
                     }),
@@ -139,11 +140,12 @@ export function CreateClassDialog({
 
                 db.transact(txArray);
             } else {
-                // Existing behavior for owners/admins: user is owner and classTeacher
+                // Existing behavior for owners/admins: user is owner, classTeacher, and classAdmin
                 db.transact([
                     createTx,
                     db.tx.classes[classId].link({ owner: user.id }),
                     db.tx.classes[classId].link({ classTeachers: user.id }),
+                    db.tx.classes[classId].link({ classAdmins: user.id }), // Creator is always an admin
                     db.tx.classes[classId].link({ organization: finalOrgId }),
                 ]);
             }

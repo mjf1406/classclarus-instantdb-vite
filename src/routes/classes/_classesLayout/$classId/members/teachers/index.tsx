@@ -3,11 +3,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TeacherIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
+import { useClassRole } from "@/hooks/use-class-role";
 import { useParams } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users } from "lucide-react";
+import { Users, MoreVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RoleManager } from "@/components/members/role-manager";
+import { KickUserDialog } from "@/components/members/kick-user-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/teachers/"
@@ -18,9 +27,16 @@ export const Route = createFileRoute(
 function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
+    
+    if (!classId) {
+        return null;
+    }
+    
     const { class: classEntity, isLoading } = useClassById(classId);
+    const roleInfo = useClassRole(classEntity);
 
     const teachers = classEntity?.classTeachers || [];
+    const canManage = roleInfo.isOwner || roleInfo.isAdmin;
 
     return (
         <div className="space-y-6">
@@ -69,7 +85,7 @@ function RouteComponent() {
 
                         return (
                             <Card key={teacher.id}>
-                                <CardContent className="py-4">
+                                <CardContent className="py-4 space-y-3">
                                     <div className="flex items-center gap-4">
                                         <Avatar>
                                             <AvatarImage
@@ -89,7 +105,38 @@ function RouteComponent() {
                                                 </div>
                                             )}
                                         </div>
+                                        {canManage && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                    >
+                                                        <MoreVertical className="size-4" />
+                                                        <span className="sr-only">
+                                                            More options
+                                                        </span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <KickUserDialog
+                                                        user={teacher}
+                                                        contextType="class"
+                                                        contextId={classId}
+                                                        canKick={canManage}
+                                                        asDropdownItem
+                                                    />
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
                                     </div>
+                                    <RoleManager
+                                        user={teacher}
+                                        contextType="class"
+                                        contextId={classId}
+                                        canManage={canManage}
+                                    />
                                 </CardContent>
                             </Card>
                         );

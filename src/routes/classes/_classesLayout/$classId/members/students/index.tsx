@@ -9,10 +9,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X } from "lucide-react";
+import { Users, Plus, X, MoreVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState } from "react";
+import { KickUserDialog } from "@/components/members/kick-user-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Dialog,
     DialogContent,
@@ -38,6 +44,7 @@ import {
 } from "@/components/ui/field";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { RoleManager } from "@/components/members/role-manager";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/students/"
@@ -61,10 +68,12 @@ function StudentCard({
     student,
     canManage,
     classGuardians,
+    classId,
 }: {
     student: InstaQLEntity<AppSchema, "$users">;
     canManage: boolean;
     classGuardians: InstaQLEntity<AppSchema, "$users">[];
+    classId: string;
 }) {
     const [open, setOpen] = useState(false);
     const [selectedGuardianId, setSelectedGuardianId] = useState<string>("");
@@ -156,6 +165,31 @@ function StudentCard({
                                 </div>
                             )}
                         </div>
+                        {canManage && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                    >
+                                        <MoreVertical className="size-4" />
+                                        <span className="sr-only">
+                                            More options
+                                        </span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <KickUserDialog
+                                        user={student}
+                                        contextType="class"
+                                        contextId={classId}
+                                        canKick={canManage}
+                                        asDropdownItem
+                                    />
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
 
                     {guardians.length > 0 && (
@@ -197,7 +231,13 @@ function StudentCard({
                     )}
 
                     {canManage && (
-                        <div className="ml-14">
+                        <div className="ml-14 space-y-2">
+                            <RoleManager
+                                user={student}
+                                contextType="class"
+                                contextId={classId}
+                                canManage={canManage}
+                            />
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
                                     <Button
@@ -310,6 +350,11 @@ function StudentCard({
 function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
+    
+    if (!classId) {
+        return null;
+    }
+    
     const { class: classEntity, isLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
@@ -357,6 +402,7 @@ function RouteComponent() {
                             student={student}
                             canManage={canManage}
                             classGuardians={guardians}
+                            classId={classId}
                         />
                     ))}
                 </div>

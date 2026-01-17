@@ -298,13 +298,14 @@ const rules = {
         allow: {
             create: "isAuthenticated",
             view: "isAuthenticated && (isOwner || isClassAdmin || isClassMember || isClassGuardian || isTeacher || isAssistantTeacher)",
-            update: "isAuthenticated && (isOwner || isClassAdmin || isTeacher || isAssistantTeacher) && (isStillOwner || isStillClassAdmin || isStillTeacher || isStillAssistantTeacher)",
+            update: "isAuthenticated && ((isOwner && isStillOwner) || isClassAdmin || isTeacher || isAssistantTeacher)",
             delete: "isAuthenticated && isOwner",
         },
         fields: {
             guardianCode: "isOwner || isClassAdmin || isTeacher",
             studentCode: "isOwner || isClassAdmin || isTeacher",
             teacherCode: "isOwner || isClassAdmin || isTeacher",
+            
         },
         bind: bindObjectToArray(allDataBinds),
     },

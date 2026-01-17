@@ -10,10 +10,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X } from "lucide-react";
+import { Users, Plus, X, MoreVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState, useMemo } from "react";
+import { KickUserDialog } from "@/components/members/kick-user-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Dialog,
     DialogContent,
@@ -39,6 +45,7 @@ import {
 } from "@/components/ui/field";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { RoleManager } from "@/components/members/role-manager";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/members/students/"
@@ -175,6 +182,31 @@ function StudentCard({
                             {classes.length}{" "}
                             {classes.length === 1 ? "class" : "classes"}
                         </Badge>
+                        {canManage && classes.length > 0 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                    >
+                                        <MoreVertical className="size-4" />
+                                        <span className="sr-only">
+                                            More options
+                                        </span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <KickUserDialog
+                                        user={student}
+                                        contextType="class"
+                                        contextId={classes[0].id}
+                                        canKick={canManage}
+                                        asDropdownItem
+                                    />
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
 
                     {classes.length > 0 && (
@@ -242,7 +274,15 @@ function StudentCard({
                     )}
 
                     {canManage && (
-                        <div className="ml-14">
+                        <div className="ml-14 space-y-2">
+                            {classes.length > 0 && (
+                                <RoleManager
+                                    user={student}
+                                    contextType="class"
+                                    contextId={classes[0].id}
+                                    canManage={canManage}
+                                />
+                            )}
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
                                     <Button

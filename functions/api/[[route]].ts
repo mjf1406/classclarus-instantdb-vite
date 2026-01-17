@@ -6,6 +6,8 @@ import type { Env, HonoContext } from "./types";
 import { authMiddleware, rateLimitMiddleware } from "./middleware";
 import { createJoinOrganizationRoute } from "./routes/join-organization";
 import { createJoinClassRoute } from "./routes/join-class";
+import { createLeaveOrganizationRoute } from "./routes/leave-organization";
+import { createLeaveClassRoute } from "./routes/leave-class";
 
 const app = new Hono<HonoContext>();
 
@@ -17,9 +19,15 @@ app.use("*", authMiddleware);
 app.use("/api/join/organization", rateLimitMiddleware);
 app.use("/api/join/class", rateLimitMiddleware);
 
+// Apply rate limiting to leave endpoints
+app.use("/api/leave/organization", rateLimitMiddleware);
+app.use("/api/leave/class", rateLimitMiddleware);
+
 // Register routes
 createJoinOrganizationRoute(app);
 createJoinClassRoute(app);
+createLeaveOrganizationRoute(app);
+createLeaveClassRoute(app);
 
 // 404 handler for unmatched routes - returns JSON instead of plain text
 app.notFound((c) => {

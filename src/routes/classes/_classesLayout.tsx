@@ -41,6 +41,7 @@ import {
     GuardianBadge,
 } from "@/components/icons/role-icons";
 import { requireAuth, requireClassAccess } from "@/lib/auth-utils";
+import { LeaveClassDialog } from "@/components/classes/leave-class-dialog";
 
 export const Route = createFileRoute("/classes/_classesLayout")({
     beforeLoad: ({ context, location, params }) => {
@@ -312,40 +313,45 @@ function RouteComponent() {
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                     {classEntity?.name && (
-                        <div className="flex items-center gap-2 -mb-2">
-                            <RenderLogo
-                                icon={classEntity?.icon}
-                                size="size-12"
-                                rounded="full"
-                                alt={classEntity?.name}
-                            />
+                        <div className="flex items-center justify-between gap-2 -mb-2">
                             <div className="flex items-center gap-2">
-                                {classEntity.name.length > 10 ? (
-                                    <span className="text-2xl font-medium truncate">
-                                        {classEntity.name}
-                                    </span>
-                                ) : (
-                                    <span className="text-2xl font-medium">
-                                        {classEntity.name}
-                                    </span>
-                                )}
-                                {(() => {
-                                    const RoleBadge = roleInfo.isOwner
-                                        ? OwnerBadge
-                                        : roleInfo.isAdmin
-                                          ? AdminBadge
-                                          : roleInfo.isTeacher
-                                            ? TeacherBadge
-                                            : roleInfo.isAssistantTeacher
-                                              ? AssistantTeacherBadge
-                                              : roleInfo.isGuardian
-                                                ? GuardianBadge
-                                                : roleInfo.isStudent
-                                                  ? StudentBadge
-                                                  : null;
-                                    return RoleBadge ? <RoleBadge /> : null;
-                                })()}
+                                <RenderLogo
+                                    icon={classEntity?.icon}
+                                    size="size-12"
+                                    rounded="full"
+                                    alt={classEntity?.name}
+                                />
+                                <div className="flex items-center gap-2">
+                                    {classEntity.name.length > 10 ? (
+                                        <span className="text-2xl font-medium truncate">
+                                            {classEntity.name}
+                                        </span>
+                                    ) : (
+                                        <span className="text-2xl font-medium">
+                                            {classEntity.name}
+                                        </span>
+                                    )}
+                                    {(() => {
+                                        const RoleBadge = roleInfo.isOwner
+                                            ? OwnerBadge
+                                            : roleInfo.isAdmin
+                                              ? AdminBadge
+                                              : roleInfo.isTeacher
+                                                ? TeacherBadge
+                                                : roleInfo.isAssistantTeacher
+                                                  ? AssistantTeacherBadge
+                                                  : roleInfo.isGuardian
+                                                    ? GuardianBadge
+                                                    : roleInfo.isStudent
+                                                      ? StudentBadge
+                                                      : null;
+                                        return RoleBadge ? <RoleBadge /> : null;
+                                    })()}
+                                </div>
                             </div>
+                            {!roleInfo.isOwner && classEntity && (
+                                <LeaveClassDialog classEntity={classEntity} />
+                            )}
                         </div>
                     )}
                     <Outlet />

@@ -3,12 +3,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AssistantTeacherIcon } from "@/components/icons/role-icons";
 import { useOrgClassRoleMembers } from "@/hooks/use-org-class-role-members";
+import { useOrganizationById } from "@/hooks/use-organization-hooks";
+import { useOrgRole } from "@/hooks/use-org-role";
 import { useParams } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users } from "lucide-react";
+import { Users, MoreVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RoleManager } from "@/components/members/role-manager";
+import { KickUserDialog } from "@/components/members/kick-user-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute(
     "/organizations/_orgLayout/$orgId/members/assistant-teachers/"
@@ -23,6 +33,10 @@ function RouteComponent() {
         orgId,
         "classAssistantTeachers"
     );
+    const { organization } = useOrganizationById(orgId);
+    const roleInfo = useOrgRole(organization);
+
+    const canManage = roleInfo.isOwner || roleInfo.isAdmin;
 
     return (
         <div className="space-y-6">
@@ -98,9 +112,34 @@ function RouteComponent() {
                                                     ? "class"
                                                     : "classes"}
                                             </Badge>
+                                            {canManage && classes.length > 0 && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                        >
+                                                            <MoreVertical className="size-4" />
+                                                            <span className="sr-only">
+                                                                More options
+                                                            </span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <KickUserDialog
+                                                            user={user}
+                                                            contextType="class"
+                                                            contextId={classes[0].id}
+                                                            canKick={canManage}
+                                                            asDropdownItem
+                                                        />
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
                                         </div>
                                         {classes.length > 0 && (
-                                            <div className="ml-14 space-y-1">
+                                            <div className="ml-14 space-y-2">
                                                 <div className="text-sm font-medium mb-2">
                                                     Classes:
                                                 </div>
@@ -122,6 +161,14 @@ function RouteComponent() {
                                                         </Link>
                                                     ))}
                                                 </div>
+                                                {canManage && classes.length > 0 && (
+                                                    <RoleManager
+                                                        user={user}
+                                                        contextType="class"
+                                                        contextId={classes[0].id}
+                                                        canManage={canManage}
+                                                    />
+                                                )}
                                             </div>
                                         )}
                                     </div>

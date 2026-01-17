@@ -16,24 +16,19 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { LogOutIcon } from "lucide-react";
+import { LogOut } from "lucide-react";
 
-type Organization = InstaQLEntity<AppSchema, "organizations">;
-
-interface LeaveOrgDialogProps {
-    organization: Organization;
+interface LeaveClassDialogProps {
+    classEntity: InstaQLEntity<AppSchema, "classes">;
     children?: React.ReactNode;
-    asDropdownItem?: boolean;
     onLeave?: () => void;
 }
 
-export function LeaveOrgDialog({
-    organization,
+export function LeaveClassDialog({
+    classEntity,
     children,
-    asDropdownItem = false,
     onLeave,
-}: LeaveOrgDialogProps) {
+}: LeaveClassDialogProps) {
     const [open, setOpen] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -41,7 +36,7 @@ export function LeaveOrgDialog({
 
     const handleLeave = async () => {
         if (!user?.id || !user?.refresh_token) {
-            setError("You must be logged in to leave an organization");
+            setError("You must be logged in to leave a class");
             return;
         }
 
@@ -50,13 +45,13 @@ export function LeaveOrgDialog({
 
         try {
             // Call the API endpoint
-            const response = await fetch("/api/leave/organization", {
+            const response = await fetch("/api/leave/class", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     token: user.refresh_token,
                 },
-                body: JSON.stringify({ organizationId: organization.id }),
+                body: JSON.stringify({ classId: classEntity.id }),
             });
 
             const data = await response.json();
@@ -68,12 +63,12 @@ export function LeaveOrgDialog({
                 } else if (response.status === 403) {
                     setError(
                         data.message ||
-                            "Organization owners cannot leave their own organization."
+                            "Class owners cannot leave their own class."
                     );
                 } else if (response.status === 404) {
                     setError(
                         data.message ||
-                            "Organization not found or you are not a member."
+                            "Class not found or you are not a member."
                     );
                 } else if (response.status === 429) {
                     setError(
@@ -85,7 +80,7 @@ export function LeaveOrgDialog({
                 } else {
                     setError(
                         data.message ||
-                            "Failed to leave organization. Please try again."
+                            "Failed to leave class. Please try again."
                     );
                 }
                 return;
@@ -96,7 +91,7 @@ export function LeaveOrgDialog({
             setError(null);
             onLeave?.();
         } catch (err) {
-            console.error("[Leave Organization Dialog] Error leaving:", err);
+            console.error("[Leave Class Dialog] Error leaving:", err);
             setError(
                 err instanceof Error
                     ? err.message
@@ -107,67 +102,22 @@ export function LeaveOrgDialog({
         }
     };
 
-    if (asDropdownItem) {
-        return (
-            <>
-                <DropdownMenuItem
-                    variant="destructive"
-                    onSelect={(e) => {
-                        e.preventDefault();
-                        setOpen(true);
-                    }}
-                >
-                    <LogOutIcon />
-                    Leave Organization
-                </DropdownMenuItem>
-                <AlertDialog open={open} onOpenChange={setOpen}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Leave Organization</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Are you sure you want to leave "{organization.name}"? You will no
-                                longer have access to this organization or its classes.
-                            </AlertDialogDescription>
-                            {error && (
-                                <div className="mt-2 text-sm text-destructive" role="alert">
-                                    {error}
-                                </div>
-                            )}
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel disabled={isLeaving}>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                                variant="destructive"
-                                onClick={handleLeave}
-                                disabled={isLeaving}
-                            >
-                                {isLeaving ? "Leaving..." : "Leave"}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            </>
-        );
-    }
-
     const trigger = children || (
-        <Button variant="destructive">
-            <LogOutIcon />
-            Leave Organization
+        <Button variant="outline" size="sm">
+            <LogOut className="size-4 mr-2" />
+            Leave Class
         </Button>
     );
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger asChild>
-                {trigger}
-            </AlertDialogTrigger>
+            <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Leave Organization</AlertDialogTitle>
+                    <AlertDialogTitle>Leave Class</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Are you sure you want to leave "{organization.name}"? You will no longer
-                        have access to this organization or its classes.
+                        Are you sure you want to leave "{classEntity.name}"? You
+                        will no longer have access to this class.
                     </AlertDialogDescription>
                     {error && (
                         <div className="mt-2 text-sm text-destructive" role="alert">
@@ -176,7 +126,9 @@ export function LeaveOrgDialog({
                     )}
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLeaving}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isLeaving}>
+                        Cancel
+                    </AlertDialogCancel>
                     <AlertDialogAction
                         variant="destructive"
                         onClick={handleLeave}
