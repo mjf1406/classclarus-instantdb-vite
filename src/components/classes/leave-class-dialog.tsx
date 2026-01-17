@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { useNavigate } from "@tanstack/react-router";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
     AlertDialog,
@@ -33,6 +34,7 @@ export function LeaveClassDialog({
     const [isLeaving, setIsLeaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuthContext();
+    const navigate = useNavigate();
 
     const handleLeave = async () => {
         if (!user?.id || !user?.refresh_token) {
@@ -86,10 +88,15 @@ export function LeaveClassDialog({
                 return;
             }
 
-            // Success - close dialog and call callback
+            // Success - close dialog, call callback, and navigate
             setOpen(false);
             setError(null);
             onLeave?.();
+            
+            // Navigate to classes list after a short delay to allow InstantDB to sync
+            setTimeout(() => {
+                navigate({ to: "/classes" });
+            }, 500);
         } catch (err) {
             console.error("[Leave Class Dialog] Error leaving:", err);
             setError(
