@@ -38,7 +38,6 @@ interface ClassCardProps {
 }
 
 export function ClassCard({ classEntity, archived = false }: ClassCardProps) {
-    console.log("🚀 ~ ClassCard ~ classEntity:", classEntity);
     const studentCount = classEntity.classStudents?.length || 0;
     const teacherCount = classEntity.classTeachers?.length || 0;
     const assistantTeacherCount =

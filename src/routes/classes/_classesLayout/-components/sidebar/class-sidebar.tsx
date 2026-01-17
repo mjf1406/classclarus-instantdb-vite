@@ -98,7 +98,7 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                 programmaticStateRef.current = open;
             }
         }
-    }, [isIndexRoute, currentRoute, open, setOpen]);
+    }, [isIndexRoute, currentRoute]);
 
     useEffect(() => {
         if (

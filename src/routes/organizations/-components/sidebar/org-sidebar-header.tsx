@@ -10,7 +10,7 @@ import { Icon, TextLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 export function OrgSidebarHeader() {
-    const { state } = useSidebar();
+    const { state, toggleSidebar } = useSidebar();
     const isExpanded = state === "expanded";
 
     return (
@@ -19,6 +19,7 @@ export function OrgSidebarHeader() {
                 <SidebarMenuButton
                     size="lg"
                     className="data-[state=open]:bg-transparent! data-[state=open]:text-sidebar-accent-foreground hover:bg-transparent! relative"
+                    onClick={toggleSidebar}
                 >
                     {/* Icon container with absolute positioning when expanded */}
                     <div
