@@ -27,6 +27,8 @@ const _schema = i.schema({
             // Billing fields (updated via Polar webhook)
             polarCustomerId: i.string().indexed().optional(),
             polarSubscriptionId: i.string().optional(),
+            // Google Classroom integration
+            googleRefreshToken: i.string().optional(),
         }),
         organizations: i.entity({
             name: i.string().indexed(),
@@ -47,6 +49,14 @@ const _schema = i.schema({
             studentCode: i.string().unique().indexed(),
             teacherCode: i.string().unique().indexed(),
             guardianCode: i.string().unique().indexed(),
+        }),
+        pendingMembers: i.entity({
+            email: i.string().indexed(),
+            firstName: i.string().optional(),
+            lastName: i.string().optional(),
+            role: i.string(), // "student" | "teacher" | "guardian"
+            source: i.string(), // "google_classroom" | "manual" | "csv"
+            createdAt: i.date(),
         }),
     },
     links: {
@@ -223,6 +233,18 @@ const _schema = i.schema({
                 has: "many",
                 label: "guardians",
             }, // Each student can have many guardians
+        },
+        classPendingMembers: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "pendingMembers",
+            }, // Each class can have many pending members
+            reverse: {
+                on: "pendingMembers",
+                has: "one",
+                label: "class",
+            }, // Each pending member belongs to one class
         },
     },
     rooms: {},

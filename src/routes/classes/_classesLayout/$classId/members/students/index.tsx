@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X, MoreVertical } from "lucide-react";
+import { Users, Plus, X, MoreVertical, Clock, GraduationCap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState } from "react";
@@ -64,6 +64,91 @@ type UserWithGuardians = InstaQLEntity<
 type UserQueryResult = {
     $users: UserWithGuardians[];
 };
+
+type PendingMember = InstaQLEntity<
+    AppSchema,
+    "pendingMembers",
+    {
+        class: {};
+    }
+>;
+
+function PendingStudentCard({
+    pendingMember,
+    canManage,
+    classId,
+}: {
+    pendingMember: PendingMember;
+    canManage: boolean;
+    classId: string;
+}) {
+    const handleRemove = async () => {
+        if (!confirm("Remove this pending invitation?")) {
+            return;
+        }
+        try {
+            db.transact([db.tx.pendingMembers[pendingMember.id].delete()]);
+        } catch (err) {
+            console.error("Failed to remove pending member:", err);
+            alert("Failed to remove pending invitation");
+        }
+    };
+
+    const displayName =
+        `${pendingMember.firstName || ""} ${pendingMember.lastName || ""}`.trim() ||
+        pendingMember.email ||
+        "Unknown";
+    const initials = displayName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+
+    const sourceBadge = {
+        google_classroom: { label: "Google Classroom", icon: GraduationCap },
+        manual: { label: "Manual", icon: Users },
+        csv: { label: "CSV", icon: Users },
+    }[pendingMember.source || "manual"] || { label: "Unknown", icon: Users };
+
+    return (
+        <Card>
+            <CardContent className="py-4">
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center size-10 rounded-full bg-muted">
+                        <span className="text-sm font-medium">{initials}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{displayName}</div>
+                        <div className="text-sm text-muted-foreground truncate">
+                            {pendingMember.email}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                                <Clock className="size-3 mr-1" />
+                                Pending
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                                {sourceBadge.label}
+                            </Badge>
+                        </div>
+                    </div>
+                    {canManage && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={handleRemove}
+                        >
+                            <X className="size-4" />
+                            <span className="sr-only">Remove</span>
+                        </Button>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 function StudentCard({
     student,
@@ -364,6 +449,21 @@ function RouteComponent() {
     const canManage =
         roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
 
+    // Query pending members
+    const { data: pendingData } = db.useQuery({
+        pendingMembers: {
+            $: {
+                where: {
+                    class: { id: classId },
+                    role: "student",
+                },
+            },
+            class: {},
+        },
+    });
+
+    const pendingMembers = (pendingData?.pendingMembers as PendingMember[]) || [];
+
     return (
         <RestrictedRoute
             role={roleInfo.role}
@@ -391,27 +491,69 @@ function RouteComponent() {
                             <Skeleton key={i} className="h-20 w-full" />
                         ))}
                     </div>
-                ) : students.length === 0 ? (
-                    <Card>
-                        <CardContent className="py-12 text-center">
-                            <Users className="size-12 mx-auto text-muted-foreground mb-4" />
-                            <p className="text-muted-foreground">
-                                No students have been added to this class yet.
-                            </p>
-                        </CardContent>
-                    </Card>
                 ) : (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {students.map((student) => (
-                            <StudentCard
-                                key={student.id}
-                                student={student}
-                                canManage={canManage}
-                                classGuardians={guardians}
-                                classId={classId}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        {pendingMembers.length > 0 && canManage && (
+                            <div className="space-y-4">
+                                <div>
+                                    <h2 className="text-lg font-semibold mb-2">
+                                        Pending Invitations
+                                    </h2>
+                                    <p className="text-sm text-muted-foreground mb-4">
+                                        These students have been invited but haven't
+                                        signed up yet. They'll be automatically added
+                                        when they create an account with the same email.
+                                    </p>
+                                </div>
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    {pendingMembers.map((pending) => (
+                                        <PendingStudentCard
+                                            key={pending.id}
+                                            pendingMember={pending}
+                                            canManage={canManage}
+                                            classId={classId}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {pendingMembers.length > 0 && canManage && (
+                            <div className="border-t pt-6" />
+                        )}
+
+                        <div className="space-y-4">
+                            {students.length === 0 ? (
+                                <Card>
+                                    <CardContent className="py-12 text-center">
+                                        <Users className="size-12 mx-auto text-muted-foreground mb-4" />
+                                        <p className="text-muted-foreground">
+                                            No students have been added to this class yet.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <>
+                                    <div>
+                                        <h2 className="text-lg font-semibold mb-2">
+                                            Active Students
+                                        </h2>
+                                    </div>
+                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        {students.map((student) => (
+                                            <StudentCard
+                                                key={student.id}
+                                                student={student}
+                                                canManage={canManage}
+                                                classGuardians={guardians}
+                                                classId={classId}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
         </RestrictedRoute>

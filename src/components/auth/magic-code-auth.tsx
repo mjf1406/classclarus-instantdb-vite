@@ -6,6 +6,7 @@ import { Mail } from "lucide-react";
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { autoJoinPendingClasses } from "@/lib/pending-members-utils";
 import {
     InputOTP,
     InputOTPGroup,
@@ -221,6 +222,11 @@ function CodeStep({
                     db.transact(
                         db.tx.$users[result.user.id].update(updateData)
                     );
+
+                    // Auto-join pending classes
+                    if (sentEmail) {
+                        await autoJoinPendingClasses(sentEmail, result.user.id);
+                    }
                 }
                 setIsLoading(false);
                 onSuccess();

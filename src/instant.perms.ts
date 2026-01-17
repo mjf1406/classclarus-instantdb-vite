@@ -319,6 +319,16 @@ const rules = {
         },
         bind: bindObjectToArray(allDataBinds),
     },
+
+    pendingMembers: {
+        allow: {
+            create: "isAuthenticated && (isOwner || isClassAdmin || isTeacher)",
+            view: "isAuthenticated && (isOwner || isClassAdmin || isTeacher)",
+            update: "false",
+            delete: "isAuthenticated && (isOwner || isClassAdmin || isTeacher)",
+        },
+        bind: bindObjectToArray(allDataBinds),
+    },
 } satisfies InstantRules;
 
 export default rules;

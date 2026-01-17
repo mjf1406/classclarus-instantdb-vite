@@ -7,6 +7,10 @@ import { useClassRole } from "@/hooks/use-class-role";
 import { Card, CardContent } from "@/components/ui/card";
 import { InviteCodesTabs } from "./-components/invite-codes-tabs";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
+import { GoogleClassroomImportDialog } from "./-components/google-classroom-import-dialog";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/invite/"
@@ -20,6 +24,7 @@ function RouteComponent() {
     const { class: classEntity, isLoading: classLoading } =
         useClassById(classId);
     const roleInfo = useClassRole(classEntity);
+    const [importDialogOpen, setImportDialogOpen] = useState(false);
 
     // Get codes directly from class entity (already loaded via useClassById)
     const classEntityWithCodes = classEntity;
@@ -88,11 +93,46 @@ function RouteComponent() {
                         </div>
                     </div>
 
+                    <Card>
+                        <CardContent className="py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <GraduationCap className="size-5 text-primary" />
+                                    <div>
+                                        <p className="font-medium">
+                                            Import from Google Classroom
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Import students directly from your Google Classroom
+                                        </p>
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={() => setImportDialogOpen(true)}
+                                    variant="outline"
+                                >
+                                    Import Students
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <InviteCodesTabs
                         codes={codes}
                         isLoading={isLoading}
                         onCopySuccess={handleCopySuccess}
                     />
+
+                    {classId && (
+                        <GoogleClassroomImportDialog
+                            open={importDialogOpen}
+                            onOpenChange={setImportDialogOpen}
+                            classId={classId}
+                            onImportComplete={() => {
+                                // Optionally refresh data or show success message
+                            }}
+                        />
+                    )}
                 </div>
             )}
         </RestrictedRoute>

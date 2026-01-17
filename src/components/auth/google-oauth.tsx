@@ -6,6 +6,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { Button } from "../ui/button";
 import { db } from "@/lib/db/db";
+import { autoJoinPendingClasses } from "@/lib/pending-members-utils";
 
 interface GoogleJwtPayload {
     given_name?: string;
@@ -72,6 +73,15 @@ function handleGoogleSuccess(
                 }
                 // Update user profile directly using client-side transaction
                 db.transact(db.tx.$users[result.user.id].update(updateData));
+
+                // Auto-join pending classes
+                // Extract email from JWT token
+                const decoded = jwtDecode<{ email?: string }>(
+                    credentialResponse.credential
+                );
+                if (decoded.email) {
+                    await autoJoinPendingClasses(decoded.email, result.user.id);
+                }
             }
         })
         .catch((err) => {

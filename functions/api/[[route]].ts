@@ -8,11 +8,18 @@ import { createJoinOrganizationRoute } from "./routes/join-organization";
 import { createJoinClassRoute } from "./routes/join-class";
 import { createLeaveOrganizationRoute } from "./routes/leave-organization";
 import { createLeaveClassRoute } from "./routes/leave-class";
+import { createGoogleClassroomRoute } from "./routes/google-classroom";
 
 const app = new Hono<HonoContext>();
 
-// Apply auth middleware to all routes
-app.use("*", authMiddleware);
+// Apply auth middleware to all routes except callback
+app.use("*", async (c, next) => {
+    // Skip auth for Google OAuth callback (called by Google)
+    if (c.req.path === "/api/google-classroom/callback") {
+        return next();
+    }
+    return authMiddleware(c, next);
+});
 
 // Apply rate limiting to join endpoints
 // Update paths to match route paths
@@ -28,6 +35,7 @@ createJoinOrganizationRoute(app);
 createJoinClassRoute(app);
 createLeaveOrganizationRoute(app);
 createLeaveClassRoute(app);
+createGoogleClassroomRoute(app);
 
 // 404 handler for unmatched routes - returns JSON instead of plain text
 app.notFound((c) => {
