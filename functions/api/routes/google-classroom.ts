@@ -614,11 +614,18 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 accessToken
             );
 
+            // Debug: Log the raw response structure
+            console.log("[Google Classroom Import] Raw students data:", JSON.stringify(studentsData, null, 2));
+
             const students =
                 studentsData.students?.map((student: any) => {
                     const profile = student.profile || {};
+                    // Debug: Log individual student structure
+                    console.log("[Google Classroom Import] Student profile:", JSON.stringify(profile, null, 2));
+                    
+                    const email = profile.emailAddress || profile.email || "";
                     return {
-                        email: (profile.emailAddress || "").toLowerCase().trim(),
+                        email: email.toLowerCase().trim(),
                         firstName: profile.name?.givenName || "",
                         lastName: profile.name?.familyName || "",
                     };
