@@ -160,6 +160,22 @@ const pendingMemberBinds = {
     isClassOwner: "auth.id == data.ref('class.owner.id')",
 };
 
+// Group and Team Binds
+const groupTeamBinds = {
+    isGroupClassOwner: "auth.id == data.ref('class.owner.id')",
+    isGroupClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isGroupClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isGroupClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isStudentInGroup: "auth.id in data.ref('groupStudents.id')",
+    isGuardianChildInGroup: "auth.id in data.ref('groupStudents.guardians.id')",
+    isTeamClassOwner: "auth.id == data.ref('group.class.owner.id')",
+    isTeamClassAdmin: "auth.id in data.ref('group.class.classAdmins.id')",
+    isTeamClassTeacher: "auth.id in data.ref('group.class.classTeachers.id')",
+    isTeamClassAssistantTeacher: "auth.id in data.ref('group.class.classAssistantTeachers.id')",
+    isStudentInTeam: "auth.id in data.ref('teamStudents.id')",
+    isGuardianChildInTeam: "auth.id in data.ref('teamStudents.guardians.id')",
+};
+
 // ============================================================
 //                  COMBINED BIND OBJECTS
 // ============================================================
@@ -180,6 +196,7 @@ const allDataBinds = {
     ...authenticationBinds,
     ...classRoleBinds,
     ...organizationRoleBinds,
+    ...groupTeamBinds,
 };
 
 const allBinds = {
@@ -336,6 +353,36 @@ const rules = {
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...pendingMemberBinds,
+        }),
+    },
+
+    groups: {
+        allow: {
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isStudentInGroup || isGuardianChildInGroup)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...classRoleBinds,
+            ...userBasicRelationships,
+            ...groupTeamBinds,
+        }),
+    },
+
+    teams: {
+        allow: {
+            create: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
+            view: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher || isStudentInTeam || isGuardianChildInTeam)",
+            update: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
+            delete: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...classRoleBinds,
+            ...userBasicRelationships,
+            ...groupTeamBinds,
         }),
     },
 } satisfies InstantRules;

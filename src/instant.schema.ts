@@ -58,6 +58,18 @@ const _schema = i.schema({
             source: i.string(), // "google_classroom" | "manual" | "csv"
             createdAt: i.date(),
         }),
+        groups: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            created: i.date(),
+            updated: i.date(),
+        }),
+        teams: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            created: i.date(),
+            updated: i.date(),
+        }),
     },
     links: {
         userClasses: {
@@ -245,6 +257,55 @@ const _schema = i.schema({
                 has: "one",
                 label: "class",
             }, // Each pending member belongs to one class
+        },
+        classGroups: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "groups",
+            }, // Each class can have many groups
+            reverse: {
+                on: "groups",
+                has: "one",
+                label: "class",
+            }, // Each group belongs to one class
+        },
+        groupStudents: {
+            forward: {
+                on: "groups",
+                has: "many",
+                label: "groupStudents",
+            }, // Each group can have many students
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "studentGroups",
+            }, // Each user can be in many groups
+        },
+        groupTeams: {
+            forward: {
+                on: "groups",
+                has: "many",
+                label: "groupTeams",
+            }, // Each group can have many teams
+            reverse: {
+                on: "teams",
+                has: "one",
+                label: "group",
+                onDelete: "cascade",
+            }, // Each team belongs to one group, cascade delete when group is deleted
+        },
+        teamStudents: {
+            forward: {
+                on: "teams",
+                has: "many",
+                label: "teamStudents",
+            }, // Each team can have many students
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "studentTeams",
+            }, // Each user can be on many teams
         },
     },
     rooms: {},
