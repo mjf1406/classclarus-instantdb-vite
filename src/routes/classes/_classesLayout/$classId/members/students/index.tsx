@@ -440,6 +440,7 @@ function RouteComponent() {
     }
     
     const { class: classEntity, isLoading } = useClassById(classId);
+    console.log("🚀 ~ RouteComponent ~ classEntity:", classEntity)
     const roleInfo = useClassRole(classEntity);
 
     const students = classEntity?.classStudents || [];

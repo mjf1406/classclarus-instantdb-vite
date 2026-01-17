@@ -644,18 +644,32 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 (p: any) => p.role === role
             );
 
+            // Normalize and collect existing emails
+            const existingStudentEmails = existingStudents
+                .map((s: any) => (s.email || "").toLowerCase().trim())
+                .filter((email: string) => email.length > 0);
+            const existingPendingEmails = existingPendingMembers
+                .map((p: any) => (p.email || "").toLowerCase().trim())
+                .filter((email: string) => email.length > 0);
+
             const existingEmails = new Set([
-                ...existingStudents.map((s: any) =>
-                    (s.email || "").toLowerCase().trim()
-                ),
-                ...existingPendingMembers.map((p: any) =>
-                    (p.email || "").toLowerCase().trim()
-                ),
+                ...existingStudentEmails,
+                ...existingPendingEmails,
             ]);
+
+            // Debug logging
+            console.log("[Google Classroom Import] Debug info:", {
+                totalStudentsFromGoogle: students.length,
+                existingStudentsCount: existingStudents.length,
+                existingPendingMembersCount: existingPendingMembers.length,
+                existingStudentEmails: Array.from(existingStudentEmails),
+                existingPendingEmails: Array.from(existingPendingEmails),
+                googleStudentEmails: students.map((s: any) => s.email),
+            });
 
             // Filter out students who already exist
             const newStudents = students.filter(
-                (s: any) => s.email && !existingEmails.has(s.email)
+                (s: any) => s.email && !existingEmails.has(s.email.toLowerCase().trim())
             );
 
             // Create pending members
