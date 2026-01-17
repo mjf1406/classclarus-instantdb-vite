@@ -38,13 +38,13 @@ function extractUserIdFromState(state: string): string | null {
 
 // Get Google OAuth credentials from environment
 function getGoogleCredentials(env: Env) {
-    const clientId = env.GOOGLE_CLIENT_ID;
-    const clientSecret = env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = env.GOOGLE_REDIRECT_URI;
+    const clientId = env.GC_CLIENT;
+    const clientSecret = env.GC_SECRET;
+    const redirectUri = env.GC_REDIRET_URI;
 
     if (!clientId || !clientSecret || !redirectUri) {
         throw new Error(
-            "Google OAuth credentials not configured. Please set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI environment variables."
+            "Google OAuth credentials not configured. Please set GC_CLIENT, GC_SECRET, and GC_REDIRET_URI environment variables."
         );
     }
 

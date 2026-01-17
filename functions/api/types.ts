@@ -8,6 +8,9 @@ export type Env = {
     INSTANT_ADMIN_TOKEN?: string;
     UPSTASH_REDIS_REST_URL?: string;
     UPSTASH_REDIS_REST_TOKEN?: string;
+    GC_CLIENT?: string;
+    GC_SECRET?: string;
+    GC_REDIRET_URI?: string;
 };
 
 // Variables stored in Hono context via c.set()

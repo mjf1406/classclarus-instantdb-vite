@@ -11,7 +11,7 @@ import type { MyRouterContext } from "@/main";
 
 const RootLayout = () => {
     return (
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GC_CLIENT!}>
             <ThemeProvider
                 storageKey="vite-ui-theme"
                 defaultTheme="classclarus"
