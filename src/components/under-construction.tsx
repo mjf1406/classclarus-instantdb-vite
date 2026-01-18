@@ -15,7 +15,7 @@ export function UnderConstruction({
     return (
         <div
             className={cn(
-                "w-full h-full min-h-[300px] flex flex-col items-center justify-center py-8 px-4 md:py-0 md:px-0",
+                "w-full h-full min-h-[300px] flex flex-col items-center justify-start py-8 px-4 md:py-0 md:px-0",
                 className
             )}
             {...props}
