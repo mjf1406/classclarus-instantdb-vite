@@ -9,19 +9,35 @@ interface BehaviorCardProps {
     behavior: InstaQLEntity<AppSchema, "behaviors", { class?: {} }>;
     classId: string;
     canManage: boolean;
+    /** When true, always use desktop layout (e.g. in List view on mobile). */
+    preferDesktop?: boolean;
 }
 
-export function BehaviorCard({ behavior, classId, canManage }: BehaviorCardProps) {
+export function BehaviorCard({
+    behavior,
+    classId,
+    canManage,
+    preferDesktop = false,
+}: BehaviorCardProps) {
+    if (preferDesktop) {
+        return (
+            <BehaviorCardDesktop
+                behavior={behavior}
+                classId={classId}
+                canManage={canManage}
+            />
+        );
+    }
     return (
         <>
-            <div className="md:hidden">
+            <div className="lg:hidden">
                 <BehaviorCardMobile
                     behavior={behavior}
                     classId={classId}
                     canManage={canManage}
                 />
             </div>
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
                 <BehaviorCardDesktop
                     behavior={behavior}
                     classId={classId}

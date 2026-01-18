@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { Award, Plus, FolderPlus, ChevronDown, Folder, Search } from "lucide-react";
+import { Award, Plus, FolderPlus, ChevronDown, Folder, Search, LayoutGrid, List, MoreVertical } from "lucide-react";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { db } from "@/lib/db/db";
@@ -28,7 +28,6 @@ import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId"
 import { CreateFolderDialog } from "../-components/folders/create-folder-dialog";
 import { EditFolderDialog } from "../-components/folders/edit-folder-dialog";
 import { DeleteFolderDialog } from "../-components/folders/delete-folder-dialog";
-import { MoreVertical } from "lucide-react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -81,6 +80,11 @@ function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
     const [search, setSearch] = useState("");
+    const [isFolderMobile] = useState(() =>
+        typeof window !== "undefined"
+            ? window.matchMedia("(max-width: 767px)").matches
+            : false
+    );
     const { class: classEntity } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
@@ -140,7 +144,7 @@ function RouteComponent() {
         return null;
     }
 
-    const listView = (
+    const gridView = (
         <>
             {dataLoading ? (
                 <div className="grid grid-cols-4 gap-4">
@@ -192,6 +196,62 @@ function RouteComponent() {
                             behavior={behavior}
                             classId={classId}
                             canManage={canManage}
+                        />
+                    ))}
+                </div>
+            )}
+        </>
+    );
+
+    const listView = (
+        <>
+            {dataLoading ? (
+                <div className="grid grid-cols-1 gap-4">
+                    {[1, 2, 3].map((i) => (
+                        <Card key={i}>
+                            <CardContent className="py-6">
+                                <Skeleton className="h-6 w-48 mb-4" />
+                                <Skeleton className="h-4 w-full mb-2" />
+                                <Skeleton className="h-4 w-3/4" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            ) : behaviors.length === 0 ? (
+                <Card>
+                    <CardContent className="py-12 text-center">
+                        <Award className="size-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground mb-4">
+                            No behaviors have been created yet.
+                        </p>
+                        {canManage && (
+                            <CreateBehaviorDialog classId={classId}>
+                                <Button>
+                                    <Plus className="size-4 mr-2" />
+                                    Create Your First Behavior
+                                </Button>
+                            </CreateBehaviorDialog>
+                        )}
+                    </CardContent>
+                </Card>
+            ) : filteredBehaviors.length === 0 ? (
+                <Card>
+                    <CardContent className="py-12 text-center">
+                        <Search className="size-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground">
+                            No results for &quot;{search.trim()}&quot;.
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {filteredBehaviors.map((behavior) => (
+                        <BehaviorCard
+                            key={behavior.id}
+                            behavior={behavior}
+                            classId={classId}
+                            canManage={canManage}
+                            preferDesktop
                         />
                     ))}
                 </div>
@@ -263,7 +323,10 @@ function RouteComponent() {
                                 matchItem(b, search)
                         );
                         return (
-                            <Collapsible key={folder.id} defaultOpen={true}>
+                            <Collapsible
+                                key={folder.id}
+                                defaultOpen={!isFolderMobile}
+                            >
                                 <Card>
                                     <div className="flex items-center justify-between pr-2">
                                         <CollapsibleTrigger asChild>
@@ -335,6 +398,7 @@ function RouteComponent() {
                                                         behavior={b}
                                                         classId={classId}
                                                         canManage={canManage}
+                                                        preferDesktop
                                                     />
                                                 ))
                                             )}
@@ -359,7 +423,7 @@ function RouteComponent() {
                         );
                     })}
 
-                    <Collapsible defaultOpen={true}>
+                    <Collapsible defaultOpen={!isFolderMobile}>
                         <Card>
                             <CollapsibleTrigger asChild>
                                 <CardContent className="group flex items-center gap-3 py-4 cursor-pointer hover:bg-muted/50 rounded-lg">
@@ -386,6 +450,7 @@ function RouteComponent() {
                                                 behavior={b}
                                                 classId={classId}
                                                 canManage={canManage}
+                                                preferDesktop
                                             />
                                         ))
                                     )}
@@ -447,11 +512,24 @@ function RouteComponent() {
                 />
             </div>
 
-            <Tabs defaultValue="list" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="list">List</TabsTrigger>
-                    <TabsTrigger value="folders">Folders</TabsTrigger>
+            <Tabs defaultValue="grid" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="grid" className="gap-1.5">
+                        <LayoutGrid className="size-4" />
+                        Grid
+                    </TabsTrigger>
+                    <TabsTrigger value="list" className="gap-1.5">
+                        <List className="size-4" />
+                        List
+                    </TabsTrigger>
+                    <TabsTrigger value="folders" className="gap-1.5">
+                        <Folder className="size-4" />
+                        Folders
+                    </TabsTrigger>
                 </TabsList>
+                <TabsContent value="grid" className="mt-4">
+                    {gridView}
+                </TabsContent>
                 <TabsContent value="list" className="mt-4">
                     {listView}
                 </TabsContent>

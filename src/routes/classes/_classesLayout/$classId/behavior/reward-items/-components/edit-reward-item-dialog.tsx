@@ -256,6 +256,7 @@ export function EditRewardItemDialog({
                         e.preventDefault();
                         setOpen(true);
                     }}
+                    className="flex items-center gap-2"
                 >
                     {children || "Edit"}
                 </DropdownMenuItem>

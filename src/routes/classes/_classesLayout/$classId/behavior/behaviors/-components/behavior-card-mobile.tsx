@@ -1,14 +1,9 @@
 /** @format */
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Award, MoreVertical } from "lucide-react";
+import { Award, Pencil, Trash2 } from "lucide-react";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
+import { CardActionMenu } from "../../-components/card-action-menu";
 import { EditBehaviorDialog } from "./edit-behavior-dialog";
 import { DeleteBehaviorDialog } from "./delete-behavior-dialog";
 import type { InstaQLEntity } from "@instantdb/react";
@@ -48,29 +43,21 @@ export function BehaviorCardMobile({
             <CardContent className="flex flex-col items-center pt-6 pb-4 text-center">
                 {canManage && (
                     <div className="absolute top-2 right-2 z-10">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreVertical className="size-4" />
-                                    <span className="sr-only">More options</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <EditBehaviorDialog
-                                    behavior={behavior}
-                                    classId={classId}
-                                    asDropdownItem
-                                >
-                                    Edit
-                                </EditBehaviorDialog>
-                                <DeleteBehaviorDialog
-                                    behavior={behavior}
-                                    asDropdownItem
-                                >
-                                    Delete
-                                </DeleteBehaviorDialog>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <CardActionMenu>
+                            <EditBehaviorDialog
+                                behavior={behavior}
+                                classId={classId}
+                                asDropdownItem
+                            >
+                                <Pencil className="size-4" /> Edit
+                            </EditBehaviorDialog>
+                            <DeleteBehaviorDialog
+                                behavior={behavior}
+                                asDropdownItem
+                            >
+                                <Trash2 className="size-4" /> Delete
+                            </DeleteBehaviorDialog>
+                        </CardActionMenu>
                     </div>
                 )}
                 {iconBlock}

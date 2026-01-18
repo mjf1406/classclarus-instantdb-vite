@@ -248,6 +248,7 @@ export function EditBehaviorDialog({
                         e.preventDefault();
                         setOpen(true);
                     }}
+                    className="flex items-center gap-2"
                 >
                     {children || "Edit"}
                 </DropdownMenuItem>

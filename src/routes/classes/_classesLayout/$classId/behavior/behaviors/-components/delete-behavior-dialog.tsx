@@ -53,7 +53,7 @@ export function DeleteBehaviorDialog({
                 e.preventDefault();
                 setOpen(true);
             }}
-            className="text-destructive focus:text-destructive"
+            className="flex items-center gap-2 text-destructive focus:text-destructive"
         >
             {children}
         </DropdownMenuItem>

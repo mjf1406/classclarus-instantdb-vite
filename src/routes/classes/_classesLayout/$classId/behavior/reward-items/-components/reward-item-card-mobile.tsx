@@ -1,14 +1,9 @@
 /** @format */
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Star, MoreVertical } from "lucide-react";
+import { Star, Pencil, Trash2 } from "lucide-react";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
+import { CardActionMenu } from "../../-components/card-action-menu";
 import { EditRewardItemDialog } from "./edit-reward-item-dialog";
 import { DeleteRewardItemDialog } from "./delete-reward-item-dialog";
 import type { InstaQLEntity } from "@instantdb/react";
@@ -50,29 +45,21 @@ export function RewardItemCardMobile({
             <CardContent className="flex flex-col items-center pt-6 pb-4 text-center">
                 {canManage && (
                     <div className="absolute top-2 right-2 z-10">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreVertical className="size-4" />
-                                    <span className="sr-only">More options</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <EditRewardItemDialog
-                                    rewardItem={rewardItem}
-                                    classId={classId}
-                                    asDropdownItem
-                                >
-                                    Edit
-                                </EditRewardItemDialog>
-                                <DeleteRewardItemDialog
-                                    rewardItem={rewardItem}
-                                    asDropdownItem
-                                >
-                                    Delete
-                                </DeleteRewardItemDialog>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <CardActionMenu>
+                            <EditRewardItemDialog
+                                rewardItem={rewardItem}
+                                classId={classId}
+                                asDropdownItem
+                            >
+                                <Pencil className="size-4" /> Edit
+                            </EditRewardItemDialog>
+                            <DeleteRewardItemDialog
+                                rewardItem={rewardItem}
+                                asDropdownItem
+                            >
+                                <Trash2 className="size-4" /> Delete
+                            </DeleteRewardItemDialog>
+                        </CardActionMenu>
                     </div>
                 )}
                 {iconBlock}
