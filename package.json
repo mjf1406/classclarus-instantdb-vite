@@ -39,6 +39,7 @@
         "@instantdb/core": "latest",
         "@instantdb/react": "^0.22.101",
         "@react-oauth/google": "^0.13.4",
+        "@react-pdf/renderer": "^4.3.2",
         "@tailwindcss/vite": "^4.1.18",
         "@tanstack/react-router": "^1.147.0",
         "@tanstack/react-router-devtools": "^1.147.0",

@@ -1,7 +1,7 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { Users, Plus } from "lucide-react";
+import { Users, Plus, Download } from "lucide-react";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { useAuthContext } from "@/components/auth/auth-provider";
@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateGroupDialog } from "./-components/create-group-dialog";
 import { GroupCard } from "./-components/group-card";
+import { ExportPDFDialog } from "./-components/export-pdf-dialog";
 import { useMemo } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -153,14 +154,27 @@ function RouteComponent() {
                         </p>
                     </div>
                 </div>
-                {canManage && (
-                    <CreateGroupDialog classId={classId}>
-                        <Button>
-                            <Plus className="size-4 mr-2" />
-                            Create Group
-                        </Button>
-                    </CreateGroupDialog>
-                )}
+                <div className="flex items-center gap-2">
+                    {groups.length > 0 && (
+                        <ExportPDFDialog
+                            groups={groups}
+                            className={classEntity?.name || "Class"}
+                        >
+                            <Button variant="outline">
+                                <Download className="size-4 mr-2" />
+                                Export
+                            </Button>
+                        </ExportPDFDialog>
+                    )}
+                    {canManage && (
+                        <CreateGroupDialog classId={classId}>
+                            <Button>
+                                <Plus className="size-4 mr-2" />
+                                Create Group
+                            </Button>
+                        </CreateGroupDialog>
+                    )}
+                </div>
             </div>
 
             {groupsLoading ? (
