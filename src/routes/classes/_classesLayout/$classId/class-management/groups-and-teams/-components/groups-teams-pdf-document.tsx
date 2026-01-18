@@ -10,33 +10,39 @@ import {
 } from "@react-pdf/renderer";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import pdfLogo from "../assets/pdf-logo.png";
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
     page: {
-        padding: 40,
+        padding: 25,
         fontFamily: "Helvetica",
-        fontSize: 10,
+        fontSize: 9,
         backgroundColor: "#ffffff",
     },
     header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 20,
-        paddingBottom: 15,
+        marginBottom: 12,
+        paddingBottom: 10,
         borderBottomWidth: 1,
         borderBottomColor: "#e5e7eb",
+    },
+    logo: {
+        width: 125,
+        height: 39,
+        marginBottom: 8,
+    },
+    headerInfo: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+        alignItems: "flex-end",
     },
     headerLeft: {
         flexDirection: "column",
     },
-    logo: {
-        width: 120,
-        height: 37,
-    },
     title: {
-        fontSize: 20,
+        fontSize: 16,
         fontWeight: "bold",
         color: "#111827",
         marginBottom: 4,
@@ -50,24 +56,29 @@ const styles = StyleSheet.create({
         color: "#9ca3af",
     },
     section: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 10,
         marginBottom: 20,
     },
     groupCard: {
-        marginBottom: 16,
+        width: "48%",
         borderWidth: 1,
         borderColor: "#e5e7eb",
-        borderRadius: 6,
+        borderRadius: 4,
+        marginBottom: 10,
+        minHeight: 100,
     },
     groupHeader: {
         backgroundColor: "#f9fafb",
-        padding: 12,
+        padding: 8,
         borderBottomWidth: 1,
         borderBottomColor: "#e5e7eb",
-        borderTopLeftRadius: 6,
-        borderTopRightRadius: 6,
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
     },
     groupName: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: "bold",
         color: "#111827",
         marginBottom: 2,
@@ -77,39 +88,39 @@ const styles = StyleSheet.create({
         color: "#6b7280",
     },
     groupContent: {
-        padding: 12,
+        padding: 8,
     },
     studentsSection: {
-        marginBottom: 12,
+        marginBottom: 8,
     },
     sectionLabel: {
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: "bold",
         color: "#374151",
-        marginBottom: 8,
+        marginBottom: 6,
     },
     studentRow: {
         flexDirection: "row",
-        paddingVertical: 4,
-        borderBottomWidth: 1,
+        paddingVertical: 2,
+        borderBottomWidth: 0.5,
         borderBottomColor: "#f3f4f6",
     },
     studentName: {
         flex: 1,
-        fontSize: 9,
+        fontSize: 8,
         color: "#111827",
     },
     studentGender: {
-        width: 60,
-        fontSize: 9,
+        width: 50,
+        fontSize: 8,
         color: "#6b7280",
         textAlign: "right",
     },
     teamCard: {
-        marginTop: 8,
-        marginLeft: 12,
-        paddingLeft: 12,
-        borderLeftWidth: 3,
+        marginTop: 6,
+        marginLeft: 8,
+        paddingLeft: 8,
+        borderLeftWidth: 2,
         borderLeftColor: "#3b82f6",
     },
     teamHeader: {
@@ -140,11 +151,11 @@ const styles = StyleSheet.create({
     },
     footer: {
         position: "absolute",
-        bottom: 30,
-        left: 40,
-        right: 40,
+        bottom: 15,
+        left: 25,
+        right: 25,
         textAlign: "center",
-        fontSize: 8,
+        fontSize: 7,
         color: "#9ca3af",
     },
 });
@@ -187,7 +198,6 @@ interface GroupsTeamsPDFDocumentProps {
     className: string;
     selectedItems: SelectedItem[];
     generatedDate: string;
-    logoUrl?: string;
 }
 
 function getStudentDisplayName(student: Student): string {
@@ -228,17 +238,17 @@ function GroupSection({ group }: { group: Group }) {
     const allStudents = group.groupStudents || [];
     const teams = group.groupTeams || [];
 
-    // If teams exist, filter out students who are on any team
-    const studentsNotOnTeams = teams.length > 0
-        ? allStudents.filter((student) => {
-              // Check if student is on any team
-              return !teams.some((team) =>
-                  (team.teamStudents || []).some(
-                      (teamStudent) => teamStudent.id === student.id
-                  )
-              );
-          })
-        : allStudents;
+    const studentsNotOnTeams =
+        teams.length > 0
+            ? allStudents.filter(
+                  (student) =>
+                      !teams.some((team) =>
+                          (team.teamStudents || []).some(
+                              (teamStudent) => teamStudent.id === student.id
+                          )
+                      )
+              )
+            : allStudents;
 
     return (
         <View style={styles.groupCard}>
@@ -327,46 +337,69 @@ export function GroupsTeamsPDFDocument({
     className,
     selectedItems,
     generatedDate,
-    logoUrl,
 }: GroupsTeamsPDFDocumentProps) {
+    const itemsPerPage = 4;
+    const pages: SelectedItem[][] = [];
+
+    for (let i = 0; i < selectedItems.length; i += itemsPerPage) {
+        pages.push(selectedItems.slice(i, i + itemsPerPage));
+    }
 
     return (
         <Document>
-            <Page size="A4" style={styles.page}>
-                <View style={styles.header}>
-                    <View style={styles.headerLeft}>
-                        <Text style={styles.title}>Groups & Teams</Text>
-                        <Text style={styles.subtitle}>{className}</Text>
-                        <Text style={styles.date}>{generatedDate}</Text>
+            {pages.map((pageItems, pageIndex) => (
+                <Page
+                    key={pageIndex}
+                    size="A4"
+                    orientation="landscape"
+                    style={styles.page}
+                    wrap={false}
+                >
+                    {pageIndex === 0 && (
+                        <View style={styles.header}>
+                            <Image style={styles.logo} src={pdfLogo} />
+                            <View style={styles.headerInfo}>
+                                <View style={styles.headerLeft}>
+                                    <Text style={styles.title}>
+                                        Groups & Teams
+                                    </Text>
+                                    <Text style={styles.subtitle}>
+                                        {className}
+                                    </Text>
+                                </View>
+                                <Text style={styles.date}>{generatedDate}</Text>
+                            </View>
+                        </View>
+                    )}
+
+                    <View style={styles.section}>
+                        {pageItems.map((item) => {
+                            if (item.type === "group") {
+                                return (
+                                    <GroupSection
+                                        key={`group-${item.group.id}`}
+                                        group={item.group}
+                                    />
+                                );
+                            } else {
+                                return (
+                                    <TeamSection
+                                        key={`team-${item.team.id}`}
+                                        team={item.team}
+                                        parentGroupName={item.parentGroupName}
+                                    />
+                                );
+                            }
+                        })}
                     </View>
-                    {logoUrl && <Image style={styles.logo} src={logoUrl} />}
-                </View>
 
-                <View style={styles.section}>
-                    {selectedItems.map((item) => {
-                        if (item.type === "group") {
-                            return (
-                                <GroupSection
-                                    key={`group-${item.group.id}`}
-                                    group={item.group}
-                                />
-                            );
-                        } else {
-                            return (
-                                <TeamSection
-                                    key={`team-${item.team.id}`}
-                                    team={item.team}
-                                    parentGroupName={item.parentGroupName}
-                                />
-                            );
-                        }
-                    })}
-                </View>
-
-                <Text style={styles.footer}>
-                    Generated by ClassClarus on {generatedDate}
-                </Text>
-            </Page>
+                    {pageIndex === pages.length - 1 && (
+                        <Text style={styles.footer}>
+                            Generated by ClassClarus on {generatedDate}
+                        </Text>
+                    )}
+                </Page>
+            ))}
         </Document>
     );
 }

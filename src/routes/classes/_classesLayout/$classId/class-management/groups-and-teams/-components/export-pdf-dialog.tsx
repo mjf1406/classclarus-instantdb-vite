@@ -153,15 +153,11 @@ export function ExportPDFDialog({
                 day: "numeric",
             });
 
-            // Build full logo URL for react-pdf
-            const logoUrl = `${window.location.origin}/brand/icon-left-of-text-different-sizes-removebg-preview.webp`;
-
             const doc = (
                 <GroupsTeamsPDFDocument
                     className={className}
                     selectedItems={selectedItems}
                     generatedDate={generatedDate}
-                    logoUrl={logoUrl}
                 />
             );
 
