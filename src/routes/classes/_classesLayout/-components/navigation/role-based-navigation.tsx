@@ -88,6 +88,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
             return {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,
+                behaviorItems: nav.behaviorItems,
                 isLoading: false,
             };
         }
@@ -96,6 +97,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
             return {
                 mainItems: nav.mainItems,
                 memberItems: nav.memberItems,
+                behaviorItems: nav.behaviorItems,
                 isLoading: false,
             };
         }

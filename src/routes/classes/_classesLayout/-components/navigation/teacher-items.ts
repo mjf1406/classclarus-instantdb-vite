@@ -118,3 +118,23 @@ export function getBehaviorItems(classId: string): NavigationItem[] {
         },
     ];
 }
+
+/**
+ * View-only behavior nav items for students and guardians (Behaviors + Reward Items only).
+ */
+export function getBehaviorItemsViewOnly(classId: string): NavigationItem[] {
+    return [
+        {
+            title: "Behaviors",
+            description: "View behaviors for your class",
+            url: `/classes/${classId}/behavior/behaviors`,
+            icon: Award,
+        },
+        {
+            title: "Reward Items",
+            description: "View reward items for your class",
+            url: `/classes/${classId}/behavior/reward-items`,
+            icon: Star,
+        },
+    ];
+}

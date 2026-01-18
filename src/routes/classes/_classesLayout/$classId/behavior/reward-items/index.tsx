@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Star, Plus, FolderPlus, ChevronDown, Folder, Search } from "lucide-react";
-import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { db } from "@/lib/db/db";
@@ -81,7 +80,7 @@ function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
     const [search, setSearch] = useState("");
-    const { class: classEntity, isLoading } = useClassById(classId);
+    const { class: classEntity } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
     const { data, isLoading: dataLoading } = db.useQuery(
@@ -402,58 +401,52 @@ function RouteComponent() {
     );
 
     return (
-        <RestrictedRoute
-            role={roleInfo.role}
-            isLoading={isLoading}
-            backUrl={classId ? `/classes/${classId}` : "/classes"}
-        >
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Star className="size-12 md:size-16 text-primary" />
-                        <div>
-                            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                                Reward Items
-                            </h1>
-                            <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                                View and manage reward items for your class
-                            </p>
-                        </div>
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Star className="size-12 md:size-16 text-primary" />
+                    <div>
+                        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                            Reward Items
+                        </h1>
+                        <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
+                            View and manage reward items for your class
+                        </p>
                     </div>
-                    {canManage && (
-                        <CreateRewardItemDialog classId={classId}>
-                            <Button>
-                                <Plus className="size-4 mr-2" />
-                                Create Reward Item
-                            </Button>
-                        </CreateRewardItemDialog>
-                    )}
                 </div>
-
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Search name and description..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9"
-                    />
-                </div>
-
-                <Tabs defaultValue="list" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="list">List</TabsTrigger>
-                        <TabsTrigger value="folders">Folders</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="list" className="mt-4">
-                        {listView}
-                    </TabsContent>
-                    <TabsContent value="folders" className="mt-4">
-                        {foldersView}
-                    </TabsContent>
-                </Tabs>
+                {canManage && (
+                    <CreateRewardItemDialog classId={classId}>
+                        <Button>
+                            <Plus className="size-4 mr-2" />
+                            Create Reward Item
+                        </Button>
+                    </CreateRewardItemDialog>
+                )}
             </div>
-        </RestrictedRoute>
+
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search name and description..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                />
+            </div>
+
+            <Tabs defaultValue="list" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="list">List</TabsTrigger>
+                    <TabsTrigger value="folders">Folders</TabsTrigger>
+                </TabsList>
+                <TabsContent value="list" className="mt-4">
+                    {listView}
+                </TabsContent>
+                <TabsContent value="folders" className="mt-4">
+                    {foldersView}
+                </TabsContent>
+            </Tabs>
+        </div>
     );
 }

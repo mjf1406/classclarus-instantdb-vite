@@ -1,12 +1,14 @@
 /** @format */
 
 import { Users } from "lucide-react";
+import { getBehaviorItemsViewOnly } from "../../navigation/teacher-items";
 import { getRestrictedMainItems } from "../../navigation/shared-items";
 import type { NavigationItem } from "../../navigation/types";
 
 export function getStudentNavigation(classId: string): {
     mainItems: NavigationItem[];
     memberItems: NavigationItem[];
+    behaviorItems?: NavigationItem[];
 } {
     return {
         mainItems: [
@@ -19,5 +21,6 @@ export function getStudentNavigation(classId: string): {
             },
         ],
         memberItems: [],
+        behaviorItems: getBehaviorItemsViewOnly(classId),
     };
 }
