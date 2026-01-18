@@ -33,7 +33,7 @@ export function NavMain({
     return (
         <SidebarGroup>
             {showLabel && label && (
-                <SidebarGroupLabel>{label}</SidebarGroupLabel>
+                <SidebarGroupLabel className="sticky top-0 z-10 bg-sidebar">{label}</SidebarGroupLabel>
             )}
             <SidebarMenu>
                 {items.map((item) => (

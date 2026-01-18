@@ -12,6 +12,9 @@ import {
     CalendarCheck,
     UserCircle,
     Network,
+    Coins,
+    Award,
+    Star,
 } from "lucide-react";
 import type { NavigationItem } from "./types";
 
@@ -89,6 +92,29 @@ export function getRandomItems(classId: string): NavigationItem[] {
             description: "View and manage randomizer for your class",
             url: `/classes/${classId}/random-tools/randomizer`,
             icon: Dice6,
+        },
+    ];
+}
+
+export function getBehaviorItems(classId: string): NavigationItem[] {
+    return [
+        {
+            title: "Points",
+            description: "View and manage points for your students",
+            url: `/classes/${classId}/behavior/points`,
+            icon: Coins,
+        },
+        {
+            title: "Behaviors",
+            description: "View and manage behaviors for your class",
+            url: `/classes/${classId}/behavior/behaviors`,
+            icon: Award,
+        },
+        {
+            title: "Reward Items",
+            description: "View and manage reward items for your class",
+            url: `/classes/${classId}/behavior/reward-items`,
+            icon: Star,
         },
     ];
 }

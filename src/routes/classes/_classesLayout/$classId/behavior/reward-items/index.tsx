@@ -1,14 +1,14 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { Coins } from "lucide-react";
+import { Star } from "lucide-react";
 import { UnderConstruction } from "@/components/under-construction";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 
 export const Route = createFileRoute(
-    "/classes/_classesLayout/$classId/main/points/"
+    "/classes/_classesLayout/$classId/behavior/reward-items/"
 )({
     component: RouteComponent,
 });
@@ -28,13 +28,13 @@ function RouteComponent() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Coins className="size-12 md:size-16 text-primary" />
+                        <Star className="size-12 md:size-16 text-primary" />
                         <div>
                             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-                                Points
+                                Reward Items
                             </h1>
                             <p className="text-sm md:text-base lg:text-base text-muted-foreground mt-1">
-                                View and manage points for your students
+                                View and manage reward items for your class
                             </p>
                         </div>
                     </div>

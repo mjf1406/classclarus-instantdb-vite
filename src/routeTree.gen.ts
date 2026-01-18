@@ -47,7 +47,6 @@ import { Route as ClassesClassesLayoutClassIdMembersGuardiansIndexRouteImport } 
 import { Route as ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/assistant-teachers/index'
 import { Route as ClassesClassesLayoutClassIdMembersAdminsIndexRouteImport } from './routes/classes/_classesLayout/$classId/members/admins/index'
 import { Route as ClassesClassesLayoutClassIdMainSettingsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/settings/index'
-import { Route as ClassesClassesLayoutClassIdMainPointsIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/points/index'
 import { Route as ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/noise-monitor/index'
 import { Route as ClassesClassesLayoutClassIdMainDashboardIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/dashboard/index'
 import { Route as ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/classroom-screen/index'
@@ -59,6 +58,9 @@ import { Route as ClassesClassesLayoutClassIdClassManagementGradebookIndexRouteI
 import { Route as ClassesClassesLayoutClassIdClassManagementExpectationsIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/expectations/index'
 import { Route as ClassesClassesLayoutClassIdClassManagementAttendanceIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/attendance/index'
 import { Route as ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/assignments/index'
+import { Route as ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRouteImport } from './routes/classes/_classesLayout/$classId/behavior/reward-items/index'
+import { Route as ClassesClassesLayoutClassIdBehaviorPointsIndexRouteImport } from './routes/classes/_classesLayout/$classId/behavior/points/index'
+import { Route as ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRouteImport } from './routes/classes/_classesLayout/$classId/behavior/behaviors/index'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -277,12 +279,6 @@ const ClassesClassesLayoutClassIdMainSettingsIndexRoute =
     path: '/$classId/main/settings/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
-const ClassesClassesLayoutClassIdMainPointsIndexRoute =
-  ClassesClassesLayoutClassIdMainPointsIndexRouteImport.update({
-    id: '/$classId/main/points/',
-    path: '/$classId/main/points/',
-    getParentRoute: () => ClassesClassesLayoutRoute,
-  } as any)
 const ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute =
   ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport.update({
     id: '/$classId/main/noise-monitor/',
@@ -355,6 +351,24 @@ const ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute =
     path: '/$classId/class-management/assignments/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute =
+  ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRouteImport.update({
+    id: '/$classId/behavior/reward-items/',
+    path: '/$classId/behavior/reward-items/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdBehaviorPointsIndexRoute =
+  ClassesClassesLayoutClassIdBehaviorPointsIndexRouteImport.update({
+    id: '/$classId/behavior/points/',
+    path: '/$classId/behavior/points/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
+const ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute =
+  ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRouteImport.update({
+    id: '/$classId/behavior/behaviors/',
+    path: '/$classId/behavior/behaviors/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -376,6 +390,9 @@ export interface FileRoutesByFullPath {
   '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/classes/$classId/random-tools': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/behavior/behaviors': typeof ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute
+  '/classes/$classId/behavior/points': typeof ClassesClassesLayoutClassIdBehaviorPointsIndexRoute
+  '/classes/$classId/behavior/reward-items': typeof ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute
   '/classes/$classId/class-management/assignments': typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
   '/classes/$classId/class-management/attendance': typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
   '/classes/$classId/class-management/expectations': typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
@@ -387,7 +404,6 @@ export interface FileRoutesByFullPath {
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
-  '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -426,6 +442,9 @@ export interface FileRoutesByTo {
   '/classes/$classId/members': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/classes/$classId/random-tools': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
   '/organizations/$orgId/members': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/$classId/behavior/behaviors': typeof ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute
+  '/classes/$classId/behavior/points': typeof ClassesClassesLayoutClassIdBehaviorPointsIndexRoute
+  '/classes/$classId/behavior/reward-items': typeof ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute
   '/classes/$classId/class-management/assignments': typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
   '/classes/$classId/class-management/attendance': typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
   '/classes/$classId/class-management/expectations': typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
@@ -437,7 +456,6 @@ export interface FileRoutesByTo {
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
-  '/classes/$classId/main/points': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/$classId/main/settings': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/$classId/members/admins': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/$classId/members/assistant-teachers': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -479,6 +497,9 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/members/': typeof ClassesClassesLayoutClassIdMembersIndexRoute
   '/classes/_classesLayout/$classId/random-tools/': typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
   '/organizations/_orgLayout/$orgId/members/': typeof OrganizationsOrgLayoutOrgIdMembersIndexRoute
+  '/classes/_classesLayout/$classId/behavior/behaviors/': typeof ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute
+  '/classes/_classesLayout/$classId/behavior/points/': typeof ClassesClassesLayoutClassIdBehaviorPointsIndexRoute
+  '/classes/_classesLayout/$classId/behavior/reward-items/': typeof ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute
   '/classes/_classesLayout/$classId/class-management/assignments/': typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
   '/classes/_classesLayout/$classId/class-management/attendance/': typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
   '/classes/_classesLayout/$classId/class-management/expectations/': typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
@@ -490,7 +511,6 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/main/classroom-screen/': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/_classesLayout/$classId/main/dashboard/': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/_classesLayout/$classId/main/noise-monitor/': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
-  '/classes/_classesLayout/$classId/main/points/': typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   '/classes/_classesLayout/$classId/main/settings/': typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   '/classes/_classesLayout/$classId/members/admins/': typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   '/classes/_classesLayout/$classId/members/assistant-teachers/': typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -533,6 +553,9 @@ export interface FileRouteTypes {
     | '/classes/$classId/members'
     | '/classes/$classId/random-tools'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/behavior/behaviors'
+    | '/classes/$classId/behavior/points'
+    | '/classes/$classId/behavior/reward-items'
     | '/classes/$classId/class-management/assignments'
     | '/classes/$classId/class-management/attendance'
     | '/classes/$classId/class-management/expectations'
@@ -544,7 +567,6 @@ export interface FileRouteTypes {
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
     | '/classes/$classId/main/noise-monitor'
-    | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
@@ -583,6 +605,9 @@ export interface FileRouteTypes {
     | '/classes/$classId/members'
     | '/classes/$classId/random-tools'
     | '/organizations/$orgId/members'
+    | '/classes/$classId/behavior/behaviors'
+    | '/classes/$classId/behavior/points'
+    | '/classes/$classId/behavior/reward-items'
     | '/classes/$classId/class-management/assignments'
     | '/classes/$classId/class-management/attendance'
     | '/classes/$classId/class-management/expectations'
@@ -594,7 +619,6 @@ export interface FileRouteTypes {
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
     | '/classes/$classId/main/noise-monitor'
-    | '/classes/$classId/main/points'
     | '/classes/$classId/main/settings'
     | '/classes/$classId/members/admins'
     | '/classes/$classId/members/assistant-teachers'
@@ -635,6 +659,9 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/members/'
     | '/classes/_classesLayout/$classId/random-tools/'
     | '/organizations/_orgLayout/$orgId/members/'
+    | '/classes/_classesLayout/$classId/behavior/behaviors/'
+    | '/classes/_classesLayout/$classId/behavior/points/'
+    | '/classes/_classesLayout/$classId/behavior/reward-items/'
     | '/classes/_classesLayout/$classId/class-management/assignments/'
     | '/classes/_classesLayout/$classId/class-management/attendance/'
     | '/classes/_classesLayout/$classId/class-management/expectations/'
@@ -646,7 +673,6 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/main/classroom-screen/'
     | '/classes/_classesLayout/$classId/main/dashboard/'
     | '/classes/_classesLayout/$classId/main/noise-monitor/'
-    | '/classes/_classesLayout/$classId/main/points/'
     | '/classes/_classesLayout/$classId/main/settings/'
     | '/classes/_classesLayout/$classId/members/admins/'
     | '/classes/_classesLayout/$classId/members/assistant-teachers/'
@@ -950,13 +976,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
-    '/classes/_classesLayout/$classId/main/points/': {
-      id: '/classes/_classesLayout/$classId/main/points/'
-      path: '/$classId/main/points'
-      fullPath: '/classes/$classId/main/points'
-      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRouteImport
-      parentRoute: typeof ClassesClassesLayoutRoute
-    }
     '/classes/_classesLayout/$classId/main/noise-monitor/': {
       id: '/classes/_classesLayout/$classId/main/noise-monitor/'
       path: '/$classId/main/noise-monitor'
@@ -1034,6 +1053,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
+    '/classes/_classesLayout/$classId/behavior/reward-items/': {
+      id: '/classes/_classesLayout/$classId/behavior/reward-items/'
+      path: '/$classId/behavior/reward-items'
+      fullPath: '/classes/$classId/behavior/reward-items'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/behavior/points/': {
+      id: '/classes/_classesLayout/$classId/behavior/points/'
+      path: '/$classId/behavior/points'
+      fullPath: '/classes/$classId/behavior/points'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdBehaviorPointsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
+    '/classes/_classesLayout/$classId/behavior/behaviors/': {
+      id: '/classes/_classesLayout/$classId/behavior/behaviors/'
+      path: '/$classId/behavior/behaviors'
+      fullPath: '/classes/$classId/behavior/behaviors'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
   }
 }
 
@@ -1043,6 +1083,9 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutMembersIndexRoute: typeof ClassesClassesLayoutMembersIndexRoute
   ClassesClassesLayoutClassIdMembersIndexRoute: typeof ClassesClassesLayoutClassIdMembersIndexRoute
   ClassesClassesLayoutClassIdRandomToolsIndexRoute: typeof ClassesClassesLayoutClassIdRandomToolsIndexRoute
+  ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute: typeof ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute
+  ClassesClassesLayoutClassIdBehaviorPointsIndexRoute: typeof ClassesClassesLayoutClassIdBehaviorPointsIndexRoute
+  ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute: typeof ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute
   ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute
   ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute
   ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementExpectationsIndexRoute
@@ -1054,7 +1097,6 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   ClassesClassesLayoutClassIdMainDashboardIndexRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute: typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
-  ClassesClassesLayoutClassIdMainPointsIndexRoute: typeof ClassesClassesLayoutClassIdMainPointsIndexRoute
   ClassesClassesLayoutClassIdMainSettingsIndexRoute: typeof ClassesClassesLayoutClassIdMainSettingsIndexRoute
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute: typeof ClassesClassesLayoutClassIdMembersAdminsIndexRoute
   ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute: typeof ClassesClassesLayoutClassIdMembersAssistantTeachersIndexRoute
@@ -1075,6 +1117,12 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
     ClassesClassesLayoutClassIdMembersIndexRoute,
   ClassesClassesLayoutClassIdRandomToolsIndexRoute:
     ClassesClassesLayoutClassIdRandomToolsIndexRoute,
+  ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute:
+    ClassesClassesLayoutClassIdBehaviorBehaviorsIndexRoute,
+  ClassesClassesLayoutClassIdBehaviorPointsIndexRoute:
+    ClassesClassesLayoutClassIdBehaviorPointsIndexRoute,
+  ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute:
+    ClassesClassesLayoutClassIdBehaviorRewardItemsIndexRoute,
   ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute:
     ClassesClassesLayoutClassIdClassManagementAssignmentsIndexRoute,
   ClassesClassesLayoutClassIdClassManagementAttendanceIndexRoute:
@@ -1097,8 +1145,6 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
     ClassesClassesLayoutClassIdMainDashboardIndexRoute,
   ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute:
     ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute,
-  ClassesClassesLayoutClassIdMainPointsIndexRoute:
-    ClassesClassesLayoutClassIdMainPointsIndexRoute,
   ClassesClassesLayoutClassIdMainSettingsIndexRoute:
     ClassesClassesLayoutClassIdMainSettingsIndexRoute,
   ClassesClassesLayoutClassIdMembersAdminsIndexRoute:

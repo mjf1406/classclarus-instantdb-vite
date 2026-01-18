@@ -8,6 +8,7 @@ import { useParams, Link, useLocation } from "@tanstack/react-router";
 import { NavMain } from "./class-main";
 import { NavUser } from "@/components/navigation/nav-user";
 import { ClassSidebarHeader } from "./class-sidebar-header";
+import { ClassClarusLinks } from "./classclarus-links";
 import {
     Sidebar,
     SidebarContent,
@@ -15,7 +16,6 @@ import {
     SidebarHeader,
     useSidebar,
     SidebarGroup,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -34,7 +34,7 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useRoleBasedNavigation } from "../navigation/role-based-navigation";
 import type { LucideIcon } from "lucide-react";
-import { Home, BookOpen, Book, ChevronUp, ChevronDown, BookOpenCheck, Users, Dice6 } from "lucide-react";
+import { ChevronUp, ChevronDown, BookOpenCheck, Users, Dice6, Award } from "lucide-react";
 import { isRouteActive } from "@/lib/utils";
 import type { NavigationItem } from "../navigation/types";
 
@@ -185,7 +185,7 @@ function ExpandableSection({
                 >
                     <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                            <SidebarMenuButton>
+                            <SidebarMenuButton className="sticky top-0 z-10 bg-sidebar">
                                 {title}
                                 <ChevronDown className="ml-auto group-data-[state=closed]/collapsible:hidden" />
                                 <ChevronUp className="ml-auto group-data-[state=open]/collapsible:hidden" />
@@ -241,6 +241,7 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         settingsItem,
         classManagementItems,
         randomItems,
+        behaviorItems,
         isLoading,
     } = useRoleBasedNavigation();
 
@@ -356,6 +357,21 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                         onLinkClick={handleLinkClick}
                                     />
                                 )}
+                                {behaviorItems &&
+                                    behaviorItems.length > 0 && (
+                                        <ExpandableSection
+                                            title="Class Behavior"
+                                            icon={Award}
+                                            items={behaviorItems}
+                                            defaultOpen={true}
+                                            onLinkClick={handleLinkClick}
+                                            sortItems={(items) =>
+                                                items.sort((a, b) =>
+                                                    a.title.localeCompare(b.title)
+                                                )
+                                            }
+                                        />
+                                    )}
                                 {classManagementItems &&
                                     classManagementItems.length > 0 && (
                                         <ExpandableSection
@@ -407,7 +423,7 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                         title="Random Tools"
                                         icon={Dice6}
                                         items={randomItems}
-                                        defaultOpen={true}
+                                        defaultOpen={false}
                                         onLinkClick={handleLinkClick}
                                         sortItems={(items) =>
                                             items.sort((a, b) =>
@@ -417,61 +433,9 @@ export function ClassSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                                     />
                                 )}
                             </div>
-                            <SidebarGroup className="mt-auto">
-                                <SidebarGroupLabel>
-                                    ClassClarus
-                                </SidebarGroupLabel>
-                                <SidebarMenu>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Home"
-                                        >
-                                            <a
-                                                href="https://www.classclarus.com"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={handleLinkClick}
-                                            >
-                                                <Home />
-                                                <span>Home</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Blog"
-                                        >
-                                            <a
-                                                href="https://blog.classclarus.com"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={handleLinkClick}
-                                            >
-                                                <BookOpen />
-                                                <span>Blog</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton
-                                            asChild
-                                            tooltip="Wiki"
-                                        >
-                                            <a
-                                                href="https://wiki.classclarus.com"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={handleLinkClick}
-                                            >
-                                                <Book />
-                                                <span>Wiki</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                </SidebarMenu>
-                            </SidebarGroup>
+                            <div className="mt-auto">
+                                <ClassClarusLinks onLinkClick={handleLinkClick} />
+                            </div>
                         </>
                     )}
                 </SidebarContent>

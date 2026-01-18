@@ -17,6 +17,7 @@ export interface RoleBasedNavigationResult {
     settingsItem?: NavigationItem;
     classManagementItems?: NavigationItem[];
     randomItems?: NavigationItem[];
+    behaviorItems?: NavigationItem[];
     isLoading: boolean;
 }
 
@@ -30,6 +31,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
         return {
             mainItems: [],
             memberItems: [],
+            behaviorItems: [],
             isLoading: true,
         };
     }
@@ -43,6 +45,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
                 settingsItem: nav.settingsItem,
                 classManagementItems: nav.classManagementItems,
                 randomItems: nav.randomItems,
+                behaviorItems: nav.behaviorItems,
                 isLoading: false,
             };
         }
@@ -53,6 +56,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
                 memberItems: nav.memberItems,
                 classManagementItems: nav.classManagementItems,
                 randomItems: nav.randomItems,
+                behaviorItems: nav.behaviorItems,
                 isLoading: false,
             };
         }
@@ -64,6 +68,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
                 settingsItem: nav.settingsItem,
                 classManagementItems: nav.classManagementItems,
                 randomItems: nav.randomItems,
+                behaviorItems: nav.behaviorItems,
                 isLoading: false,
             };
         }
@@ -74,6 +79,7 @@ export function useRoleBasedNavigation(): RoleBasedNavigationResult {
                 memberItems: nav.memberItems,
                 classManagementItems: nav.classManagementItems,
                 randomItems: nav.randomItems,
+                behaviorItems: nav.behaviorItems,
                 isLoading: false,
             };
         }

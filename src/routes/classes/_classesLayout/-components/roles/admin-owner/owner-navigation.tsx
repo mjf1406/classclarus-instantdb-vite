@@ -8,6 +8,7 @@ import {
 import {
     getClassManagementItems,
     getRandomItems,
+    getBehaviorItems,
 } from "../../navigation/teacher-items";
 import type { NavigationItem } from "../../navigation/types";
 
@@ -17,6 +18,7 @@ export function getOwnerNavigation(classId: string): {
     settingsItem: NavigationItem;
     classManagementItems: NavigationItem[];
     randomItems: NavigationItem[];
+    behaviorItems: NavigationItem[];
 } {
     return {
         mainItems: getMainItems(classId),
@@ -24,5 +26,6 @@ export function getOwnerNavigation(classId: string): {
         settingsItem: getSettingsItem(classId),
         classManagementItems: getClassManagementItems(classId),
         randomItems: getRandomItems(classId),
+        behaviorItems: getBehaviorItems(classId),
     };
 }

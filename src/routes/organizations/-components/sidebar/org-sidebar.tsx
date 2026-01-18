@@ -160,7 +160,7 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 )}
                                 {memberItems.length > 0 && (
                                     <SidebarGroup>
-                                        <SidebarGroupLabel>
+                                        <SidebarGroupLabel className="sticky top-0 z-10 bg-sidebar">
                                             Organization Members
                                         </SidebarGroupLabel>
                                         <SidebarMenu>
@@ -227,7 +227,7 @@ export function OrgSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 )}
                             </div>
                             <SidebarGroup className="mt-auto">
-                                <SidebarGroupLabel>
+                                <SidebarGroupLabel className="sticky top-0 z-10 bg-sidebar">
                                     ClassClarus
                                 </SidebarGroupLabel>
                                 <SidebarMenu>
