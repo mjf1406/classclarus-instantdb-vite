@@ -29,7 +29,7 @@ const options: HomeSelectionOption[] = [
         route: "/classes",
     },
     {
-        title: "Guardian",
+        title: "Parent/Guardian",
         icon: GuardianIcon,
         route: "/classes",
     },
