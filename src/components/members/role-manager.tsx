@@ -1,6 +1,6 @@
 /** @format */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -82,14 +82,22 @@ interface RoleManagerProps {
     contextType: "class" | "org";
     contextId: string;
     canManage: boolean;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    hideTrigger?: boolean;
 }
 
 export function RoleManager({
     user,
     contextType,
     contextId,
+    open: openProp,
+    onOpenChange: onOpenChangeProp,
+    hideTrigger = false,
 }: RoleManagerProps) {
-    const [open, setOpen] = useState(false);
+    const [internalOpen, setInternalOpen] = useState(false);
+    const isControlled = openProp !== undefined && onOpenChangeProp !== undefined;
+    const dialogOpen = isControlled ? openProp : internalOpen;
     const [selectedRoles, setSelectedRoles] = useState<Set<RoleType>>(
         new Set()
     );
@@ -225,14 +233,18 @@ export function RoleManager({
         }
     }
 
-    // Initialize selected roles when dialog opens
     const handleOpenChange = (newOpen: boolean) => {
-        setOpen(newOpen);
-        if (newOpen) {
+        if (onOpenChangeProp) onOpenChangeProp(newOpen);
+        if (!isControlled) setInternalOpen(newOpen);
+    };
+
+    useEffect(() => {
+        if (dialogOpen) {
             setSelectedRoles(new Set(currentRoles));
             setError(null);
         }
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- currentRoles is derived, we only need to init when dialog opens
+    }, [dialogOpen]);
 
     // Get available roles based on user type
     // Students can switch to other roles, but if they have student role, they can only have student role
@@ -398,7 +410,7 @@ export function RoleManager({
                 db.transact(transactions as Parameters<typeof db.transact>[0]);
             }
 
-            setOpen(false);
+            handleOpenChange(false);
         } catch (err) {
             setError(
                 err instanceof Error
@@ -495,13 +507,15 @@ export function RoleManager({
                     <div key={role}>{renderRoleBadge(role)}</div>
                 ))}
             </div>
-            <Dialog open={open} onOpenChange={handleOpenChange}>
-                <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                        <Settings2 className="size-4 mr-2" />
-                        Manage Roles
-                    </Button>
-                </DialogTrigger>
+            <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+                {!hideTrigger && (
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                            <Settings2 className="size-4 mr-2" />
+                            Manage Roles
+                        </Button>
+                    </DialogTrigger>
+                )}
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Manage Roles</DialogTitle>
@@ -551,7 +565,7 @@ export function RoleManager({
                     <DialogFooter>
                         <Button
                             variant="outline"
-                            onClick={() => setOpen(false)}
+                            onClick={() => handleOpenChange(false)}
                         >
                             Cancel
                         </Button>

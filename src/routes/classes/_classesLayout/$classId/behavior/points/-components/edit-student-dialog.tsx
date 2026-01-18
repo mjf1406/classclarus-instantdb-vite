@@ -20,26 +20,10 @@ import {
     FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
-
-const GENDER_NONE = "__none__";
-
-const GENDER_OPTIONS = [
-    { value: GENDER_NONE, label: "—" },
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" },
-    { value: "other", label: "Other" },
-    { value: "prefer_not_to_say", label: "Prefer not to say" },
-];
+import { GenderSelect, GENDER_NONE } from "./gender-select";
 
 export type ExistingRoster = {
     id: string;
@@ -197,25 +181,12 @@ export function EditStudentDialog({
                 <Field>
                     <FieldLabel htmlFor="edit-student-gender">Gender</FieldLabel>
                     <FieldContent>
-                        <Select
-                            value={gender || GENDER_NONE}
+                        <GenderSelect
+                            id="edit-student-gender"
+                            value={gender}
                             onValueChange={setGender}
                             disabled={isSubmitting}
-                        >
-                            <SelectTrigger id="edit-student-gender">
-                                <SelectValue placeholder="Select (optional)" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {GENDER_OPTIONS.map((opt) => (
-                                    <SelectItem
-                                        key={opt.value}
-                                        value={opt.value}
-                                    >
-                                        {opt.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        />
                     </FieldContent>
                 </Field>
 

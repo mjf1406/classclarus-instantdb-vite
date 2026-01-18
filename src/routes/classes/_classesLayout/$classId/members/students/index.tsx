@@ -1,6 +1,7 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { id } from "@instantdb/react";
 import { useMemo } from "react";
 import { StudentIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
@@ -10,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X, MoreVertical, Pencil, LayoutGrid, Table2 } from "lucide-react";
+import { Users, X, MoreVertical, Pencil, LayoutGrid, Table2, Check, Settings2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState } from "react";
@@ -19,6 +20,7 @@ import { PendingStudentCard } from "@/components/members/pending-student-card";
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -28,7 +30,6 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import {
     Select,
@@ -58,7 +59,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
+import { GenderSelect, GENDER_NONE, GENDER_OPTIONS } from "@/routes/classes/_classesLayout/$classId/behavior/points/-components/gender-select";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/students/"
@@ -87,20 +90,17 @@ type RosterForDisplay = {
     number?: number;
 } | null;
 
-function StudentCard({
+function ManageGuardiansDialog({
     student,
-    canManage,
     classGuardians,
-    classId,
-    roster,
+    open,
+    onOpenChange,
 }: {
     student: InstaQLEntity<AppSchema, "$users">;
-    canManage: boolean;
     classGuardians: InstaQLEntity<AppSchema, "$users">[];
-    classId: string;
-    roster: RosterForDisplay;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
 }) {
-    const [open, setOpen] = useState(false);
     const [selectedGuardianId, setSelectedGuardianId] = useState<string>("");
     const [isLinking, setIsLinking] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -127,11 +127,9 @@ function StudentCard({
         setError(null);
 
         try {
-            // Link guardian to student (reverse relationship)
             db.transact([
                 db.tx.$users[selectedGuardianId].link({ children: student.id }),
             ]);
-            setOpen(false);
             setSelectedGuardianId("");
         } catch (err) {
             setError(
@@ -144,7 +142,6 @@ function StudentCard({
 
     const handleUnlinkGuardian = async (guardianId: string) => {
         try {
-            // Unlink guardian from student (reverse relationship)
             db.transact([
                 db.tx.$users[guardianId].unlink({ children: student.id }),
             ]);
@@ -153,6 +150,142 @@ function StudentCard({
         }
     };
 
+    // Get available guardians (not already guardians of this student)
+    const availableGuardians = classGuardians.filter(
+        (guardian) => !guardians.some((g) => g.id === guardian.id)
+    );
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Manage Guardians</DialogTitle>
+                    <DialogDescription>
+                        Add or remove guardians for this student.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                    {guardians.length > 0 && (
+                        <Field>
+                            <FieldLabel>Current Guardians</FieldLabel>
+                            <FieldContent>
+                                <div className="flex flex-wrap gap-2">
+                                    {guardians.map((guardian) => {
+                                        const guardianDisplayName =
+                                            `${guardian.firstName || ""} ${guardian.lastName || ""}`.trim() ||
+                                            guardian.email ||
+                                            "Unknown User";
+                                        return (
+                                            <Badge
+                                                key={guardian.id}
+                                                variant="outline"
+                                                className="flex items-center gap-1"
+                                            >
+                                                {guardianDisplayName}
+                                                <button
+                                                    onClick={() =>
+                                                        handleUnlinkGuardian(
+                                                            guardian.id
+                                                        )
+                                                    }
+                                                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                                    aria-label={`Remove ${guardianDisplayName}`}
+                                                >
+                                                    <X className="size-3" />
+                                                </button>
+                                            </Badge>
+                                        );
+                                    })}
+                                </div>
+                            </FieldContent>
+                        </Field>
+                    )}
+                    <Field>
+                        <FieldLabel htmlFor="guardian-select">
+                            Add Guardian
+                        </FieldLabel>
+                        <FieldContent>
+                            <Select
+                                value={selectedGuardianId}
+                                onValueChange={setSelectedGuardianId}
+                                disabled={availableGuardians.length === 0}
+                            >
+                                <SelectTrigger id="guardian-select">
+                                    <SelectValue placeholder={availableGuardians.length === 0 ? "No available guardians" : "Select a guardian"} />
+                                </SelectTrigger>
+                                {availableGuardians.length > 0 && (
+                                    <SelectContent>
+                                        {availableGuardians.map((guardian) => {
+                                            const guardianDisplayName =
+                                                `${guardian.firstName || ""} ${guardian.lastName || ""}`.trim() ||
+                                                guardian.email ||
+                                                "Unknown User";
+                                            return (
+                                                <SelectItem
+                                                    key={guardian.id}
+                                                    value={guardian.id}
+                                                >
+                                                    {guardianDisplayName}
+                                                </SelectItem>
+                                            );
+                                        })}
+                                    </SelectContent>
+                                )}
+                            </Select>
+                            {error && <FieldError>{error}</FieldError>}
+                            <FieldDescription>
+                                Select a guardian to link to this student.
+                            </FieldDescription>
+                        </FieldContent>
+                    </Field>
+                </div>
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                    >
+                        Close
+                    </Button>
+                    <Button
+                        onClick={handleLinkGuardian}
+                        disabled={!selectedGuardianId || isLinking}
+                    >
+                        {isLinking ? "Linking..." : "Add Guardian"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function StudentCard({
+    student,
+    canManage,
+    classGuardians,
+    classId,
+    roster,
+}: {
+    student: InstaQLEntity<AppSchema, "$users">;
+    canManage: boolean;
+    classGuardians: InstaQLEntity<AppSchema, "$users">[];
+    classId: string;
+    roster: RosterForDisplay;
+}) {
+    const [manageGuardiansOpen, setManageGuardiansOpen] = useState(false);
+    const [roleManagerOpen, setRoleManagerOpen] = useState(false);
+
+    // Query guardians for this student
+    const { data: userData } = db.useQuery({
+        $users: {
+            $: { where: { id: student.id } },
+            guardians: {},
+        },
+    });
+
+    const typedUserData = (userData as UserQueryResult | undefined) ?? null;
+    const studentWithGuardians = typedUserData?.$users?.[0];
+    const guardians = studentWithGuardians?.guardians || [];
+
     const displayName = displayNameForStudent(student, roster);
     const initials = displayName
         .split(" ")
@@ -160,11 +293,6 @@ function StudentCard({
         .join("")
         .toUpperCase()
         .slice(0, 2);
-
-    // Get available guardians (not already guardians of this student)
-    const availableGuardians = classGuardians.filter(
-        (guardian) => !guardians.some((g) => g.id === guardian.id)
-    );
 
     return (
         <Card>
@@ -221,6 +349,20 @@ function StudentCard({
                                         <Pencil className="size-4" /> Edit
                                         student
                                     </EditStudentDialog>
+                                    <DropdownMenuItem
+                                        onSelect={() => setRoleManagerOpen(true)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Settings2 className="size-4" />
+                                        Manage roles
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => setManageGuardiansOpen(true)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Users className="size-4" />
+                                        Manage Guardians
+                                    </DropdownMenuItem>
                                     <KickUserDialog
                                         user={student}
                                         contextType="class"
@@ -251,19 +393,6 @@ function StudentCard({
                                             className="flex items-center gap-1"
                                         >
                                             {guardianDisplayName}
-                                            {canManage && (
-                                                <button
-                                                    onClick={() =>
-                                                        handleUnlinkGuardian(
-                                                            guardian.id
-                                                        )
-                                                    }
-                                                    className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
-                                                    aria-label={`Remove ${guardianDisplayName}`}
-                                                >
-                                                    <X className="size-3" />
-                                                </button>
-                                            )}
                                         </Badge>
                                     );
                                 })}
@@ -278,108 +407,16 @@ function StudentCard({
                                 contextType="class"
                                 contextId={classId}
                                 canManage={canManage}
+                                hideTrigger
+                                open={roleManagerOpen}
+                                onOpenChange={setRoleManagerOpen}
                             />
-                            <Dialog open={open} onOpenChange={setOpen}>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full"
-                                    >
-                                        <Plus className="size-4" />
-                                        Add Guardian
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Add Guardian</DialogTitle>
-                                        <DialogDescription>
-                                            Link a guardian to this student.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="space-y-4">
-                                        <Field>
-                                            <FieldLabel htmlFor="guardian-select">
-                                                Guardian
-                                            </FieldLabel>
-                                            <FieldContent>
-                                                <Select
-                                                    value={selectedGuardianId}
-                                                    onValueChange={
-                                                        setSelectedGuardianId
-                                                    }
-                                                >
-                                                    <SelectTrigger id="guardian-select">
-                                                        <SelectValue placeholder="Select a guardian" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {availableGuardians.length ===
-                                                        0 ? (
-                                                            <SelectItem
-                                                                value=""
-                                                                disabled
-                                                            >
-                                                                No available
-                                                                guardians
-                                                            </SelectItem>
-                                                        ) : (
-                                                            availableGuardians.map(
-                                                                (guardian) => {
-                                                                    const guardianDisplayName =
-                                                                        `${guardian.firstName || ""} ${guardian.lastName || ""}`.trim() ||
-                                                                        guardian.email ||
-                                                                        "Unknown User";
-                                                                    return (
-                                                                        <SelectItem
-                                                                            key={
-                                                                                guardian.id
-                                                                            }
-                                                                            value={
-                                                                                guardian.id
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                guardianDisplayName
-                                                                            }
-                                                                        </SelectItem>
-                                                                    );
-                                                                }
-                                                            )
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                                {error && (
-                                                    <FieldError>
-                                                        {error}
-                                                    </FieldError>
-                                                )}
-                                                <FieldDescription>
-                                                    Select a guardian to link to
-                                                    this student.
-                                                </FieldDescription>
-                                            </FieldContent>
-                                        </Field>
-                                    </div>
-                                    <DialogFooter>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setOpen(false)}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={handleLinkGuardian}
-                                            disabled={
-                                                !selectedGuardianId || isLinking
-                                            }
-                                        >
-                                            {isLinking
-                                                ? "Linking..."
-                                                : "Link Guardian"}
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+                            <ManageGuardiansDialog
+                                student={student}
+                                classGuardians={classGuardians}
+                                open={manageGuardiansOpen}
+                                onOpenChange={setManageGuardiansOpen}
+                            />
                         </div>
                     )}
                 </div>
@@ -388,19 +425,144 @@ function StudentCard({
     );
 }
 
+function getGenderLabel(gender?: string | null): string {
+    if (!gender) return "—";
+    const option = GENDER_OPTIONS.find((opt) => opt.value === gender);
+    return option?.label || gender;
+}
+
+function getInitialEditValue(columnKey: string, roster: RosterForDisplay): string {
+    switch (columnKey) {
+        case "roster.number":
+            return roster?.number != null ? String(roster.number) : "";
+        case "roster.firstName":
+            return roster?.firstName ?? "";
+        case "roster.lastName":
+            return roster?.lastName ?? "";
+        case "roster.gender":
+            return roster?.gender || GENDER_NONE;
+        default:
+            return "";
+    }
+}
+
+function getInputType(columnKey: string): "text" | "number" {
+    if (columnKey === "roster.number") return "number";
+    return "text";
+}
+
 function StudentsTable({
     students,
     canManage,
     classId,
     rosterByStudentId,
     guardianNamesByStudentId,
+    classGuardians,
 }: {
     students: InstaQLEntity<AppSchema, "$users">[];
     canManage: boolean;
     classId: string;
     rosterByStudentId: Map<string, RosterForDisplay>;
     guardianNamesByStudentId: Map<string, string[]>;
+    classGuardians: InstaQLEntity<AppSchema, "$users">[];
 }) {
+    const [editingCell, setEditingCell] = useState<{ studentId: string; columnKey: string } | null>(null);
+    const [editValue, setEditValue] = useState("");
+    const [manageGuardiansForStudent, setManageGuardiansForStudent] = useState<InstaQLEntity<AppSchema, "$users"> | null>(null);
+
+    const handleStartEdit = (studentId: string, columnKey: string, roster: RosterForDisplay) => {
+        if (!canManage) return;
+        setEditingCell({ studentId, columnKey });
+        setEditValue(getInitialEditValue(columnKey, roster));
+    };
+
+    const handleSaveEdit = () => {
+        if (!editingCell) return;
+        const { studentId, columnKey } = editingCell;
+        const roster = rosterByStudentId.get(studentId) ?? null;
+
+        const field = columnKey.split(".")[1] as string;
+        let parsed: string | number | undefined;
+        switch (columnKey) {
+            case "roster.number": {
+                const v = editValue.trim();
+                parsed = v === "" ? undefined : Number(v);
+                if (parsed !== undefined && Number.isNaN(parsed)) parsed = undefined;
+                break;
+            }
+            case "roster.gender":
+                parsed = editValue === GENDER_NONE || !editValue ? undefined : editValue;
+                break;
+            default:
+                parsed = editValue.trim() || undefined;
+        }
+
+        try {
+            if (roster) {
+                db.transact(db.tx.class_roster[roster.id].update({ [field]: parsed }));
+            } else {
+                const payload: Record<string, unknown> = { [field]: parsed };
+                db.transact(
+                    db.tx.class_roster[id()].create(payload).link({ class: classId }).link({ student: studentId })
+                );
+            }
+            setEditingCell(null);
+        } catch {
+            // leave editing state on error; user can cancel
+        }
+    };
+
+    const handleCancelEdit = () => setEditingCell(null);
+
+    const isEditing = (studentId: string, columnKey: string) =>
+        editingCell?.studentId === studentId && editingCell?.columnKey === columnKey;
+
+    const renderEditableCell = (studentId: string, columnKey: string, displayVal: string) => {
+        if (canManage && isEditing(studentId, columnKey)) {
+            // Special handling for gender - use Select dropdown
+            if (columnKey === "roster.gender") {
+                return (
+                    <div className="flex items-center gap-1 min-w-0">
+                        <GenderSelect
+                            value={editValue}
+                            onValueChange={setEditValue}
+                            className="h-8 flex-1 min-w-0"
+                        />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleSaveEdit} aria-label="Save">
+                            <Check className="size-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleCancelEdit} aria-label="Cancel">
+                            <X className="size-4" />
+                        </Button>
+                    </div>
+                );
+            }
+            // For other fields, use Input
+            return (
+                <div className="flex items-center gap-1 min-w-0">
+                    <Input
+                        type={getInputType(columnKey)}
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveEdit();
+                            else if (e.key === "Escape") handleCancelEdit();
+                        }}
+                        autoFocus
+                        className="h-8 flex-1 min-w-0"
+                    />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleSaveEdit} aria-label="Save">
+                        <Check className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleCancelEdit} aria-label="Cancel">
+                        <X className="size-4" />
+                    </Button>
+                </div>
+            );
+        }
+        return <span className={canManage ? "cursor-cell" : undefined}>{displayVal || "—"}</span>;
+    };
+
     return (
         <div className="rounded-md border">
             <Table>
@@ -416,7 +578,6 @@ function StudentsTable({
                         <TableHead>Gender (class)</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Guardians</TableHead>
-                        {canManage && <TableHead className="w-[60px]">Actions</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -445,55 +606,65 @@ function StudentsTable({
                                         <span className="font-medium">{displayName}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-muted-foreground">{student.firstName || "—"}</TableCell>
-                                <TableCell className="text-muted-foreground">{student.lastName || "—"}</TableCell>
-                                <TableCell className="text-muted-foreground whitespace-nowrap">{lastLogonStr}</TableCell>
-                                <TableCell className="text-muted-foreground tabular-nums">{roster?.number ?? "—"}</TableCell>
-                                <TableCell className="text-muted-foreground">{roster?.firstName || "—"}</TableCell>
-                                <TableCell className="text-muted-foreground">{roster?.lastName || "—"}</TableCell>
-                                <TableCell className="text-muted-foreground">{roster?.gender || "—"}</TableCell>
+                                <TableCell className="text-muted-foreground">
+                                    {student.firstName || "—"}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">
+                                    {student.lastName || "—"}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground whitespace-nowrap">
+                                    {lastLogonStr}
+                                </TableCell>
+                                <TableCell
+                                    className="text-muted-foreground tabular-nums"
+                                    onDoubleClick={canManage ? () => handleStartEdit(student.id, "roster.number", roster) : undefined}
+                                >
+                                    {renderEditableCell(student.id, "roster.number", roster?.number != null ? String(roster.number) : "")}
+                                </TableCell>
+                                <TableCell
+                                    className="text-muted-foreground"
+                                    onDoubleClick={canManage ? () => handleStartEdit(student.id, "roster.firstName", roster) : undefined}
+                                >
+                                    {renderEditableCell(student.id, "roster.firstName", roster?.firstName || "")}
+                                </TableCell>
+                                <TableCell
+                                    className="text-muted-foreground"
+                                    onDoubleClick={canManage ? () => handleStartEdit(student.id, "roster.lastName", roster) : undefined}
+                                >
+                                    {renderEditableCell(student.id, "roster.lastName", roster?.lastName || "")}
+                                </TableCell>
+                                <TableCell
+                                    className="text-muted-foreground"
+                                    onDoubleClick={canManage ? () => handleStartEdit(student.id, "roster.gender", roster) : undefined}
+                                >
+                                    {renderEditableCell(student.id, "roster.gender", getGenderLabel(roster?.gender))}
+                                </TableCell>
                                 <TableCell className="text-muted-foreground">
                                     {student.email || "—"}
                                 </TableCell>
-                                <TableCell className="text-muted-foreground max-w-[200px] align-top">
-                                    <span className="line-clamp-2 whitespace-normal" title={guardianNamesStr}>
+                                <TableCell
+                                    className="text-muted-foreground max-w-[200px] align-top"
+                                    onDoubleClick={canManage ? () => setManageGuardiansForStudent(student) : undefined}
+                                >
+                                    <span className={canManage ? "cursor-cell line-clamp-2 whitespace-normal" : "line-clamp-2 whitespace-normal"} title={guardianNamesStr}>
                                         {guardianNamesStr}
                                     </span>
                                 </TableCell>
-                                {canManage && (
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <MoreVertical className="size-4" />
-                                                    <span className="sr-only">More options</span>
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <EditStudentDialog
-                                                    student={student}
-                                                    classId={classId}
-                                                    existingRoster={roster}
-                                                    asDropdownItem
-                                                >
-                                                    <Pencil className="size-4" /> Edit student
-                                                </EditStudentDialog>
-                                                <KickUserDialog
-                                                    user={student}
-                                                    contextType="class"
-                                                    contextId={classId}
-                                                    canKick={canManage}
-                                                    asDropdownItem
-                                                />
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                )}
                             </TableRow>
                         );
                     })}
                 </TableBody>
             </Table>
+            {manageGuardiansForStudent && (
+                <ManageGuardiansDialog
+                    student={manageGuardiansForStudent}
+                    classGuardians={classGuardians}
+                    open={!!manageGuardiansForStudent}
+                    onOpenChange={(open) => {
+                        if (!open) setManageGuardiansForStudent(null);
+                    }}
+                />
+            )}
         </div>
     );
 }
@@ -656,6 +827,11 @@ function RouteComponent() {
                                         <h2 className="text-lg font-semibold mb-2">
                                             Active Students
                                         </h2>
+                                        {view === "table" && canManage && (
+                                            <p className="text-sm text-muted-foreground mb-2">
+                                                Double click a cell to edit it.
+                                            </p>
+                                        )}
                                     </div>
                                     {view === "grid" ? (
                                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -681,6 +857,7 @@ function RouteComponent() {
                                             classId={classId}
                                             rosterByStudentId={rosterByStudentId}
                                             guardianNamesByStudentId={guardianNamesByStudentId}
+                                            classGuardians={guardians}
                                         />
                                     )}
                                 </>
