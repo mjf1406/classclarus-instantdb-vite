@@ -1,10 +1,12 @@
 /** @format */
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Pencil } from "lucide-react";
+import { Undo2, Repeat } from "lucide-react";
 import { CardActionMenu } from "../../-components/card-action-menu";
-import { EditStudentDialog } from "./edit-student-dialog";
-import { KickUserDialog } from "@/components/members/kick-user-dialog";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { type ExistingRoster } from "./edit-student-dialog";
+import { UndoLastActionDialog, type LastAction } from "./undo-last-action-dialog";
+import { RepeatLastBehaviorDialog, type LastBehavior } from "./repeat-last-behavior-dialog";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -12,8 +14,10 @@ interface StudentPointsCardProps {
     student: InstaQLEntity<AppSchema, "$users">;
     classId: string;
     totalPoints: number;
-    existingRoster: { id: string; number?: number } | null;
+    existingRoster: ExistingRoster;
     canManage: boolean;
+    lastAction: LastAction | null;
+    lastBehavior: LastBehavior | null;
 }
 
 export function StudentPointsCard({
@@ -22,10 +26,14 @@ export function StudentPointsCard({
     totalPoints,
     existingRoster,
     canManage,
+    lastAction,
+    lastBehavior,
 }: StudentPointsCardProps) {
     const rosterNumber = existingRoster?.number;
-    const firstName = student.firstName?.trim() || "—";
-    const gender = student.gender?.trim() || "—";
+    const firstName =
+        (existingRoster?.firstName ?? student.firstName)?.trim() || "—";
+    const gender =
+        (existingRoster?.gender ?? student.gender)?.trim() || "—";
 
     return (
         <Card className="relative min-h-[80px] lg:min-h-[120px] py-1">
@@ -43,21 +51,31 @@ export function StudentPointsCard({
                         </span>
                         {canManage && (
                             <CardActionMenu triggerClassName="h-6 w-6 lg:h-8 lg:w-8">
-                                <EditStudentDialog
-                                    student={student}
-                                    classId={classId}
-                                    existingRoster={existingRoster}
-                                    asDropdownItem
-                                >
-                                    <Pencil className="size-4" /> Edit student
-                                </EditStudentDialog>
-                                <KickUserDialog
-                                    user={student}
-                                    contextType="class"
-                                    contextId={classId}
-                                    canKick={canManage}
-                                    asDropdownItem
-                                />
+                                {lastAction && (
+                                    <UndoLastActionDialog
+                                        lastAction={lastAction}
+                                        asDropdownItem
+                                    >
+                                        <Undo2 className="size-4" /> Undo last
+                                        action
+                                    </UndoLastActionDialog>
+                                )}
+                                {lastBehavior && (
+                                    <RepeatLastBehaviorDialog
+                                        lastBehavior={lastBehavior}
+                                        studentId={student.id}
+                                        classId={classId}
+                                        asDropdownItem
+                                    >
+                                        <Repeat className="size-4" /> Repeat
+                                        last behavior
+                                    </RepeatLastBehaviorDialog>
+                                )}
+                                {!lastAction && !lastBehavior && (
+                                    <DropdownMenuItem disabled>
+                                        No recent actions
+                                    </DropdownMenuItem>
+                                )}
                             </CardActionMenu>
                         )}
                     </div>

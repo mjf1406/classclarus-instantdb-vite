@@ -114,6 +114,9 @@ const _schema = i.schema({
         }),
         class_roster: i.entity({
             number: i.number().optional(),
+            firstName: i.string().optional(),
+            lastName: i.string().optional(),
+            gender: i.string().optional(),
         }),
     },
     links: {

@@ -31,19 +31,29 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
+const GENDER_NONE = "__none__";
+
 const GENDER_OPTIONS = [
-    { value: "", label: "—" },
+    { value: GENDER_NONE, label: "—" },
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
     { value: "other", label: "Other" },
     { value: "prefer_not_to_say", label: "Prefer not to say" },
 ];
 
+export type ExistingRoster = {
+    id: string;
+    number?: number;
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+} | null;
+
 interface EditStudentDialogProps {
     children?: React.ReactNode;
     student: InstaQLEntity<AppSchema, "$users">;
     classId: string;
-    existingRoster: { id: string; number?: number } | null;
+    existingRoster: ExistingRoster;
     asDropdownItem?: boolean;
 }
 
@@ -64,11 +74,19 @@ export function EditStudentDialog({
 
     useEffect(() => {
         if (open && student) {
-            setFirstName(student.firstName || "");
-            setLastName(student.lastName || "");
-            setGender(student.gender || "");
+            setFirstName(
+                (existingRoster?.firstName ?? student.firstName ?? "").trim() ||
+                    ""
+            );
+            setLastName(
+                (existingRoster?.lastName ?? student.lastName ?? "").trim() ||
+                    ""
+            );
+            const g = (existingRoster?.gender ?? student.gender)?.trim();
+            setGender(g ? g : GENDER_NONE);
             setNumberStr(
-                existingRoster?.number !== undefined && existingRoster?.number !== null
+                existingRoster?.number !== undefined &&
+                    existingRoster?.number !== null
                     ? String(existingRoster.number)
                     : ""
             );
@@ -96,32 +114,29 @@ export function EditStudentDialog({
 
         setIsSubmitting(true);
 
-        try {
-            const transactions: Parameters<typeof db.transact>[0][] = [
-                db.tx.$users[student.id].update({
-                    firstName: firstName.trim(),
-                    lastName: lastName.trim() || undefined,
-                    gender: gender || undefined,
-                }),
-            ];
+        const genderValue =
+            gender === GENDER_NONE || !gender ? undefined : gender;
+        const rosterPayload = {
+            firstName: firstName.trim(),
+            lastName: lastName.trim() || undefined,
+            gender: genderValue,
+            number: rosterNumber,
+        };
 
+        try {
             if (existingRoster) {
-                transactions.push(
-                    db.tx.class_roster[existingRoster.id].update({
-                        number: rosterNumber,
-                    })
+                db.transact(
+                    db.tx.class_roster[existingRoster.id].update(rosterPayload)
                 );
-            } else if (rosterNumber !== undefined) {
+            } else {
                 const rosterId = id();
-                transactions.push(
+                db.transact(
                     db.tx.class_roster[rosterId]
-                        .create({ number: rosterNumber })
+                        .create(rosterPayload)
                         .link({ class: classId })
                         .link({ student: student.id })
                 );
             }
-
-            db.transact(transactions as Parameters<typeof db.transact>[0]);
             setOpen(false);
         } catch (err) {
             setError(
@@ -183,7 +198,7 @@ export function EditStudentDialog({
                     <FieldLabel htmlFor="edit-student-gender">Gender</FieldLabel>
                     <FieldContent>
                         <Select
-                            value={gender || ""}
+                            value={gender || GENDER_NONE}
                             onValueChange={setGender}
                             disabled={isSubmitting}
                         >
@@ -193,7 +208,7 @@ export function EditStudentDialog({
                             <SelectContent>
                                 {GENDER_OPTIONS.map((opt) => (
                                     <SelectItem
-                                        key={opt.value || "empty"}
+                                        key={opt.value}
                                         value={opt.value}
                                     >
                                         {opt.label}

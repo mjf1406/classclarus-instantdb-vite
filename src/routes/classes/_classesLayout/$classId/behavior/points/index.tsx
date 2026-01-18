@@ -132,7 +132,67 @@ function RouteComponent() {
             (r) => r.student?.id === studentId
         );
         if (!roster) return null;
-        return { id: roster.id, number: roster.number };
+        return {
+            id: roster.id,
+            number: roster.number,
+            firstName: roster.firstName,
+            lastName: roster.lastName,
+            gender: roster.gender,
+        };
+    };
+
+    type LastAction = {
+        type: "behavior" | "redemption";
+        id: string;
+        description: string;
+    } | null;
+
+    type LastBehavior = {
+        behaviorId: string;
+        behavior: { name: string; points: number };
+    } | null;
+
+    const toMs = (v: string | number | Date | null | undefined) =>
+        v == null ? 0 : typeof v === "number" ? v : new Date(v).getTime();
+
+    const getLastActionForStudent = (studentId: string): LastAction => {
+        const logs = (classEntity?.behaviorLogs ?? [])
+            .filter((l) => l.student?.id === studentId)
+            .map((l) => ({
+                type: "behavior" as const,
+                id: l.id,
+                createdAt: l.createdAt,
+                description: `Behavior: ${l.behavior?.name ?? "Unknown"} (${(l.behavior?.points ?? 0) >= 0 ? "+" : ""}${l.behavior?.points ?? 0})`,
+            }));
+        const redemptions = (classEntity?.rewardRedemptions ?? [])
+            .filter((r) => r.student?.id === studentId)
+            .map((r) => ({
+                type: "redemption" as const,
+                id: r.id,
+                createdAt: r.createdAt,
+                description: `Reward: ${r.rewardItem?.name ?? "Unknown"} (-${r.rewardItem?.cost ?? 0})`,
+            }));
+        const combined = [...logs, ...redemptions].sort(
+            (a, b) => toMs(b.createdAt) - toMs(a.createdAt)
+        );
+        const first = combined[0];
+        if (!first) return null;
+        return { type: first.type, id: first.id, description: first.description };
+    };
+
+    const getLastBehaviorForStudent = (studentId: string): LastBehavior => {
+        const logs = (classEntity?.behaviorLogs ?? [])
+            .filter((l) => l.student?.id === studentId)
+            .sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+        const first = logs[0];
+        if (!first?.behavior?.id) return null;
+        return {
+            behaviorId: first.behavior.id,
+            behavior: {
+                name: first.behavior?.name ?? "Unknown",
+                points: first.behavior?.points ?? 0,
+            },
+        };
     };
 
     const isLoading = !classEntity && pointsQuery !== null;
@@ -241,6 +301,10 @@ function RouteComponent() {
                                 totalPoints={pointsMap.get(student.id) ?? 0}
                                 existingRoster={getRosterForStudent(student.id)}
                                 canManage={canManage}
+                                lastAction={getLastActionForStudent(student.id)}
+                                lastBehavior={getLastBehaviorForStudent(
+                                    student.id
+                                )}
                             />
                         ))}
                     </div>

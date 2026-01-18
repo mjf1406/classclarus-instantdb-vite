@@ -1,10 +1,10 @@
 /** @format */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { GuardianIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
-import { useParams } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,7 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { RoleManager } from "@/components/members/role-manager";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
+import { displayNameForStudent } from "@/lib/roster-utils";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/guardians/"
@@ -65,16 +66,20 @@ type UserQueryResult = {
     $users: UserWithChildren[];
 };
 
+type RosterOverride = { firstName?: string; lastName?: string };
+
 function GuardianCard({
     guardian,
     canManage,
     classStudents,
     classId,
+    rosterByStudentId,
 }: {
     guardian: InstaQLEntity<AppSchema, "$users">;
     canManage: boolean;
     classStudents: InstaQLEntity<AppSchema, "$users">[];
     classId: string;
+    rosterByStudentId: Map<string, RosterOverride>;
 }) {
     const [open, setOpen] = useState(false);
     const [selectedChildId, setSelectedChildId] = useState<string>("");
@@ -198,10 +203,11 @@ function GuardianCard({
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {children.map((child) => {
-                                    const childDisplayName =
-                                        `${child.firstName || ""} ${child.lastName || ""}`.trim() ||
-                                        child.email ||
-                                        "Unknown User";
+                                    const r = rosterByStudentId.get(child.id);
+                                    const childDisplayName = displayNameForStudent(
+                                        child,
+                                        r
+                                    );
                                     return (
                                         <Badge
                                             key={child.id}
@@ -284,10 +290,11 @@ function GuardianCard({
                                                         ) : (
                                                             availableStudents.map(
                                                                 (student) => {
-                                                                    const studentDisplayName =
-                                                                        `${student.firstName || ""} ${student.lastName || ""}`.trim() ||
-                                                                        student.email ||
-                                                                        "Unknown User";
+                                                                    const r = rosterByStudentId.get(student.id);
+                                                                    const studentDisplayName = displayNameForStudent(
+                                                                        student,
+                                                                        r
+                                                                    );
                                                                     return (
                                                                         <SelectItem
                                                                             key={
@@ -358,6 +365,30 @@ function RouteComponent() {
     const { class: classEntity, isLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
+    const rosterQuery =
+        classId && classId.trim() !== ""
+            ? {
+                  class_roster: {
+                      $: { where: { "class.id": classId } },
+                      student: {},
+                  },
+              }
+            : null;
+    const { data: rosterData } = db.useQuery(rosterQuery);
+
+    const rosterByStudentId = useMemo(() => {
+        const m = new Map<string, RosterOverride>();
+        const list = (rosterData as { class_roster?: Array<{ firstName?: string; lastName?: string; student?: { id: string } }> } | undefined)?.class_roster ?? [];
+        for (const r of list) {
+            if (r.student?.id)
+                m.set(r.student.id, {
+                    firstName: r.firstName,
+                    lastName: r.lastName,
+                });
+        }
+        return m;
+    }, [(rosterData as { class_roster?: unknown[] } | undefined)?.class_roster]);
+
     const guardians = classEntity?.classGuardians || [];
     const students = classEntity?.classStudents || [];
     const canManage =
@@ -408,6 +439,7 @@ function RouteComponent() {
                                 canManage={canManage}
                                 classStudents={students}
                                 classId={classId}
+                                rosterByStudentId={rosterByStudentId}
                             />
                         ))}
                     </div>

@@ -1,16 +1,16 @@
 /** @format */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { StudentIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { usePendingMembers } from "@/hooks/use-pending-members";
-import { useParams } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X, MoreVertical } from "lucide-react";
+import { Users, Plus, X, MoreVertical, Pencil } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState } from "react";
@@ -48,6 +48,8 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { RoleManager } from "@/components/members/role-manager";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
+import { EditStudentDialog } from "@/routes/classes/_classesLayout/$classId/behavior/points/-components/edit-student-dialog";
+import { displayNameForStudent } from "@/lib/roster-utils";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/students/"
@@ -68,16 +70,26 @@ type UserQueryResult = {
 };
 
 
+type RosterForDisplay = {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    number?: number;
+} | null;
+
 function StudentCard({
     student,
     canManage,
     classGuardians,
     classId,
+    roster,
 }: {
     student: InstaQLEntity<AppSchema, "$users">;
     canManage: boolean;
     classGuardians: InstaQLEntity<AppSchema, "$users">[];
     classId: string;
+    roster: RosterForDisplay;
 }) {
     const [open, setOpen] = useState(false);
     const [selectedGuardianId, setSelectedGuardianId] = useState<string>("");
@@ -132,10 +144,7 @@ function StudentCard({
         }
     };
 
-    const displayName =
-        `${student.firstName || ""} ${student.lastName || ""}`.trim() ||
-        student.email ||
-        "Unknown User";
+    const displayName = displayNameForStudent(student, roster);
     const initials = displayName
         .split(" ")
         .map((n) => n[0])
@@ -184,6 +193,15 @@ function StudentCard({
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    <EditStudentDialog
+                                        student={student}
+                                        classId={classId}
+                                        existingRoster={roster}
+                                        asDropdownItem
+                                    >
+                                        <Pencil className="size-4" /> Edit
+                                        student
+                                    </EditStudentDialog>
                                     <KickUserDialog
                                         user={student}
                                         contextType="class"
@@ -360,8 +378,30 @@ function RouteComponent() {
     }
     
     const { class: classEntity, isLoading } = useClassById(classId);
-    // console.log("🚀 ~ RouteComponent ~ classEntity:", classEntity)
     const roleInfo = useClassRole(classEntity);
+
+    const rosterQuery =
+        classId && classId.trim() !== ""
+            ? {
+                  class_roster: {
+                      $: { where: { "class.id": classId } },
+                      student: {},
+                  },
+              }
+            : null;
+    const { data: rosterData } = db.useQuery(rosterQuery);
+
+    const rosterByStudentId = useMemo(() => {
+        const m = new Map<
+            string,
+            { id: string; firstName?: string; lastName?: string; gender?: string; number?: number }
+        >();
+        const list = (rosterData as { class_roster?: Array<{ id: string; firstName?: string; lastName?: string; gender?: string; number?: number; student?: { id: string } }> } | undefined)?.class_roster ?? [];
+        for (const r of list) {
+            if (r.student?.id) m.set(r.student.id, r);
+        }
+        return m;
+    }, [(rosterData as { class_roster?: unknown[] } | undefined)?.class_roster]);
 
     const students = classEntity?.classStudents || [];
     const guardians = classEntity?.classGuardians || [];
@@ -453,6 +493,11 @@ function RouteComponent() {
                                                 canManage={canManage}
                                                 classGuardians={guardians}
                                                 classId={classId}
+                                                roster={
+                                                    rosterByStudentId.get(
+                                                        student.id
+                                                    ) ?? null
+                                                }
                                             />
                                         ))}
                                     </div>
