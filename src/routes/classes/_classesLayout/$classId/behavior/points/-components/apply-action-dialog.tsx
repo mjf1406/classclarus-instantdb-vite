@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { NumberInput } from "@/components/ui/number-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CreateBehaviorDialog } from "../../behaviors/-components/create-behavior-dialog";
 import { CreateRewardItemDialog } from "../../reward-items/-components/create-reward-item-dialog";
 import { BehaviorCard } from "../../behaviors/-components/behavior-card";
@@ -49,6 +50,148 @@ type FolderType = InstaQLEntity<AppSchema, "folders", { class?: {} }>;
 type BehaviorsQueryResult = { behaviors: Behavior[] };
 type RewardItemsQueryResult = { reward_items: RewardItem[] };
 type FoldersQueryResult = { folders: FolderType[] };
+
+interface ActionTabControlsProps {
+    quantityId: string;
+    applyModeId: string;
+    quantity: string;
+    setQuantity: React.Dispatch<React.SetStateAction<string>>;
+    applyMode: boolean;
+    setApplyMode: React.Dispatch<React.SetStateAction<boolean>>;
+    isSubmitting: boolean;
+    createAction?: React.ReactNode;
+}
+
+function ActionTabControls({
+    quantityId,
+    applyModeId,
+    quantity,
+    setQuantity,
+    applyMode,
+    setApplyMode,
+    isSubmitting,
+    createAction,
+}: ActionTabControlsProps) {
+    return (
+        <div className="flex items-end gap-2 md:gap-4">
+            {createAction}
+            <div className="flex-1 space-y-1 md:space-y-2">
+                <Label htmlFor={quantityId} className="text-xs sr-only md:text-sm">
+                    Quantity
+                </Label>
+                <NumberInput
+                    id={quantityId}
+                    min={1}
+                    step={1}
+                    value={quantity}
+                    onChange={setQuantity}
+                    disabled={isSubmitting}
+                    className="h-8 md:h-10 text-sm md:text-base"
+                />
+            </div>
+            <div className="flex items-center gap-1 md:gap-2 pb-1 md:pb-2">
+                <input
+                    type="checkbox"
+                    id={applyModeId}
+                    checked={applyMode}
+                    onChange={(e) => setApplyMode(e.target.checked)}
+                    className="h-3 w-3 md:h-4 md:w-4 rounded border-input"
+                />
+                <Label htmlFor={applyModeId} className="cursor-pointer text-xs md:text-sm">
+                    Multi-select
+                </Label>
+            </div>
+        </div>
+    );
+}
+
+interface FolderCardButtonProps {
+    folder: FolderType;
+    count: number;
+    onClick: () => void;
+}
+
+function FolderCardButton({ folder, count, onClick }: FolderCardButtonProps) {
+    return (
+        <Card
+            onClick={onClick}
+            className="cursor-pointer hover:ring-2 h-[90px] md:h-[150px] hover:ring-primary transition-all"
+        >
+            <CardContent className="flex flex-col items-center justify-center pt-0.5 pb-0.5 md:pt-3 md:pb-3 text-center min-h-[80px] md:min-h-[120px]">
+                {folder.icon ? (
+                    <FontAwesomeIconFromId
+                        id={folder.icon}
+                        className="size-5 md:size-8 text-primary mb-0 md:mb-2"
+                        fallback={<Folder className="size-5 md:size-8 text-primary mb-0 md:mb-2" />}
+                    />
+                ) : (
+                    <Folder className="size-5 md:size-8 text-primary mb-0 md:mb-2" />
+                )}
+                <span className="font-medium text-[10px] md:text-sm mb-0 md:mb-1">{folder.name}</span>
+                <Badge variant="secondary" className="text-[10px] md:text-sm px-0.5 md:px-2 py-0 md:py-0.5">
+                    {count}
+                </Badge>
+            </CardContent>
+        </Card>
+    );
+}
+
+interface ActionItemsGridProps<TItem extends { id: string }> {
+    folders: FolderType[];
+    itemsByFolder: Map<string, TItem[]>;
+    itemsUncategorized: TItem[];
+    onFolderClick: (folder: FolderType) => void;
+    selectedIds: Set<string>;
+    onItemClick: (itemId: string) => void;
+    renderItemCard: (item: TItem) => React.ReactNode;
+    itemWrapperClassName?: string;
+}
+
+function ActionItemsGrid<TItem extends { id: string }>({
+    folders,
+    itemsByFolder,
+    itemsUncategorized,
+    onFolderClick,
+    selectedIds,
+    onItemClick,
+    renderItemCard,
+    itemWrapperClassName,
+}: ActionItemsGridProps<TItem>) {
+    return (
+        <div className="grid grid-cols-4 gap-1.5 md:gap-4 pb-2">
+            {/* Folders */}
+            {folders
+                .filter((folder) => itemsByFolder.has(folder.id))
+                .map((folder) => {
+                    const folderItems = itemsByFolder.get(folder.id) ?? [];
+                    return (
+                        <FolderCardButton
+                            key={folder.id}
+                            folder={folder}
+                            count={folderItems.length}
+                            onClick={() => onFolderClick(folder)}
+                        />
+                    );
+                })}
+            {/* Uncategorized items */}
+            {itemsUncategorized.map((item) => {
+                const isSelected = selectedIds.has(item.id);
+                const wrapperClassName = [
+                    "cursor-pointer transition-all",
+                    itemWrapperClassName ?? "",
+                    isSelected ? "ring-2 ring-primary rounded-lg" : "",
+                ]
+                    .filter(Boolean)
+                    .join(" ");
+                return (
+                    <div key={item.id} onClick={() => onItemClick(item.id)} className={wrapperClassName}>
+                        {renderItemCard(item)}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
 
 export function ApplyActionDialog({
     student,
@@ -364,33 +507,33 @@ export function ApplyActionDialog({
                 <CredenzaHeader>
                     <div className="relative w-full">
                         {rosterNumber !== undefined && rosterNumber !== null && (
-                            <span className="absolute top-0 left-0 text-sm text-muted-foreground">
+                            <span className="absolute top-0 left-0 text-xs md:text-sm text-muted-foreground">
                                 #{rosterNumber}
                             </span>
                         )}
                         <div className="flex-1">
-                            <CredenzaTitle className="text-center text-2xl">
+                            <CredenzaTitle className="text-center text-lg md:text-2xl">
                                 {fullName}
                             </CredenzaTitle>
-                            <p className="text-center text-sm text-muted-foreground mb-4">
+                            <p className="text-center text-xs md:text-sm text-muted-foreground mb-2 md:mb-4">
                                 {gender}
                             </p>
-                            <div className="flex items-center justify-center gap-2 mb-4">
-                                <Trophy className="size-8 text-yellow-500" />
-                                <span className="text-2xl font-semibold">{totalPoints}</span>
+                            <div className="flex items-center justify-center gap-1 md:gap-2 mb-2 md:mb-4">
+                                <Trophy className="size-5 md:size-8 text-yellow-500" />
+                                <span className="text-xl md:text-2xl font-semibold">{totalPoints}</span>
                             </div>
-                            <div className="flex items-center justify-center gap-6 mb-6">
-                                <div className="flex items-center gap-2">
-                                    <Award className="size-6 text-muted-foreground" />
-                                    <span className="text-lg">{awardedPoints}</span>
+                            <div className="flex items-center justify-center gap-3 md:gap-6 mb-3 md:mb-6">
+                                <div className="flex items-center gap-1 md:gap-2">
+                                    <Award className="size-4 md:size-6 text-muted-foreground" />
+                                    <span className="text-sm md:text-lg">{awardedPoints}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Flag className="size-6 text-muted-foreground" />
-                                    <span className="text-lg">-{removedPoints}</span>
+                                <div className="flex items-center gap-1 md:gap-2">
+                                    <Flag className="size-4 md:size-6 text-muted-foreground" />
+                                    <span className="text-sm md:text-lg">-{removedPoints}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Gift className="size-6 text-muted-foreground" />
-                                    <span className="text-lg">{redeemedPoints}</span>
+                                <div className="flex items-center gap-1 md:gap-2">
+                                    <Gift className="size-4 md:size-6 text-muted-foreground" />
+                                    <span className="text-sm md:text-lg">{redeemedPoints}</span>
                                 </div>
                             </div>
                         </div>
@@ -398,270 +541,140 @@ export function ApplyActionDialog({
                 </CredenzaHeader>
                 <CredenzaBody>
                     <Tabs value={activeTab} onValueChange={handleTabChange}>
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="award">Award Points</TabsTrigger>
-                            <TabsTrigger value="remove">Remove Points</TabsTrigger>
-                            <TabsTrigger value="redeem">Redeem Points</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-3 h-9 md:h-10">
+                            <TabsTrigger value="award" className="text-xs md:text-sm">Award Points</TabsTrigger>
+                            <TabsTrigger value="remove" className="text-xs md:text-sm">Remove Points</TabsTrigger>
+                            <TabsTrigger value="redeem" className="text-xs md:text-sm">Redeem Points</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="award" className="space-y-4 mt-4">
-                            {canManage && (
-                                <CreateBehaviorDialog classId={classId}>
-                                    <Button variant="outline" size="sm">
-                                        <Plus className="size-4 mr-2" />
-                                        Create Behavior
-                                    </Button>
-                                </CreateBehaviorDialog>
-                            )}
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex-1 space-y-2">
-                                        <Label htmlFor="quantity-award">Quantity</Label>
-                                        <NumberInput
-                                            id="quantity-award"
-                                            min={1}
-                                            step={1}
-                                            value={quantity}
-                                            onChange={setQuantity}
-                                            disabled={isSubmitting}
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-2 pt-6">
-                                        <input
-                                            type="checkbox"
-                                            id="apply-mode-award"
-                                            checked={applyMode}
-                                            onChange={(e) => setApplyMode(e.target.checked)}
-                                            className="h-4 w-4 rounded border-input"
-                                        />
-                                        <Label htmlFor="apply-mode-award" className="cursor-pointer">
-                                            Multi-select
-                                        </Label>
-                                    </div>
+                        <TabsContent value="award" className="space-y-2 md:space-y-4 mt-2 md:mt-4">
+                            <ActionTabControls
+                                quantityId="quantity-award"
+                                applyModeId="apply-mode-award"
+                                quantity={quantity}
+                                setQuantity={setQuantity}
+                                applyMode={applyMode}
+                                setApplyMode={setApplyMode}
+                                isSubmitting={isSubmitting}
+                                createAction={
+                                    canManage ? (
+                                        <CreateBehaviorDialog classId={classId}>
+                                            <Button variant="outline" size="sm" className="text-xs md:text-sm h-7 md:h-9">
+                                                <Plus className="size-3 md:size-4 mr-1 md:mr-2" />
+                                                <span>Create</span>
+                                            </Button>
+                                        </CreateBehaviorDialog>
+                                    ) : null
+                                }
+                            />
+                            <ScrollArea className="h-[300px] md:h-[350px] max-h-[calc(100vh-400px)]">
+                                <div className="pr-4 pb-8 md:pb-6">
+                                    <ActionItemsGrid
+                                        folders={folders}
+                                        itemsByFolder={positiveBehaviorsByFolder}
+                                        itemsUncategorized={positiveBehaviorsUncategorized}
+                                        onFolderClick={(folder) => handleFolderClick(folder, "behavior")}
+                                        selectedIds={selectedBehaviorIds}
+                                        onItemClick={handleBehaviorClick}
+                                        renderItemCard={(behavior) => (
+                                            <BehaviorCard
+                                                behavior={behavior}
+                                                classId={classId}
+                                                canManage={false}
+                                                preferMobile
+                                            />
+                                        )}
+                                    />
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-4 gap-4 min-h-[350px]">
-                                {/* Folders */}
-                                {folders
-                                    .filter((folder) => positiveBehaviorsByFolder.has(folder.id))
-                                    .map((folder) => {
-                                        const folderBehaviors = positiveBehaviorsByFolder.get(folder.id) ?? [];
-                                        return (
-                                            <Card
-                                                key={folder.id}
-                                                onClick={() => handleFolderClick(folder, "behavior")}
-                                                className="cursor-pointer hover:ring-2 h-[150px] hover:ring-primary transition-all"
-                                            >
-                                                <CardContent className="flex flex-col items-center justify-center pt-3 pb-3 text-center min-h-[120px]">
-                                                    {folder.icon ? (
-                                                        <FontAwesomeIconFromId
-                                                            id={folder.icon}
-                                                            className="size-8 text-primary mb-2"
-                                                            fallback={<Folder className="size-8 text-primary mb-2" />}
-                                                        />
-                                                    ) : (
-                                                        <Folder className="size-8 text-primary mb-2" />
-                                                    )}
-                                                    <span className="font-medium text-sm mb-1">{folder.name}</span>
-                                                    <Badge variant="secondary">{folderBehaviors.length}</Badge>
-                                                </CardContent>
-                                            </Card>
-                                        );
-                                    })}
-                                {/* Uncategorized items */}
-                                {positiveBehaviorsUncategorized.map((behavior) => (
-                                    <div
-                                        key={behavior.id}
-                                        onClick={() => handleBehaviorClick(behavior.id)}
-                                        className={`cursor-pointer transition-all ${
-                                            selectedBehaviorIds.has(behavior.id)
-                                                ? "ring-2 ring-primary rounded-lg"
-                                                : ""
-                                        }`}
-                                    >
-                                        <BehaviorCard
-                                            behavior={behavior}
-                                            classId={classId}
-                                            canManage={false}
-                                            preferMobile
-                                        />
-                                    </div>
-                                ))}
-                            </div>
+                            </ScrollArea>
                         </TabsContent>
-                        <TabsContent value="remove" className="space-y-4 mt-4">
-                            {canManage && (
-                                <CreateBehaviorDialog classId={classId}>
-                                    <Button variant="outline" size="sm">
-                                        <Plus className="size-4 mr-2" />
-                                        Create Behavior
-                                    </Button>
-                                </CreateBehaviorDialog>
-                            )}
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex-1 space-y-2">
-                                        <Label htmlFor="quantity-remove">Quantity</Label>
-                                        <NumberInput
-                                            id="quantity-remove"
-                                            min={1}
-                                            step={1}
-                                            value={quantity}
-                                            onChange={setQuantity}
-                                            disabled={isSubmitting}
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-2 pt-6">
-                                        <input
-                                            type="checkbox"
-                                            id="apply-mode-remove"
-                                            checked={applyMode}
-                                            onChange={(e) => setApplyMode(e.target.checked)}
-                                            className="h-4 w-4 rounded border-input"
-                                        />
-                                        <Label htmlFor="apply-mode-remove" className="cursor-pointer">
-                                            Multi-select
-                                        </Label>
-                                    </div>
+                        <TabsContent value="remove" className="space-y-2 md:space-y-4 mt-2 md:mt-4">
+                            <ActionTabControls
+                                quantityId="quantity-remove"
+                                applyModeId="apply-mode-remove"
+                                quantity={quantity}
+                                setQuantity={setQuantity}
+                                applyMode={applyMode}
+                                setApplyMode={setApplyMode}
+                                isSubmitting={isSubmitting}
+                                createAction={
+                                    canManage ? (
+                                        <CreateBehaviorDialog classId={classId}>
+                                            <Button variant="outline" size="sm" className="text-xs md:text-sm h-7 md:h-9">
+                                                <Plus className="size-3 md:size-4 mr-1 md:mr-2" />
+                                                <span>Create</span>
+                                            </Button>
+                                        </CreateBehaviorDialog>
+                                    ) : null
+                                }
+                            />
+                            <ScrollArea className="h-[300px] md:h-[350px] max-h-[calc(100vh-400px)]">
+                                <div className="pr-4 pb-8 md:pb-6">
+                                    <ActionItemsGrid
+                                        folders={folders}
+                                        itemsByFolder={negativeBehaviorsByFolder}
+                                        itemsUncategorized={negativeBehaviorsUncategorized}
+                                        onFolderClick={(folder) => handleFolderClick(folder, "behavior")}
+                                        selectedIds={selectedBehaviorIds}
+                                        onItemClick={handleBehaviorClick}
+                                        itemWrapperClassName="h-[100px] md:h-[150px]"
+                                        renderItemCard={(behavior) => (
+                                            <BehaviorCard
+                                                behavior={behavior}
+                                                classId={classId}
+                                                canManage={false}
+                                                preferMobile
+                                            />
+                                        )}
+                                    />
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-4 gap-4 min-h-[350px]">
-                                {/* Folders */}
-                                {folders
-                                    .filter((folder) => negativeBehaviorsByFolder.has(folder.id))
-                                    .map((folder) => {
-                                        const folderBehaviors = negativeBehaviorsByFolder.get(folder.id) ?? [];
-                                        return (
-                                            <Card
-                                                key={folder.id}
-                                                onClick={() => handleFolderClick(folder, "behavior")}
-                                                className="cursor-pointer hover:ring-2 hover:ring-primary transition-all h-[150px]"
-                                            >
-                                                <CardContent className="flex flex-col items-center justify-center pt-3 pb-3 text-center min-h-[120px]">
-                                                    {folder.icon ? (
-                                                        <FontAwesomeIconFromId
-                                                            id={folder.icon}
-                                                            className="size-8 text-primary mb-2"
-                                                            fallback={<Folder className="size-8 text-primary mb-2" />}
-                                                        />
-                                                    ) : (
-                                                        <Folder className="size-8 text-primary mb-2" />
-                                                    )}
-                                                    <span className="font-medium text-sm mb-1">{folder.name}</span>
-                                                    <Badge variant="secondary">{folderBehaviors.length}</Badge>
-                                                </CardContent>
-                                            </Card>
-                                        );
-                                    })}
-                                {/* Uncategorized items */}
-                                {negativeBehaviorsUncategorized.map((behavior) => (
-                                    <div
-                                        key={behavior.id}
-                                        onClick={() => handleBehaviorClick(behavior.id)}
-                                        className={`cursor-pointer h-[150px] transition-all ${
-                                            selectedBehaviorIds.has(behavior.id)
-                                                ? "ring-2 ring-primary rounded-lg"
-                                                : ""
-                                        }`}
-                                    >
-                                        <BehaviorCard
-                                            behavior={behavior}
-                                            classId={classId}
-                                            canManage={false}
-                                            preferMobile
-                                        />
-                                    </div>
-                                ))}
-                            </div>
+                            </ScrollArea>
                         </TabsContent>
-                        <TabsContent value="redeem" className="space-y-4 mt-4">
-                            {canManage && (
-                                <CreateRewardItemDialog classId={classId}>
-                                    <Button variant="outline" size="sm">
-                                        <Plus className="size-4 mr-2" />
-                                        Create Reward Item
-                                    </Button>
-                                </CreateRewardItemDialog>
-                            )}
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex-1 space-y-2">
-                                        <Label htmlFor="quantity-redeem">Quantity</Label>
-                                        <NumberInput
-                                            id="quantity-redeem"
-                                            min={1}
-                                            step={1}
-                                            value={quantity}
-                                            onChange={setQuantity}
-                                            disabled={isSubmitting}
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-2 pt-6">
-                                        <input
-                                            type="checkbox"
-                                            id="apply-mode-redeem"
-                                            checked={applyMode}
-                                            onChange={(e) => setApplyMode(e.target.checked)}
-                                            className="h-4 w-4 rounded border-input"
-                                        />
-                                        <Label htmlFor="apply-mode-redeem" className="cursor-pointer">
-                                            Multi-select
-                                        </Label>
-                                    </div>
+                        <TabsContent value="redeem" className="space-y-2 md:space-y-4 mt-2 md:mt-4">
+                            <ActionTabControls
+                                quantityId="quantity-redeem"
+                                applyModeId="apply-mode-redeem"
+                                quantity={quantity}
+                                setQuantity={setQuantity}
+                                applyMode={applyMode}
+                                setApplyMode={setApplyMode}
+                                isSubmitting={isSubmitting}
+                                createAction={
+                                    canManage ? (
+                                        <CreateRewardItemDialog classId={classId}>
+                                            <Button variant="outline" size="sm" className="text-xs md:text-sm h-7 md:h-9">
+                                                <Plus className="size-3 md:size-4 mr-1 md:mr-2" />
+                                                <span>Create</span>
+                                            </Button>
+                                        </CreateRewardItemDialog>
+                                    ) : null
+                                }
+                            />
+                            <ScrollArea className="h-[300px] md:h-[350px] max-h-[calc(100vh-400px)]">
+                                <div className="pr-4 pb-8 md:pb-6">
+                                    <ActionItemsGrid
+                                        folders={folders}
+                                        itemsByFolder={rewardItemsByFolder}
+                                        itemsUncategorized={rewardItemsUncategorized}
+                                        onFolderClick={(folder) => handleFolderClick(folder, "reward")}
+                                        selectedIds={selectedRewardItemIds}
+                                        onItemClick={handleRewardItemClick}
+                                        itemWrapperClassName="h-[100px] md:h-[150px]"
+                                        renderItemCard={(rewardItem) => (
+                                            <RewardItemCard
+                                                rewardItem={rewardItem}
+                                                classId={classId}
+                                                canManage={false}
+                                                preferMobile
+                                            />
+                                        )}
+                                    />
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-4 gap-4 min-h-[350px]">
-                                {/* Folders */}
-                                {folders
-                                    .filter((folder) => rewardItemsByFolder.has(folder.id))
-                                    .map((folder) => {
-                                        const folderRewardItems = rewardItemsByFolder.get(folder.id) ?? [];
-                                        return (
-                                            <Card
-                                                key={folder.id}
-                                                onClick={() => handleFolderClick(folder, "reward")}
-                                                className="cursor-pointer hover:ring-2 h-[150px] hover:ring-primary transition-all"
-                                            >
-                                                <CardContent className="flex flex-col items-center justify-center pt-3 pb-3 text-center min-h-[120px]">
-                                                    {folder.icon ? (
-                                                        <FontAwesomeIconFromId
-                                                            id={folder.icon}
-                                                            className="size-8 text-primary mb-2"
-                                                            fallback={<Folder className="size-8 text-primary mb-2" />}
-                                                        />
-                                                    ) : (
-                                                        <Folder className="size-8 text-primary mb-2" />
-                                                    )}
-                                                    <span className="font-medium text-sm mb-1">{folder.name}</span>
-                                                    <Badge variant="secondary">{folderRewardItems.length}</Badge>
-                                                </CardContent>
-                                            </Card>
-                                        );
-                                    })}
-                                {/* Uncategorized items */}
-                                {rewardItemsUncategorized.map((rewardItem) => (
-                                    <div
-                                        key={rewardItem.id}
-                                        onClick={() => handleRewardItemClick(rewardItem.id)}
-                                        className={`cursor-pointer h-[150px] transition-all ${
-                                            selectedRewardItemIds.has(rewardItem.id)
-                                                ? "ring-2 ring-primary rounded-lg"
-                                                : ""
-                                        }`}
-                                    >
-                                        <RewardItemCard
-                                            rewardItem={rewardItem}
-                                            classId={classId}
-                                            canManage={false}
-                                            preferMobile
-                                        />
-                                    </div>
-                                ))}
-                            </div>
+                            </ScrollArea>
                         </TabsContent>
                     </Tabs>
                     {canApply && (
-                        <div className="mt-6 flex justify-end">
-                            <Button onClick={handleApply} disabled={isSubmitting}>
+                        <div className="mt-3 md:mt-6 flex justify-end">
+                            <Button onClick={handleApply} disabled={isSubmitting} className="text-xs md:text-sm h-8 md:h-10 px-3 md:px-4">
                                 {isSubmitting
                                     ? "Applying..."
                                     : (() => {

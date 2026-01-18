@@ -10,6 +10,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { BehaviorCard } from "../../behaviors/-components/behavior-card";
 import { RewardItemCard } from "../../reward-items/-components/reward-item-card";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
@@ -128,8 +129,9 @@ export function FolderItemsDialog({
                         {folder.name}
                     </DialogTitle>
                 </DialogHeader>
-                <div className="grid grid-cols-4 gap-4 min-h-[400px]">
-                    {sortedItems.map((item) => {
+                <ScrollArea className="h-[calc(90vh-200px)] max-h-[500px]">
+                    <div className="grid grid-cols-4 gap-4 min-h-[400px]">
+                        {sortedItems.map((item) => {
                         const itemId = item.id;
                         const isSelected =
                             itemType === "behavior"
@@ -162,7 +164,8 @@ export function FolderItemsDialog({
                             </div>
                         );
                     })}
-                </div>
+                    </div>
+                </ScrollArea>
                 {canApply && (
                     <div className="mt-6 flex justify-end">
                         <Button onClick={handleApply} disabled={isSubmitting}>

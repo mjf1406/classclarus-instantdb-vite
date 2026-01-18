@@ -25,24 +25,24 @@ export function BehaviorCardMobile({
     const pointsDisplay = isPositive ? `+${points}` : String(points);
 
     const iconBlock = (
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+        <div className="flex size-10 md:size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
             {behavior.icon ? (
                 <FontAwesomeIconFromId
                     id={behavior.icon}
-                    className="size-7 text-primary"
-                    fallback={<Award className="size-7 text-primary" />}
+                    className="size-5 md:size-7 text-primary"
+                    fallback={<Award className="size-5 md:size-7 text-primary" />}
                 />
             ) : (
-                <Award className="size-7 text-primary" />
+                <Award className="size-5 md:size-7 text-primary" />
             )}
         </div>
     );
 
     return (
-        <Card className="relative h-[150px]">
+        <Card className="relative h-[100px] md:h-[150px]">
             <CardContent className="p-0 flex flex-col items-center text-center">
                 {canManage && (
-                    <div className="absolute top-2 right-2 z-10">
+                    <div className="absolute top-1 right-1 md:top-2 md:right-2 z-10">
                         <CardActionMenu>
                             <EditBehaviorDialog
                                 behavior={behavior}
@@ -61,9 +61,9 @@ export function BehaviorCardMobile({
                     </div>
                 )}
                 {iconBlock}
-                <span className="mt-2 line-clamp-2 text-sm">{behavior.name}</span>
+                <span className="mt-0.5 md:mt-2 line-clamp-2 text-[10px] md:text-sm">{behavior.name}</span>
                 <span
-                    className={`mt-1 text-xs ${
+                    className={`mt-0 md:mt-1 text-[10px] md:text-xs ${
                         isPositive
                             ? "text-emerald-600 dark:text-emerald-400"
                             : "text-destructive"
