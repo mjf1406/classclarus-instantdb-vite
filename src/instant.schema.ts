@@ -70,6 +70,18 @@ const _schema = i.schema({
             created: i.date(),
             updated: i.date(),
         }),
+        classDashboardSettings: i.entity({
+            groupsTeamsDisplay: i.string().indexed(),
+            created: i.date(),
+            updated: i.date(),
+        }),
+        studentDashboardPreferences: i.entity({
+            icon: i.string().optional(),
+            color: i.string().optional(),
+            background: i.string().optional(),
+            created: i.date(),
+            updated: i.date(),
+        }),
     },
     links: {
         userClasses: {
@@ -306,6 +318,45 @@ const _schema = i.schema({
                 has: "many",
                 label: "studentTeams",
             }, // Each user can be on many teams
+        },
+        classDashboardSettings: {
+            forward: {
+                on: "classes",
+                has: "one",
+                label: "dashboardSettings",
+                onDelete: "cascade",
+            }, // Each class has one dashboard settings record
+            reverse: {
+                on: "classDashboardSettings",
+                has: "one",
+                label: "class",
+            }, // Each dashboard settings belongs to one class
+        },
+        userDashboardPreferences: {
+            forward: {
+                on: "studentDashboardPreferences",
+                has: "one",
+                label: "user",
+                onDelete: "cascade",
+            }, // Each preference belongs to one user
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "dashboardPreferences",
+            }, // Each user can have many dashboard preferences (one per class)
+        },
+        classDashboardPreferences: {
+            forward: {
+                on: "studentDashboardPreferences",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            }, // Each preference belongs to one class
+            reverse: {
+                on: "classes",
+                has: "many",
+                label: "studentDashboardPreferences",
+            }, // Each class can have many student preferences (one per student)
         },
     },
     rooms: {},

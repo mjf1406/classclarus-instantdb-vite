@@ -132,6 +132,10 @@ async function createTestUsers() {
             adminDb.tx.$users["1261489c-3620-442e-b037-bf7617b5d538"].link({
                 children: "6b09717e-c9be-49e2-b61e-4880a5fe9f7c",
             }),
+            // Link existing user as assistant teacher
+            adminDb.tx.classes[classId].link({
+                classAssistantTeachers: "45537f07-fb7a-479d-acd4-42defd38bf03",
+            }),
         ];
 
         // Execute all transactions
@@ -156,6 +160,9 @@ async function createTestUsers() {
         );
         console.log(
             `   - Linked parent (1261489c-3620-442e-b037-bf7617b5d538) to student (6b09717e-c9be-49e2-b61e-4880a5fe9f7c)`
+        );
+        console.log(
+            `   - Added user (45537f07-fb7a-479d-acd4-42defd38bf03) to class as assistant teacher`
         );
     } catch (error) {
         console.error("❌ Error creating test users:", error);

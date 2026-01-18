@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -37,11 +38,12 @@ interface GroupCardProps {
     >;
     classId: string;
     canManage: boolean;
+    highlightedStudentIds?: string[];
 }
 
-export function GroupCard({ group, classId, canManage }: GroupCardProps) {
-    const [isStudentsOpen, setIsStudentsOpen] = useState(false);
-    const [isTeamsOpen, setIsTeamsOpen] = useState(false);
+export function GroupCard({ group, classId, canManage, highlightedStudentIds = [] }: GroupCardProps) {
+    const [isStudentsOpen, setIsStudentsOpen] = useState(true);
+    const [isTeamsOpen, setIsTeamsOpen] = useState(true);
     const students = group.groupStudents || [];
     const teams = group.groupTeams || [];
 
@@ -125,28 +127,37 @@ export function GroupCard({ group, classId, canManage }: GroupCardProps) {
                             </CollapsibleTrigger>
                             <CollapsibleContent>
                                 <div className="flex flex-wrap gap-2 pt-2">
-                                    {students.map((student) => (
-                                        <Badge
-                                            key={student.id}
-                                            variant="secondary"
-                                            className="flex items-center gap-1.5 pr-1.5"
-                                        >
-                                            <Avatar className="size-4">
-                                                <AvatarImage
-                                                    src={
-                                                        student.avatarURL ||
-                                                        student.imageURL
-                                                    }
-                                                />
-                                                <AvatarFallback className="text-xs">
-                                                    {getStudentInitials(student)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <span className="text-xs">
-                                                {getStudentDisplayName(student)}
-                                            </span>
-                                        </Badge>
-                                    ))}
+                                    {students.map((student) => {
+                                        const isHighlighted = highlightedStudentIds.includes(student.id);
+                                        return (
+                                            <Badge
+                                                key={student.id}
+                                                variant={isHighlighted ? "default" : "secondary"}
+                                                className={cn(
+                                                    "flex items-center gap-1.5 pr-1.5",
+                                                    isHighlighted && "ring-2 ring-primary/30 font-semibold"
+                                                )}
+                                            >
+                                                <Avatar className="size-4">
+                                                    <AvatarImage
+                                                        src={
+                                                            student.avatarURL ||
+                                                            student.imageURL
+                                                        }
+                                                    />
+                                                    <AvatarFallback className="text-xs">
+                                                        {getStudentInitials(student)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <span className={cn(
+                                                    "text-xs",
+                                                    isHighlighted && "font-semibold"
+                                                )}>
+                                                    {getStudentDisplayName(student)}
+                                                </span>
+                                            </Badge>
+                                        );
+                                    })}
                                 </div>
                             </CollapsibleContent>
                         </div>
@@ -193,6 +204,7 @@ export function GroupCard({ group, classId, canManage }: GroupCardProps) {
                                             team={team}
                                             group={group}
                                             canManage={canManage}
+                                            highlightedStudentIds={highlightedStudentIds}
                                         />
                                     ))}
                                 </div>

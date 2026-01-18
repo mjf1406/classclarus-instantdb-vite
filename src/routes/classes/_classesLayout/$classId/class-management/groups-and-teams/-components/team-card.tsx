@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,9 +35,10 @@ interface TeamCardProps {
     >;
     group: Group;
     canManage: boolean;
+    highlightedStudentIds?: string[];
 }
 
-export function TeamCard({ team, group, canManage }: TeamCardProps) {
+export function TeamCard({ team, group, canManage, highlightedStudentIds = [] }: TeamCardProps) {
     const students = team.teamStudents || [];
 
     const getStudentDisplayName = (student: InstaQLEntity<AppSchema, "$users">) => {
@@ -70,28 +72,37 @@ export function TeamCard({ team, group, canManage }: TeamCardProps) {
                         )}
                         {students.length > 0 && (
                             <div className="flex flex-wrap gap-1.5">
-                                {students.map((student) => (
-                                    <Badge
-                                        key={student.id}
-                                        variant="outline"
-                                        className="flex items-center gap-1 pr-1 text-xs"
-                                    >
-                                        <Avatar className="size-3">
-                                            <AvatarImage
-                                                src={
-                                                    student.avatarURL ||
-                                                    student.imageURL
-                                                }
-                                            />
-                                            <AvatarFallback className="text-[8px]">
-                                                {getStudentInitials(student)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <span className="text-xs">
-                                            {getStudentDisplayName(student)}
-                                        </span>
-                                    </Badge>
-                                ))}
+                                {students.map((student) => {
+                                    const isHighlighted = highlightedStudentIds.includes(student.id);
+                                    return (
+                                        <Badge
+                                            key={student.id}
+                                            variant={isHighlighted ? "default" : "outline"}
+                                            className={cn(
+                                                "flex items-center gap-1 pr-1 text-xs",
+                                                isHighlighted && "ring-2 ring-primary/30 font-semibold"
+                                            )}
+                                        >
+                                            <Avatar className="size-3">
+                                                <AvatarImage
+                                                    src={
+                                                        student.avatarURL ||
+                                                        student.imageURL
+                                                    }
+                                                />
+                                                <AvatarFallback className="text-[8px]">
+                                                    {getStudentInitials(student)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <span className={cn(
+                                                "text-xs",
+                                                isHighlighted && "font-semibold"
+                                            )}>
+                                                {getStudentDisplayName(student)}
+                                            </span>
+                                        </Badge>
+                                    );
+                                })}
                             </div>
                         )}
                         {students.length === 0 && (

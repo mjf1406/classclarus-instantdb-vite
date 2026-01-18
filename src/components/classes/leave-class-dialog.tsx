@@ -110,7 +110,7 @@ export function LeaveClassDialog({
     };
 
     const trigger = children || (
-        <Button variant="outline" size="sm">
+        <Button variant="ghost" size="sm">
             <LogOut className="size-4 mr-2" />
             Leave Class
         </Button>

@@ -6,6 +6,8 @@ import { UserCircle, Settings, Eye } from "lucide-react";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
+import { db } from "@/lib/db/db";
+import { id } from "@instantdb/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
     Select,
@@ -17,12 +19,25 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import type { InstaQLEntity } from "@instantdb/react";
+import type { AppSchema } from "@/instant.schema";
+import { GroupsTeamsWidgetConfig, type GroupsTeamsDisplayOption } from "./-components/groups-teams-widget-config";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/class-management/student-dashboards/"
 )({
     component: RouteComponent,
 });
+
+type ClassDashboardSettings = InstaQLEntity<
+    AppSchema,
+    "classDashboardSettings",
+    { class: {} }
+>;
+
+type SettingsQueryResult = {
+    classDashboardSettings: ClassDashboardSettings[];
+};
 
 function RouteComponent() {
     const params = useParams({ strict: false });
@@ -33,6 +48,26 @@ function RouteComponent() {
     const [activeTab, setActiveTab] = useState<string>("settings");
 
     const students = classEntity?.classStudents || [];
+
+    // Early return if classId is not available
+    if (!classId) {
+        return null;
+    }
+
+    // Query existing dashboard settings
+    const { data: settingsData } = db.useQuery(
+        classId
+            ? {
+                  classDashboardSettings: {
+                      $: { where: { "class.id": classId } },
+                      class: {},
+                  },
+              }
+            : null
+    );
+
+    const typedSettingsData = (settingsData as SettingsQueryResult | undefined) ?? null;
+    const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
 
     return (
         <RestrictedRoute
@@ -70,29 +105,35 @@ function RouteComponent() {
                         </TabsList>
 
                         <TabsContent value="settings" className="mt-4">
-                            <SettingsPanel />
+                        <SettingsPanel 
+                            classId={classId}
+                            existingSettings={existingSettings}
+                        />
                         </TabsContent>
 
                         <TabsContent value="preview" className="mt-4">
-                            <PreviewPanel
-                                students={students}
-                                selectedStudentId={selectedStudentId}
-                                onStudentSelect={setSelectedStudentId}
-                            />
+                        <PreviewPanel
+                            students={students}
+                            selectedStudentId={selectedStudentId}
+                            onStudentSelect={setSelectedStudentId}
+                        />
                         </TabsContent>
                     </Tabs>
                 </div>
 
                 {/* Desktop: Side-by-side layout (lg and bigger) */}
-                <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
-                    <div className="space-y-4">
+                <div className="hidden lg:grid lg:grid-cols-4 lg:gap-6">
+                    <div className="space-y-4 lg:col-span-1">
                         <div className="flex items-center gap-2 mb-4">
                             <Settings className="size-5" />
                             <h2 className="text-lg font-semibold">Settings</h2>
                         </div>
-                        <SettingsPanel />
+                        <SettingsPanel 
+                            classId={classId}
+                            existingSettings={existingSettings}
+                        />
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-4 lg:col-span-3">
                         <div className="flex items-center gap-2 mb-4">
                             <Eye className="size-5" />
                             <h2 className="text-lg font-semibold">Preview</h2>
@@ -109,38 +150,48 @@ function RouteComponent() {
     );
 }
 
-function SettingsPanel() {
+function SettingsPanel({
+    classId,
+    existingSettings,
+}: {
+    classId: string;
+    existingSettings: ClassDashboardSettings | undefined;
+}) {
+    const currentGroupsTeamsDisplay = (existingSettings?.groupsTeamsDisplay as GroupsTeamsDisplayOption | undefined) || "none";
+
+    const handleGroupsTeamsDisplayChange = (value: GroupsTeamsDisplayOption) => {
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    groupsTeamsDisplay: value,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: value,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Dashboard Settings</CardTitle>
-                <CardDescription>
-                    Configure what students see on their dashboard
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="space-y-2">
-                    <Label>Display Options</Label>
-                    <p className="text-sm text-muted-foreground">
-                        Configure dashboard display settings for students
-                    </p>
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                    <Label>Widget Configuration</Label>
-                    <p className="text-sm text-muted-foreground">
-                        Manage which widgets appear on student dashboards
-                    </p>
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                    <Label>Privacy Settings</Label>
-                    <p className="text-sm text-muted-foreground">
-                        Control what information students can see about themselves and others
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
+        <div className="space-y-4">
+            <GroupsTeamsWidgetConfig
+                value={currentGroupsTeamsDisplay}
+                onChange={handleGroupsTeamsDisplayChange}
+            />
+        </div>
     );
 }
 
@@ -212,17 +263,10 @@ function PreviewPanel({
                                         This is how the dashboard appears to {displayName}
                                     </p>
                                 </div>
-                                <div className="space-y-3">
-                                    <div className="h-32 rounded border bg-background p-4">
-                                        <p className="text-sm text-muted-foreground">
-                                            Dashboard content will appear here
-                                        </p>
-                                    </div>
-                                    <div className="h-32 rounded border bg-background p-4">
-                                        <p className="text-sm text-muted-foreground">
-                                            Additional dashboard widgets
-                                        </p>
-                                    </div>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <p className="text-sm text-muted-foreground">
+                                        Dashboard preview content will appear here.
+                                    </p>
                                 </div>
                             </div>
                         </div>

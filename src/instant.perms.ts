@@ -135,7 +135,7 @@ const userClassStudentRelationships = {
         "auth.id in data.ref('teacherClasses.classStudents.id')",
     isAssistantTeacherInMyClassAsStudent:
         "auth.id in data.ref('assistantTeacherClasses.classStudents.id')",
-    // REMOVED: isGuardianInMyClassAsStudent - Students should only see their own guardians' full info
+    isStudentInMyClass: "auth.id in data.ref('studentClasses.classStudents.id')",
 };
 
 // Guardian-Child Relationships in Shared Classes
@@ -157,23 +157,49 @@ const userOrgRelationships = {
 const pendingMemberBinds = {
     isClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
     isClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
-    isClassOwner: "auth.id == data.ref('class.owner.id')",
+    isClassOwner: "auth.id in data.ref('class.owner.id')",
 };
 
 // Group and Team Binds
 const groupTeamBinds = {
-    isGroupClassOwner: "auth.id == data.ref('class.owner.id')",
+    isGroupClassOwner: "auth.id in data.ref('class.owner.id')",
     isGroupClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
     isGroupClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
     isGroupClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
     isStudentInGroup: "auth.id in data.ref('groupStudents.id')",
     isGuardianChildInGroup: "auth.id in data.ref('groupStudents.guardians.id')",
-    isTeamClassOwner: "auth.id == data.ref('group.class.owner.id')",
+    isGroupClassStudent: "auth.id in data.ref('class.classStudents.id')",
+    isGroupClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
+    isTeamClassOwner: "auth.id in data.ref('group.class.owner.id')",
     isTeamClassAdmin: "auth.id in data.ref('group.class.classAdmins.id')",
     isTeamClassTeacher: "auth.id in data.ref('group.class.classTeachers.id')",
     isTeamClassAssistantTeacher: "auth.id in data.ref('group.class.classAssistantTeachers.id')",
     isStudentInTeam: "auth.id in data.ref('teamStudents.id')",
     isGuardianChildInTeam: "auth.id in data.ref('teamStudents.guardians.id')",
+    isTeamClassStudent: "auth.id in data.ref('group.class.classStudents.id')",
+    isTeamClassGuardian: "auth.id in data.ref('group.class.classGuardians.id')",
+};
+
+// Add to the existing bind objects, or create a new one:
+// Add this new bind object
+const dashboardSettingsBinds = {
+    isClassOwner: "auth.id in data.ref('class.owner.id')",
+    isClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isClassMember: "auth.id in data.ref('class.classStudents.id') || auth.id in data.ref('class.classTeachers.id') || auth.id in data.ref('class.classAssistantTeachers.id') || auth.id in data.ref('class.classGuardians.id')",
+    isClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
+};
+
+// Add after dashboardSettingsBinds
+const studentDashboardPreferencesBinds = {
+    isMyself: "auth.id in data.ref('user.id')",
+    isMyChild: "auth.id in data.ref('user.guardians.id')",
+    isClassOwner: "auth.id in data.ref('class.owner.id')",
+    isClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isClassMember: "auth.id in data.ref('class.classStudents.id') || auth.id in data.ref('class.classTeachers.id') || auth.id in data.ref('class.classAssistantTeachers.id')",
 };
 
 // ============================================================
@@ -214,6 +240,7 @@ const USER_SELF_AND_FAMILY = "isMyself || isMyChild || isMyGuardian";
 // Full profile access for class staff, admins, guardians viewing teachers, and students viewing teachers
 // NOTE: isStudentInMyClassAsGuardian is excluded so guardians only see full info for their own children
 // NOTE: isGuardianInMyClassAsStudent is excluded so students only see full info for their own guardians
+4// Full profile access for class staff, admins, guardians viewing teachers, students viewing teachers, AND students viewing other students
 const USER_ALL_CLASS_RELATIONSHIPS = [
     "isMyChildInSharedClass",
     "isMyGuardianInSharedClass",
@@ -235,6 +262,7 @@ const USER_ALL_CLASS_RELATIONSHIPS = [
     "isAssistantTeacherInMyClassAsGuardian",
     "isTeacherInMyClassAsStudent",
     "isAssistantTeacherInMyClassAsStudent",
+    "isStudentInMyClass",  // ADD THIS
     "isStudentInMyClassAsAssistant",
     "isTeacherInMyClassAsAssistant",
     "isAssistantTeacherInMyClassAsAssistant",
@@ -359,7 +387,7 @@ const rules = {
     groups: {
         allow: {
             create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isStudentInGroup || isGuardianChildInGroup)",
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian || isStudentInGroup || isGuardianChildInGroup)",
             update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
             delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
         },
@@ -374,7 +402,7 @@ const rules = {
     teams: {
         allow: {
             create: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
-            view: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher || isStudentInTeam || isGuardianChildInTeam)",
+            view: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher || isTeamClassStudent || isTeamClassGuardian || isStudentInTeam || isGuardianChildInTeam)",
             update: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
             delete: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
         },
@@ -383,6 +411,32 @@ const rules = {
             ...classRoleBinds,
             ...userBasicRelationships,
             ...groupTeamBinds,
+        }),
+    },
+
+    classDashboardSettings: {
+        allow: {
+            create: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            view: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            update: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...dashboardSettingsBinds,
+        }),
+    },
+
+    studentDashboardPreferences: {
+        allow: {
+            create: "isAuthenticated",
+            view: "isAuthenticated && (isMyself || isMyChild || isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            update: "isAuthenticated && isMyself",
+            delete: "isAuthenticated && isMyself",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...studentDashboardPreferencesBinds,
         }),
     },
 } satisfies InstantRules;
