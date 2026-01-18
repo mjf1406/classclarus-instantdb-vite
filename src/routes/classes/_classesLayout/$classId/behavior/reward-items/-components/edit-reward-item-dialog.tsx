@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { FolderSelect } from "../../-components/folders/folder-select";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -29,7 +30,7 @@ interface EditRewardItemDialogProps {
     rewardItem: InstaQLEntity<
         AppSchema,
         "reward_items",
-        { class?: {} }
+        { class?: {}; folder?: {} }
     >;
     classId: string;
     asDropdownItem?: boolean;
@@ -38,12 +39,14 @@ interface EditRewardItemDialogProps {
 export function EditRewardItemDialog({
     children,
     rewardItem,
+    classId,
     asDropdownItem = false,
 }: EditRewardItemDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [costStr, setCostStr] = useState("");
+    const [folderId, setFolderId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +59,7 @@ export function EditRewardItemDialog({
                     ? String(rewardItem.cost)
                     : ""
             );
+            setFolderId(rewardItem.folder?.id ?? null);
         }
     }, [open, rewardItem]);
 
@@ -78,14 +82,32 @@ export function EditRewardItemDialog({
 
         try {
             const now = new Date();
-            db.transact([
+            const transactions = [
                 db.tx.reward_items[rewardItem.id].update({
                     name: name.trim(),
                     description: description.trim() || undefined,
                     cost,
                     updated: now,
                 }),
-            ]);
+            ];
+            if (
+                rewardItem.folder &&
+                (!folderId || folderId !== rewardItem.folder!.id)
+            ) {
+                transactions.push(
+                    db.tx.reward_items[rewardItem.id].unlink({
+                        folder: rewardItem.folder!.id,
+                    })
+                );
+            }
+            if (folderId) {
+                transactions.push(
+                    db.tx.reward_items[rewardItem.id].link({
+                        folder: folderId,
+                    })
+                );
+            }
+            db.transact(transactions);
             setOpen(false);
         } catch (err) {
             setError(
@@ -104,6 +126,7 @@ export function EditRewardItemDialog({
             setName("");
             setDescription("");
             setCostStr("");
+            setFolderId(null);
             setError(null);
         }
     };
@@ -146,6 +169,14 @@ export function EditRewardItemDialog({
                         />
                     </FieldContent>
                 </Field>
+
+                <FolderSelect
+                    classId={classId}
+                    value={folderId}
+                    onChange={setFolderId}
+                    disabled={isSubmitting}
+                    placeholder="Uncategorized"
+                />
 
                 <Field>
                     <FieldLabel htmlFor="edit-reward-cost">Cost (points) *</FieldLabel>

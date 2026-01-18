@@ -21,20 +21,24 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { FolderSelect } from "../../-components/folders/folder-select";
 
 interface CreateBehaviorDialogProps {
     children: React.ReactNode;
     classId: string;
+    initialFolderId?: string | null;
 }
 
 export function CreateBehaviorDialog({
     children,
     classId,
+    initialFolderId,
 }: CreateBehaviorDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [pointsStr, setPointsStr] = useState("");
+    const [folderId, setFolderId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -59,7 +63,7 @@ export function CreateBehaviorDialog({
             const behaviorId = id();
             const now = new Date();
 
-            db.transact([
+            const transactions = [
                 db.tx.behaviors[behaviorId].create({
                     name: name.trim(),
                     description: description.trim() || undefined,
@@ -68,11 +72,18 @@ export function CreateBehaviorDialog({
                     updated: now,
                 }),
                 db.tx.behaviors[behaviorId].link({ class: classId }),
-            ]);
+            ];
+            if (folderId) {
+                transactions.push(
+                    db.tx.behaviors[behaviorId].link({ folder: folderId })
+                );
+            }
+            db.transact(transactions);
 
             setName("");
             setDescription("");
             setPointsStr("");
+            setFolderId(null);
             setOpen(false);
         } catch (err) {
             setError(
@@ -85,10 +96,13 @@ export function CreateBehaviorDialog({
 
     const handleOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
-        if (!newOpen) {
+        if (newOpen) {
+            setFolderId(initialFolderId ?? null);
+        } else {
             setName("");
             setDescription("");
             setPointsStr("");
+            setFolderId(null);
             setError(null);
         }
     };
@@ -137,6 +151,14 @@ export function CreateBehaviorDialog({
                                 />
                             </FieldContent>
                         </Field>
+
+                        <FolderSelect
+                            classId={classId}
+                            value={folderId}
+                            onChange={setFolderId}
+                            disabled={isSubmitting}
+                            placeholder="Uncategorized"
+                        />
 
                         <Field>
                             <FieldLabel htmlFor="behavior-points">

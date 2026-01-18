@@ -21,47 +21,32 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { FolderSelect } from "../../-components/folders/folder-select";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-interface EditBehaviorDialogProps {
+interface EditFolderDialogProps {
     children?: React.ReactNode;
-    behavior: InstaQLEntity<
-        AppSchema,
-        "behaviors",
-        { class?: {}; folder?: {} }
-    >;
-    classId: string;
+    folder: InstaQLEntity<AppSchema, "folders", { class?: {} }>;
     asDropdownItem?: boolean;
 }
 
-export function EditBehaviorDialog({
+export function EditFolderDialog({
     children,
-    behavior,
-    classId,
+    folder,
     asDropdownItem = false,
-}: EditBehaviorDialogProps) {
+}: EditFolderDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
-    const [pointsStr, setPointsStr] = useState("");
-    const [folderId, setFolderId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (open && behavior) {
-            setName(behavior.name || "");
-            setDescription(behavior.description || "");
-            setPointsStr(
-                behavior.points !== undefined && behavior.points !== null
-                    ? String(behavior.points)
-                    : ""
-            );
-            setFolderId(behavior.folder?.id ?? null);
+        if (open && folder) {
+            setName(folder.name || "");
+            setDescription(folder.description || "");
         }
-    }, [open, behavior]);
+    }, [open, folder]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,41 +57,21 @@ export function EditBehaviorDialog({
             return;
         }
 
-        const points = pointsStr.trim() === "" ? undefined : Number(pointsStr);
-        if (points === undefined || Number.isNaN(points)) {
-            setError("Points must be a number (positive or negative)");
-            return;
-        }
-
         setIsSubmitting(true);
 
         try {
             const now = new Date();
-            const transactions = [
-                db.tx.behaviors[behavior.id].update({
+            db.transact([
+                db.tx.folders[folder.id].update({
                     name: name.trim(),
                     description: description.trim() || undefined,
-                    points,
                     updated: now,
                 }),
-            ];
-            if (behavior.folder && (!folderId || folderId !== behavior.folder!.id)) {
-                transactions.push(
-                    db.tx.behaviors[behavior.id].unlink({
-                        folder: behavior.folder!.id,
-                    })
-                );
-            }
-            if (folderId) {
-                transactions.push(
-                    db.tx.behaviors[behavior.id].link({ folder: folderId })
-                );
-            }
-            db.transact(transactions);
+            ]);
             setOpen(false);
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : "Failed to update behavior"
+                err instanceof Error ? err.message : "Failed to update folder"
             );
         } finally {
             setIsSubmitting(false);
@@ -118,8 +83,6 @@ export function EditBehaviorDialog({
         if (!newOpen) {
             setName("");
             setDescription("");
-            setPointsStr("");
-            setFolderId(null);
             setError(null);
         }
     };
@@ -127,20 +90,20 @@ export function EditBehaviorDialog({
     const formContent = (
         <form onSubmit={handleSubmit}>
             <DialogHeader>
-                <DialogTitle>Edit Behavior</DialogTitle>
+                <DialogTitle>Edit Folder</DialogTitle>
                 <DialogDescription>
-                    Update behavior details. Use positive points to add, negative to subtract.
+                    Update folder name and description.
                 </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
                 <Field>
-                    <FieldLabel htmlFor="edit-behavior-name">Name *</FieldLabel>
+                    <FieldLabel htmlFor="edit-folder-name">Name *</FieldLabel>
                     <FieldContent>
                         <Input
-                            id="edit-behavior-name"
+                            id="edit-folder-name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. Helping a classmate"
+                            placeholder="e.g. Participation"
                             required
                             disabled={isSubmitting}
                         />
@@ -148,40 +111,17 @@ export function EditBehaviorDialog({
                 </Field>
 
                 <Field>
-                    <FieldLabel htmlFor="edit-behavior-description">
+                    <FieldLabel htmlFor="edit-folder-description">
                         Description
                     </FieldLabel>
                     <FieldContent>
                         <Textarea
-                            id="edit-behavior-description"
+                            id="edit-folder-description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Optional description"
                             rows={3}
                             disabled={isSubmitting}
-                        />
-                    </FieldContent>
-                </Field>
-
-                <FolderSelect
-                    classId={classId}
-                    value={folderId}
-                    onChange={setFolderId}
-                    disabled={isSubmitting}
-                    placeholder="Uncategorized"
-                />
-
-                <Field>
-                    <FieldLabel htmlFor="edit-behavior-points">Points *</FieldLabel>
-                    <FieldContent>
-                        <Input
-                            id="edit-behavior-points"
-                            type="number"
-                            value={pointsStr}
-                            onChange={(e) => setPointsStr(e.target.value)}
-                            placeholder="e.g. 5 or -2"
-                            disabled={isSubmitting}
-                            required
                         />
                     </FieldContent>
                 </Field>

@@ -474,6 +474,19 @@ const rules = {
         }),
     },
 
+    folders: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+        }),
+    },
+
     behavior_logs: {
         allow: {
             view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isBehaviorLogForMyself || isGuardianOfBehaviorLogStudent)",

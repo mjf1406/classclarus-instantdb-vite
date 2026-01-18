@@ -102,6 +102,12 @@ const _schema = i.schema({
         reward_redemptions: i.entity({
             createdAt: i.date().indexed(),
         }),
+        folders: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            created: i.date(),
+            updated: i.date(),
+        }),
     },
     links: {
         userClasses: {
@@ -502,6 +508,43 @@ const _schema = i.schema({
                 on: "$users",
                 has: "many",
                 label: "rewardRedemptionsAsCreatedBy",
+            },
+        },
+        classFolders: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "folders",
+            },
+            reverse: {
+                on: "folders",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        behaviorFolder: {
+            forward: {
+                on: "behaviors",
+                has: "one",
+                label: "folder",
+            },
+            reverse: {
+                on: "folders",
+                has: "many",
+                label: "behaviors",
+            },
+        },
+        rewardItemFolder: {
+            forward: {
+                on: "reward_items",
+                has: "one",
+                label: "folder",
+            },
+            reverse: {
+                on: "folders",
+                has: "many",
+                label: "rewardItems",
             },
         },
     },

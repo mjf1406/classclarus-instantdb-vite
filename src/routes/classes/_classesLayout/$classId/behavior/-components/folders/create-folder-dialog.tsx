@@ -21,24 +21,19 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FolderSelect } from "../../-components/folders/folder-select";
 
-interface CreateRewardItemDialogProps {
+interface CreateFolderDialogProps {
     children: React.ReactNode;
     classId: string;
-    initialFolderId?: string | null;
 }
 
-export function CreateRewardItemDialog({
+export function CreateFolderDialog({
     children,
     classId,
-    initialFolderId,
-}: CreateRewardItemDialogProps) {
+}: CreateFolderDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
-    const [costStr, setCostStr] = useState("");
-    const [folderId, setFolderId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -51,45 +46,28 @@ export function CreateRewardItemDialog({
             return;
         }
 
-        const cost = costStr.trim() === "" ? undefined : Number(costStr);
-        if (cost === undefined || Number.isNaN(cost) || cost <= 0) {
-            setError("Cost must be a positive number");
-            return;
-        }
-
         setIsSubmitting(true);
 
         try {
-            const rewardItemId = id();
+            const folderId = id();
             const now = new Date();
 
-            const transactions = [
-                db.tx.reward_items[rewardItemId].create({
+            db.transact([
+                db.tx.folders[folderId].create({
                     name: name.trim(),
                     description: description.trim() || undefined,
-                    cost,
                     created: now,
                     updated: now,
                 }),
-                db.tx.reward_items[rewardItemId].link({ class: classId }),
-            ];
-            if (folderId) {
-                transactions.push(
-                    db.tx.reward_items[rewardItemId].link({ folder: folderId })
-                );
-            }
-            db.transact(transactions);
+                db.tx.folders[folderId].link({ class: classId }),
+            ]);
 
             setName("");
             setDescription("");
-            setCostStr("");
-            setFolderId(null);
             setOpen(false);
         } catch (err) {
             setError(
-                err instanceof Error
-                    ? err.message
-                    : "Failed to create reward item"
+                err instanceof Error ? err.message : "Failed to create folder"
             );
         } finally {
             setIsSubmitting(false);
@@ -98,13 +76,9 @@ export function CreateRewardItemDialog({
 
     const handleOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
-        if (newOpen) {
-            setFolderId(initialFolderId ?? null);
-        } else {
+        if (!newOpen) {
             setName("");
             setDescription("");
-            setCostStr("");
-            setFolderId(null);
             setError(null);
         }
     };
@@ -115,20 +89,20 @@ export function CreateRewardItemDialog({
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Create Reward Item</DialogTitle>
+                        <DialogTitle>Create Folder</DialogTitle>
                         <DialogDescription>
-                            Add a reward that students can redeem with points.
+                            Create a folder to organize behaviors and reward items.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <Field>
-                            <FieldLabel htmlFor="reward-name">Name *</FieldLabel>
+                            <FieldLabel htmlFor="folder-name">Name *</FieldLabel>
                             <FieldContent>
                                 <Input
-                                    id="reward-name"
+                                    id="folder-name"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    placeholder="e.g. Extra recess"
+                                    placeholder="e.g. Participation"
                                     required
                                     disabled={isSubmitting}
                                 />
@@ -136,12 +110,12 @@ export function CreateRewardItemDialog({
                         </Field>
 
                         <Field>
-                            <FieldLabel htmlFor="reward-description">
+                            <FieldLabel htmlFor="folder-description">
                                 Description
                             </FieldLabel>
                             <FieldContent>
                                 <Textarea
-                                    id="reward-description"
+                                    id="folder-description"
                                     value={description}
                                     onChange={(e) =>
                                         setDescription(e.target.value)
@@ -151,34 +125,6 @@ export function CreateRewardItemDialog({
                                     disabled={isSubmitting}
                                 />
                             </FieldContent>
-                        </Field>
-
-                        <FolderSelect
-                            classId={classId}
-                            value={folderId}
-                            onChange={setFolderId}
-                            disabled={isSubmitting}
-                            placeholder="Uncategorized"
-                        />
-
-                        <Field>
-                            <FieldLabel htmlFor="reward-cost">
-                                Cost (points) *</FieldLabel>
-                            <FieldContent>
-                                <Input
-                                    id="reward-cost"
-                                    type="number"
-                                    min={1}
-                                    value={costStr}
-                                    onChange={(e) => setCostStr(e.target.value)}
-                                    placeholder="e.g. 10"
-                                    disabled={isSubmitting}
-                                    required
-                                />
-                            </FieldContent>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Points required to redeem this reward.
-                            </p>
                         </Field>
 
                         {error && <FieldError>{error}</FieldError>}
@@ -193,7 +139,7 @@ export function CreateRewardItemDialog({
                             Cancel
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "Creating..." : "Create Reward Item"}
+                            {isSubmitting ? "Creating..." : "Create Folder"}
                         </Button>
                     </DialogFooter>
                 </form>
