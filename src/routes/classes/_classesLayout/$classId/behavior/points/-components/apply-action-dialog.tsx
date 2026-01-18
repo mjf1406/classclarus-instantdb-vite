@@ -14,6 +14,16 @@ import {
     CredenzaTitle,
     CredenzaBody,
 } from "@/components/ui/credenza";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -214,6 +224,11 @@ export function ApplyActionDialog({
     const [folderDialogOpen, setFolderDialogOpen] = useState(false);
     const [selectedFolder, setSelectedFolder] = useState<FolderType | null>(null);
     const [folderItemType, setFolderItemType] = useState<"behavior" | "reward">("behavior");
+    const [negativePointsDialogOpen, setNegativePointsDialogOpen] = useState(false);
+    const [pendingRedemption, setPendingRedemption] = useState<{
+        behaviorIds: string[];
+        rewardItemIds: string[];
+    } | null>(null);
     const { user } = useAuthContext();
 
     const { data: behaviorsData } = db.useQuery(
@@ -349,7 +364,7 @@ export function ApplyActionDialog({
     const fullName = lastName ? `${firstName} ${lastName}` : firstName;
     const gender = (existingRoster?.gender ?? student.gender)?.trim() || "—";
 
-    const applyAction = async (behaviorIds?: string[], rewardItemIds?: string[]) => {
+    const applyAction = async (behaviorIds?: string[], rewardItemIds?: string[], skipNegativeCheck = false) => {
         if (!user?.id || !canManage) return;
 
         const qty = Number(quantity);
@@ -359,6 +374,21 @@ export function ApplyActionDialog({
 
         const targetBehaviorIds = behaviorIds ?? Array.from(selectedBehaviorIds);
         const targetRewardItemIds = rewardItemIds ?? Array.from(selectedRewardItemIds);
+
+        // Check if redemption would result in negative points
+        if (!skipNegativeCheck && targetRewardItemIds.length > 0) {
+            const totalRedemptionCost = targetRewardItemIds.reduce((sum, rewardItemId) => {
+                const rewardItem = rewardItems.find((r) => r.id === rewardItemId);
+                return sum + (rewardItem?.cost ?? 0) * qty;
+            }, 0);
+
+            const newPoints = totalPoints - totalRedemptionCost;
+            if (newPoints < 0) {
+                setPendingRedemption({ behaviorIds: targetBehaviorIds, rewardItemIds: targetRewardItemIds });
+                setNegativePointsDialogOpen(true);
+                return;
+            }
+        }
 
         setIsSubmitting(true);
 
@@ -694,6 +724,49 @@ export function ApplyActionDialog({
                     )}
                 </CredenzaBody>
             </CredenzaContent>
+            <AlertDialog
+                open={negativePointsDialogOpen}
+                onOpenChange={(open) => {
+                    setNegativePointsDialogOpen(open);
+                    if (!open) {
+                        setPendingRedemption(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Insufficient Points</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {pendingRedemption && (() => {
+                                const totalRedemptionCost = pendingRedemption.rewardItemIds.reduce((sum, rewardItemId) => {
+                                    const rewardItem = rewardItems.find((r) => r.id === rewardItemId);
+                                    return sum + (rewardItem?.cost ?? 0) * Number(quantity);
+                                }, 0);
+                                const newPoints = totalPoints - totalRedemptionCost;
+                                return (
+                                    <>
+                                        This student has insufficient points for this redemption. You can override this if needed. If you proceed, this student will have {newPoints} points.
+                                    </>
+                                );
+                            })()}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (pendingRedemption) {
+                                    applyAction(pendingRedemption.behaviorIds, pendingRedemption.rewardItemIds, true);
+                                    setPendingRedemption(null);
+                                }
+                                setNegativePointsDialogOpen(false);
+                            }}
+                        >
+                            Override & Proceed
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             {selectedFolder && (
                 <FolderItemsDialog
                     open={folderDialogOpen}
