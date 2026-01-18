@@ -1,7 +1,7 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { Award } from "lucide-react";
+import { Coins } from "lucide-react";
 import { UnderConstruction } from "@/components/under-construction";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassById } from "@/hooks/use-class-hooks";
@@ -28,7 +28,7 @@ function RouteComponent() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Award className="size-12 md:size-16 text-primary" />
+                        <Coins className="size-12 md:size-16 text-primary" />
                         <div>
                             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
                                 Points

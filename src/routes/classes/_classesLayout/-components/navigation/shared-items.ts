@@ -1,6 +1,6 @@
 /** @format */
 
-import { Home, LayoutDashboard, UserPlus, Settings, Award, Monitor, Volume2 } from "lucide-react";
+import { Home, LayoutDashboard, UserPlus, Settings, Monitor, Volume2, Coins } from "lucide-react";
 import {
     AdminIcon,
     TeacherIcon,
@@ -31,7 +31,7 @@ export function getMainItems(classId: string): NavigationItem[] {
             description:
                 "View and manage points for your students",
             url: `/classes/${classId}/main/points`,
-            icon: Award,
+            icon: Coins,
         },
         {
             title: "Screen",
