@@ -6,8 +6,6 @@ import { UserCircle, Settings, Eye } from "lucide-react";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
-import { db } from "@/lib/db/db";
-import { id } from "@instantdb/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
     Select,
@@ -19,25 +17,12 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
-import { GroupsTeamsWidgetConfig, type GroupsTeamsDisplayOption } from "./-components/groups-teams-widget-config";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/class-management/student-dashboards/"
 )({
     component: RouteComponent,
 });
-
-type ClassDashboardSettings = InstaQLEntity<
-    AppSchema,
-    "classDashboardSettings",
-    { class: {} }
->;
-
-type SettingsQueryResult = {
-    classDashboardSettings: ClassDashboardSettings[];
-};
 
 function RouteComponent() {
     const params = useParams({ strict: false });
@@ -53,21 +38,6 @@ function RouteComponent() {
     if (!classId) {
         return null;
     }
-
-    // Query existing dashboard settings
-    const { data: settingsData } = db.useQuery(
-        classId
-            ? {
-                  classDashboardSettings: {
-                      $: { where: { "class.id": classId } },
-                      class: {},
-                  },
-              }
-            : null
-    );
-
-    const typedSettingsData = (settingsData as SettingsQueryResult | undefined) ?? null;
-    const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
 
     return (
         <RestrictedRoute
@@ -105,10 +75,7 @@ function RouteComponent() {
                         </TabsList>
 
                         <TabsContent value="settings" className="mt-4">
-                        <SettingsPanel 
-                            classId={classId}
-                            existingSettings={existingSettings}
-                        />
+                        <SettingsPanel />
                         </TabsContent>
 
                         <TabsContent value="preview" className="mt-4">
@@ -128,10 +95,7 @@ function RouteComponent() {
                             <Settings className="size-5" />
                             <h2 className="text-lg font-semibold">Settings</h2>
                         </div>
-                        <SettingsPanel 
-                            classId={classId}
-                            existingSettings={existingSettings}
-                        />
+                        <SettingsPanel />
                     </div>
                     <div className="space-y-4 lg:col-span-3">
                         <div className="flex items-center gap-2 mb-4">
@@ -150,47 +114,22 @@ function RouteComponent() {
     );
 }
 
-function SettingsPanel({
-    classId,
-    existingSettings,
-}: {
-    classId: string;
-    existingSettings: ClassDashboardSettings | undefined;
-}) {
-    const currentGroupsTeamsDisplay = (existingSettings?.groupsTeamsDisplay as GroupsTeamsDisplayOption | undefined) || "none";
-
-    const handleGroupsTeamsDisplayChange = (value: GroupsTeamsDisplayOption) => {
-        const now = new Date();
-
-        if (existingSettings) {
-            // Update existing settings
-            db.transact([
-                db.tx.classDashboardSettings[existingSettings.id].update({
-                    groupsTeamsDisplay: value,
-                    updated: now,
-                }),
-            ]);
-        } else {
-            // Create new settings
-            const settingsId = id();
-            db.transact([
-                db.tx.classDashboardSettings[settingsId]
-                    .create({
-                        groupsTeamsDisplay: value,
-                        created: now,
-                        updated: now,
-                    })
-                    .link({ class: classId }),
-            ]);
-        }
-    };
-
+function SettingsPanel() {
     return (
         <div className="space-y-4">
-            <GroupsTeamsWidgetConfig
-                value={currentGroupsTeamsDisplay}
-                onChange={handleGroupsTeamsDisplayChange}
-            />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Dashboard Settings</CardTitle>
+                    <CardDescription>
+                        Configure student dashboard preferences
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                        No settings available at this time.
+                    </p>
+                </CardContent>
+            </Card>
         </div>
     );
 }

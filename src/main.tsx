@@ -27,6 +27,7 @@ const router = createRouter({
     },
     defaultPreload: "viewport",
     // defaultPreloadMaxAge: 60, // TypeScript says this does not exist on this object
+    defaultPreloadGcTime: 1000 * 60, // 1 minute,
     defaultPendingComponent: PendingComponent,
     defaultPendingMs: 50,
     defaultPendingMinMs: 300,
