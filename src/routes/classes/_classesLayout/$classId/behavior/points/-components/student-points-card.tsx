@@ -36,13 +36,17 @@ export function StudentPointsCard({
         (existingRoster?.gender ?? student.gender)?.trim() || "—";
 
     return (
-        <Card className="relative min-h-[80px] lg:min-h-[120px] py-1">
+        <Card
+            className={`relative min-h-[80px] lg:min-h-[120px] py-1 ${
+                canManage ? "cursor-pointer" : ""
+            }`}
+        >
             <CardContent className="flex flex-col p-1 lg:p-2">
                 {/* Upper row: number (left), points + action menu (right) */}
                 <div className="flex items-center justify-between gap-1">
                     <span className="text-[10px] shrink-0 text-muted-foreground lg:text-xs">
                         {rosterNumber !== undefined && rosterNumber !== null
-                            ? rosterNumber
+                            ? `#${rosterNumber}`
                             : "—"}
                     </span>
                     <div className="flex shrink-0 items-center gap-0.5">
@@ -50,33 +54,35 @@ export function StudentPointsCard({
                             {totalPoints}
                         </span>
                         {canManage && (
-                            <CardActionMenu triggerClassName="h-6 w-6 lg:h-8 lg:w-8">
-                                {lastAction && (
-                                    <UndoLastActionDialog
-                                        lastAction={lastAction}
-                                        asDropdownItem
-                                    >
-                                        <Undo2 className="size-4" /> Undo last
-                                        action
-                                    </UndoLastActionDialog>
-                                )}
-                                {lastBehavior && (
-                                    <RepeatLastBehaviorDialog
-                                        lastBehavior={lastBehavior}
-                                        studentId={student.id}
-                                        classId={classId}
-                                        asDropdownItem
-                                    >
-                                        <Repeat className="size-4" /> Repeat
-                                        last behavior
-                                    </RepeatLastBehaviorDialog>
-                                )}
-                                {!lastAction && !lastBehavior && (
-                                    <DropdownMenuItem disabled>
-                                        No recent actions
-                                    </DropdownMenuItem>
-                                )}
-                            </CardActionMenu>
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <CardActionMenu triggerClassName="h-6 w-6 lg:h-8 lg:w-8">
+                                    {lastAction && (
+                                        <UndoLastActionDialog
+                                            lastAction={lastAction}
+                                            asDropdownItem
+                                        >
+                                            <Undo2 className="size-4" /> Undo last
+                                            action
+                                        </UndoLastActionDialog>
+                                    )}
+                                    {lastBehavior && (
+                                        <RepeatLastBehaviorDialog
+                                            lastBehavior={lastBehavior}
+                                            studentId={student.id}
+                                            classId={classId}
+                                            asDropdownItem
+                                        >
+                                            <Repeat className="size-4" /> Repeat
+                                            last behavior
+                                        </RepeatLastBehaviorDialog>
+                                    )}
+                                    {!lastAction && !lastBehavior && (
+                                        <DropdownMenuItem disabled>
+                                            No recent actions
+                                        </DropdownMenuItem>
+                                    )}
+                                </CardActionMenu>
+                            </div>
                         )}
                     </div>
                 </div>

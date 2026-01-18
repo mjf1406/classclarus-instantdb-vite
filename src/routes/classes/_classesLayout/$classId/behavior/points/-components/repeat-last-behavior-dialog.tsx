@@ -52,7 +52,7 @@ export function RepeatLastBehaviorDialog({
             const newId = id();
             db.transact(
                 db.tx.behavior_logs[newId]
-                    .create({ createdAt: new Date() })
+                    .create({ createdAt: new Date(), quantity: 1 })
                     .link({ class: classId })
                     .link({ behavior: lastBehavior.behaviorId })
                     .link({ student: studentId })

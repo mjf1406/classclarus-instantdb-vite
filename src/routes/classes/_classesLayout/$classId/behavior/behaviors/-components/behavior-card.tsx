@@ -11,6 +11,8 @@ interface BehaviorCardProps {
     canManage: boolean;
     /** When true, always use desktop layout (e.g. in List view on mobile). */
     preferDesktop?: boolean;
+    /** When true, always use mobile layout. */
+    preferMobile?: boolean;
 }
 
 export function BehaviorCard({
@@ -18,7 +20,17 @@ export function BehaviorCard({
     classId,
     canManage,
     preferDesktop = false,
+    preferMobile = false,
 }: BehaviorCardProps) {
+    if (preferMobile) {
+        return (
+            <BehaviorCardMobile
+                behavior={behavior}
+                classId={classId}
+                canManage={canManage}
+            />
+        );
+    }
     if (preferDesktop) {
         return (
             <BehaviorCardDesktop

@@ -1,7 +1,7 @@
 /** @format */
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Pencil, Trash2 } from "lucide-react";
+import { Star, Pencil, Trash2, Coins } from "lucide-react";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
 import { CardActionMenu } from "../../-components/card-action-menu";
 import { EditRewardItemDialog } from "./edit-reward-item-dialog";
@@ -41,8 +41,8 @@ export function RewardItemCardMobile({
     );
 
     return (
-        <Card className="relative">
-            <CardContent className="flex flex-col items-center pt-6 pb-4 text-center">
+        <Card className="relative h-[150px]">
+            <CardContent className="p-0 flex flex-col items-center text-center">
                 {canManage && (
                     <div className="absolute top-2 right-2 z-10">
                         <CardActionMenu>
@@ -64,9 +64,9 @@ export function RewardItemCardMobile({
                 )}
                 {iconBlock}
                 <span className="mt-2 line-clamp-2 text-sm">{rewardItem.name}</span>
-                <span className="mt-1 text-xs text-amber-700 dark:text-amber-400">
-                    {cost}
-                </span>
+                <div className="mt-1 flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
+                    <Coins className="size-4" />{cost}
+                </div>
             </CardContent>
         </Card>
     );

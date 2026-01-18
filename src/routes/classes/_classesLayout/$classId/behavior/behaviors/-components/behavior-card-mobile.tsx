@@ -39,8 +39,8 @@ export function BehaviorCardMobile({
     );
 
     return (
-        <Card className="relative">
-            <CardContent className="flex flex-col items-center pt-6 pb-4 text-center">
+        <Card className="relative h-[150px]">
+            <CardContent className="p-0 flex flex-col items-center text-center">
                 {canManage && (
                     <div className="absolute top-2 right-2 z-10">
                         <CardActionMenu>

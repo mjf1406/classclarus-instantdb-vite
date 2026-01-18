@@ -13,6 +13,7 @@ import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { StudentPointsCard } from "./-components/student-points-card";
+import { ApplyActionDialog } from "./-components/apply-action-dialog";
 
 const ALL_VALUE = "__all__";
 
@@ -97,10 +98,18 @@ function RouteComponent() {
         for (const s of students) {
             const fromLogs = logs
                 .filter((l) => l.student?.id === s.id)
-                .reduce((sum, l) => sum + (l.behavior?.points ?? 0), 0);
+                .reduce(
+                    (sum, l) =>
+                        sum + (l.behavior?.points ?? 0) * ((l.quantity ?? 1) as number),
+                    0
+                );
             const spent = redemptions
                 .filter((r) => r.student?.id === s.id)
-                .reduce((sum, r) => sum + (r.rewardItem?.cost ?? 0), 0);
+                .reduce(
+                    (sum, r) =>
+                        sum + (r.rewardItem?.cost ?? 0) * ((r.quantity ?? 1) as number),
+                    0
+                );
             map.set(s.id, fromLogs - spent);
         }
         return map;
@@ -109,6 +118,37 @@ function RouteComponent() {
         classEntity?.rewardRedemptions,
         classEntity?.classStudents,
     ]);
+
+    const getStudentAggregates = (studentId: string) => {
+        const logs = (classEntity?.behaviorLogs ?? []).filter(
+            (l) => l.student?.id === studentId
+        );
+        const redemptions = (classEntity?.rewardRedemptions ?? []).filter(
+            (r) => r.student?.id === studentId
+        );
+
+        let awardedPoints = 0;
+        let removedPoints = 0;
+        let redeemedPoints = 0;
+
+        for (const log of logs) {
+            const points = log.behavior?.points ?? 0;
+            const qty = (log.quantity ?? 1) as number;
+            if (points >= 0) {
+                awardedPoints += points * qty;
+            } else {
+                removedPoints += Math.abs(points) * qty;
+            }
+        }
+
+        for (const redemption of redemptions) {
+            const cost = redemption.rewardItem?.cost ?? 0;
+            const qty = (redemption.quantity ?? 1) as number;
+            redeemedPoints += cost * qty;
+        }
+
+        return { awardedPoints, removedPoints, redeemedPoints };
+    };
 
     const filteredStudents = useMemo(() => {
         const list = classEntity?.classStudents ?? [];
@@ -293,20 +333,43 @@ function RouteComponent() {
                     </Card>
                 ) : (
                     <div className="grid grid-cols-4 gap-2 md:gap-4">
-                        {filteredStudents.map((student) => (
-                            <StudentPointsCard
-                                key={student.id}
-                                student={student}
-                                classId={classId ?? ""}
-                                totalPoints={pointsMap.get(student.id) ?? 0}
-                                existingRoster={getRosterForStudent(student.id)}
-                                canManage={canManage}
-                                lastAction={getLastActionForStudent(student.id)}
-                                lastBehavior={getLastBehaviorForStudent(
-                                    student.id
-                                )}
-                            />
-                        ))}
+                        {filteredStudents.map((student) => {
+                            const aggregates = getStudentAggregates(student.id);
+                            const card = (
+                                <StudentPointsCard
+                                    key={student.id}
+                                    student={student}
+                                    classId={classId ?? ""}
+                                    totalPoints={pointsMap.get(student.id) ?? 0}
+                                    existingRoster={getRosterForStudent(student.id)}
+                                    canManage={canManage}
+                                    lastAction={getLastActionForStudent(student.id)}
+                                    lastBehavior={getLastBehaviorForStudent(
+                                        student.id
+                                    )}
+                                />
+                            );
+
+                            if (canManage) {
+                                return (
+                                    <ApplyActionDialog
+                                        key={student.id}
+                                        student={student}
+                                        classId={classId ?? ""}
+                                        totalPoints={pointsMap.get(student.id) ?? 0}
+                                        existingRoster={getRosterForStudent(student.id)}
+                                        awardedPoints={aggregates.awardedPoints}
+                                        removedPoints={aggregates.removedPoints}
+                                        redeemedPoints={aggregates.redeemedPoints}
+                                        canManage={canManage}
+                                    >
+                                        {card}
+                                    </ApplyActionDialog>
+                                );
+                            }
+
+                            return card;
+                        })}
                     </div>
                 )}
             </div>

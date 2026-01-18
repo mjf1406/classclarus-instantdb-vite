@@ -101,9 +101,11 @@ const _schema = i.schema({
         }),
         behavior_logs: i.entity({
             createdAt: i.date().indexed(),
+            quantity: i.number().optional(),
         }),
         reward_redemptions: i.entity({
             createdAt: i.date().indexed(),
+            quantity: i.number().optional(),
         }),
         folders: i.entity({
             name: i.string().indexed(),

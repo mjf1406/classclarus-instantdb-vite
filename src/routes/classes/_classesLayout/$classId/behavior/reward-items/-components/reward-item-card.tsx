@@ -15,6 +15,8 @@ interface RewardItemCardProps {
     canManage: boolean;
     /** When true, always use desktop layout (e.g. in List view on mobile). */
     preferDesktop?: boolean;
+    /** When true, always use mobile layout. */
+    preferMobile?: boolean;
 }
 
 export function RewardItemCard({
@@ -22,7 +24,17 @@ export function RewardItemCard({
     classId,
     canManage,
     preferDesktop = false,
+    preferMobile = false,
 }: RewardItemCardProps) {
+    if (preferMobile) {
+        return (
+            <RewardItemCardMobile
+                rewardItem={rewardItem}
+                classId={classId}
+                canManage={canManage}
+            />
+        );
+    }
     if (preferDesktop) {
         return (
             <RewardItemCardDesktop
