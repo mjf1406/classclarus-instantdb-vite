@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState, useEffect } from "react";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { db } from "@/lib/db/db";
 import {
     Dialog,
@@ -21,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { FontAwesomeIconPickerLazy } from "@/components/icons/FontAwesomeIconPickerLazy";
+import { resolveIconId } from "@/lib/fontawesome-icon-catalog";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -38,6 +41,7 @@ export function EditFolderDialog({
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [iconDef, setIconDef] = useState<IconDefinition | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +49,11 @@ export function EditFolderDialog({
         if (open && folder) {
             setName(folder.name || "");
             setDescription(folder.description || "");
+            if (folder.icon) {
+                resolveIconId(folder.icon).then(setIconDef);
+            } else {
+                setIconDef(null);
+            }
         }
     }, [open, folder]);
 
@@ -83,6 +92,7 @@ export function EditFolderDialog({
         if (!newOpen) {
             setName("");
             setDescription("");
+            setIconDef(null);
             setError(null);
         }
     };
@@ -123,6 +133,31 @@ export function EditFolderDialog({
                             rows={3}
                             disabled={isSubmitting}
                         />
+                    </FieldContent>
+                </Field>
+
+                <Field>
+                    <FieldLabel>Icon</FieldLabel>
+                    <FieldContent>
+                        <div className="flex items-center gap-2">
+                            <FontAwesomeIconPickerLazy
+                                value={iconDef}
+                                onChange={(def) => setIconDef(def)}
+                                placeholder="Pick an icon (optional)"
+                                disabled={isSubmitting}
+                            />
+                            {iconDef && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIconDef(null)}
+                                    disabled={isSubmitting}
+                                >
+                                    Clear
+                                </Button>
+                            )}
+                        </div>
                     </FieldContent>
                 </Field>
 

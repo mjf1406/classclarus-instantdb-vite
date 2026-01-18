@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { CreateRewardItemDialog } from "./-components/create-reward-item-dialog";
 import { RewardItemCard } from "./-components/reward-item-card";
+import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
 import { CreateFolderDialog } from "../-components/folders/create-folder-dialog";
 import { EditFolderDialog } from "../-components/folders/edit-folder-dialog";
 import { DeleteFolderDialog } from "../-components/folders/delete-folder-dialog";
@@ -143,8 +144,8 @@ function RouteComponent() {
     const listView = (
         <>
             {dataLoading ? (
-                <div className="space-y-4">
-                    {[1, 2, 3].map((i) => (
+                <div className="grid grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
                         <Card key={i}>
                             <CardContent className="py-6">
                                 <Skeleton className="h-6 w-48 mb-4" />
@@ -155,33 +156,37 @@ function RouteComponent() {
                     ))}
                 </div>
             ) : rewardItems.length === 0 ? (
-                <Card>
-                    <CardContent className="py-12 text-center">
-                        <Star className="size-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground mb-4">
-                            No reward items have been created yet.
-                        </p>
-                        {canManage && (
-                            <CreateRewardItemDialog classId={classId}>
-                                <Button>
-                                    <Plus className="size-4 mr-2" />
-                                    Create Your First Reward Item
-                                </Button>
-                            </CreateRewardItemDialog>
-                        )}
-                    </CardContent>
-                </Card>
+                <div className="grid grid-cols-4 gap-4">
+                    <Card className="col-span-4">
+                        <CardContent className="py-12 text-center">
+                            <Star className="size-12 mx-auto text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground mb-4">
+                                No reward items have been created yet.
+                            </p>
+                            {canManage && (
+                                <CreateRewardItemDialog classId={classId}>
+                                    <Button>
+                                        <Plus className="size-4 mr-2" />
+                                        Create Your First Reward Item
+                                    </Button>
+                                </CreateRewardItemDialog>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             ) : filteredRewardItems.length === 0 ? (
-                <Card>
-                    <CardContent className="py-12 text-center">
-                        <Search className="size-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">
-                            No results for &quot;{search.trim()}&quot;.
-                        </p>
-                    </CardContent>
-                </Card>
+                <div className="grid grid-cols-4 gap-4">
+                    <Card className="col-span-4">
+                        <CardContent className="py-12 text-center">
+                            <Search className="size-12 mx-auto text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground">
+                                No results for &quot;{search.trim()}&quot;.
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
             ) : (
-                <div className="space-y-4">
+                <div className="grid grid-cols-4 gap-4">
                     {filteredRewardItems.map((rewardItem) => (
                         <RewardItemCard
                             key={rewardItem.id}
@@ -265,7 +270,17 @@ function RouteComponent() {
                                     <div className="flex items-center justify-between pr-2">
                                         <CollapsibleTrigger asChild>
                                             <CardContent className="group flex flex-1 items-center gap-3 py-4 cursor-pointer hover:bg-muted/50 rounded-lg">
-                                                <Folder className="size-5 text-primary shrink-0" />
+                                                {folder.icon ? (
+                                                    <FontAwesomeIconFromId
+                                                        id={folder.icon}
+                                                        className="size-5 text-primary shrink-0"
+                                                        fallback={
+                                                            <Folder className="size-5 text-primary shrink-0" />
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <Folder className="size-5 text-primary shrink-0" />
+                                                )}
                                                 <span className="font-medium">
                                                     {folder.name}
                                                 </span>

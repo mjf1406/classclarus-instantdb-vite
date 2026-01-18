@@ -42,6 +42,13 @@ export default defineConfig({
                     ],
                     // Icons (often large due to tree-shaking limits)
                     "vendor-icons": ["lucide-react"],
+                    // FontAwesome runtime (small; icon sets are dynamic-imported in fontawesome-icon-catalog)
+                    "vendor-fa": [
+                        "@fortawesome/react-fontawesome",
+                        "@fortawesome/fontawesome-svg-core",
+                    ],
+                    // Virtual list — only used by FontAwesomeIconPicker (lazy-loaded)
+                    "vendor-virtual": ["@tanstack/react-virtual"],
                 },
             },
         },

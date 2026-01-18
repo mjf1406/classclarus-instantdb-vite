@@ -85,6 +85,7 @@ const _schema = i.schema({
         behaviors: i.entity({
             name: i.string().indexed(),
             description: i.string().optional(),
+            icon: i.string().optional(),
             points: i.number().indexed(),
             created: i.date(),
             updated: i.date(),
@@ -92,6 +93,7 @@ const _schema = i.schema({
         reward_items: i.entity({
             name: i.string().indexed(),
             description: i.string().optional(),
+            icon: i.string().optional(),
             cost: i.number().indexed(),
             created: i.date(),
             updated: i.date(),
@@ -105,6 +107,7 @@ const _schema = i.schema({
         folders: i.entity({
             name: i.string().indexed(),
             description: i.string().optional(),
+            icon: i.string().optional(),
             created: i.date(),
             updated: i.date(),
         }),

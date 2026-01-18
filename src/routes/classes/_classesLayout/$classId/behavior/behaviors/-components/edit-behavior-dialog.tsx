@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState, useEffect } from "react";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { db } from "@/lib/db/db";
 import {
     Dialog,
@@ -21,7 +22,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { FontAwesomeIconPickerLazy } from "@/components/icons/FontAwesomeIconPickerLazy";
 import { FolderSelect } from "../../-components/folders/folder-select";
+import { resolveIconId } from "@/lib/fontawesome-icon-catalog";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -47,6 +50,7 @@ export function EditBehaviorDialog({
     const [description, setDescription] = useState("");
     const [pointsStr, setPointsStr] = useState("");
     const [folderId, setFolderId] = useState<string | null>(null);
+    const [iconDef, setIconDef] = useState<IconDefinition | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +64,11 @@ export function EditBehaviorDialog({
                     : ""
             );
             setFolderId(behavior.folder?.id ?? null);
+            if (behavior.icon) {
+                resolveIconId(behavior.icon).then(setIconDef);
+            } else {
+                setIconDef(null);
+            }
         }
     }, [open, behavior]);
 
@@ -86,6 +95,7 @@ export function EditBehaviorDialog({
                 db.tx.behaviors[behavior.id].update({
                     name: name.trim(),
                     description: description.trim() || undefined,
+                    icon: iconDef ? `${iconDef.prefix}:${iconDef.iconName}` : undefined,
                     points,
                     updated: now,
                 }),
@@ -120,6 +130,7 @@ export function EditBehaviorDialog({
             setDescription("");
             setPointsStr("");
             setFolderId(null);
+            setIconDef(null);
             setError(null);
         }
     };
@@ -160,6 +171,31 @@ export function EditBehaviorDialog({
                             rows={3}
                             disabled={isSubmitting}
                         />
+                    </FieldContent>
+                </Field>
+
+                <Field>
+                    <FieldLabel>Icon</FieldLabel>
+                    <FieldContent>
+                        <div className="flex items-center gap-2">
+                            <FontAwesomeIconPickerLazy
+                                value={iconDef}
+                                onChange={(def) => setIconDef(def)}
+                                placeholder="Pick an icon (optional)"
+                                disabled={isSubmitting}
+                            />
+                            {iconDef && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIconDef(null)}
+                                    disabled={isSubmitting}
+                                >
+                                    Clear
+                                </Button>
+                            )}
+                        </div>
                     </FieldContent>
                 </Field>
 

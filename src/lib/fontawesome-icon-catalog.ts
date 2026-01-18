@@ -43,23 +43,45 @@ export async function loadIconOptions(
 
   const mod = await importCategory(category);
 
-  // The module exports many things (including packs like `fas`/`far`/`fab`).
-  // We only keep actual IconDefinition objects.
-  const icons = Object.values(mod as Record<string, unknown>)
-    .filter(isIconDefinition)
-    .map((icon) => {
-      const name = icon.iconName;
-      const prefix = icon.prefix;
-      return {
-        id: `${prefix}:${name}`,
-        name,
-        prefix,
-        icon,
-        search: name.toLowerCase().replace(/-/g, " "),
-      } satisfies IconOption;
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const unique = new Map<string, IconOption>();
+
+for (const value of Object.values(mod as Record<string, unknown>)) {
+  if (!isIconDefinition(value)) continue;
+  const icon = value;
+  const name = icon.iconName;
+  const prefix = icon.prefix;
+  const id = `${prefix}:${name}`;
+
+  if (unique.has(id)) continue;
+
+  unique.set(id, {
+    id,
+    name,
+    prefix,
+    icon,
+    search: name.toLowerCase().replace(/-/g, " "),
+  });
+}
+
+const icons = Array.from(unique.values()).sort((a, b) =>
+  a.name.localeCompare(b.name),
+);
 
   cache.set(category, icons);
   return icons;
+}
+
+const PREFIX_TO_CATEGORY: Record<string, IconCategory> = {
+  fas: "solid",
+  far: "regular",
+  fab: "brands",
+};
+
+export async function resolveIconId(id: string): Promise<IconDefinition | null> {
+  const [prefix] = id.split(":");
+  const category = PREFIX_TO_CATEGORY[prefix];
+  if (!category) return null;
+  const opts = await loadIconOptions(category);
+  const found = opts.find((o) => o.id === id);
+  return found ? found.icon : null;
 }
