@@ -110,32 +110,16 @@ export function ClassClarusLinks({ onLinkClick }: ClassClarusLinksProps) {
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         asChild
-                        tooltip="Security"
+                        tooltip="Privacy and Security"
                     >
                         <a
-                            href="https://www.classclarus.com/security"
+                            href="https://www.classclarus.com/privacy-and-security"
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={onLinkClick}
                         >
                             <Lock />
-                            <span>Security</span>
-                        </a>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        tooltip="Privacy"
-                    >
-                        <a
-                            href="https://www.classclarus.com/privacy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={onLinkClick}
-                        >
-                            <Shield />
-                            <span>Privacy</span>
+                            <span>Privacy and Security</span>
                         </a>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

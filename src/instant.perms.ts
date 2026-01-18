@@ -191,6 +191,14 @@ const dashboardSettingsBinds = {
     isClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
 };
 
+// Behavior and reward log/redemption binds (for behavior_logs, reward_redemptions)
+const behaviorRewardLogBinds = {
+    isBehaviorLogForMyself: "auth.id in data.ref('student.id')",
+    isGuardianOfBehaviorLogStudent: "auth.id in data.ref('student.guardians.id')",
+    isRewardRedemptionForMyself: "auth.id in data.ref('student.id')",
+    isGuardianOfRewardRedemptionStudent: "auth.id in data.ref('student.guardians.id')",
+};
+
 // Add after dashboardSettingsBinds
 const studentDashboardPreferencesBinds = {
     isMyself: "auth.id in data.ref('user.id')",
@@ -240,7 +248,7 @@ const USER_SELF_AND_FAMILY = "isMyself || isMyChild || isMyGuardian";
 // Full profile access for class staff, admins, guardians viewing teachers, and students viewing teachers
 // NOTE: isStudentInMyClassAsGuardian is excluded so guardians only see full info for their own children
 // NOTE: isGuardianInMyClassAsStudent is excluded so students only see full info for their own guardians
-4// Full profile access for class staff, admins, guardians viewing teachers, students viewing teachers, AND students viewing other students
+// Full profile access for class staff, admins, guardians viewing teachers, students viewing teachers, AND students viewing other students
 const USER_ALL_CLASS_RELATIONSHIPS = [
     "isMyChildInSharedClass",
     "isMyGuardianInSharedClass",
@@ -437,6 +445,60 @@ const rules = {
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...studentDashboardPreferencesBinds,
+        }),
+    },
+
+    behaviors: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+        }),
+    },
+
+    reward_items: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+        }),
+    },
+
+    behavior_logs: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isBehaviorLogForMyself || isGuardianOfBehaviorLogStudent)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+            ...behaviorRewardLogBinds,
+        }),
+    },
+
+    reward_redemptions: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isRewardRedemptionForMyself || isGuardianOfRewardRedemptionStudent)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+            ...behaviorRewardLogBinds,
         }),
     },
 } satisfies InstantRules;

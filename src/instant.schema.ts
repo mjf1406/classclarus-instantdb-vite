@@ -82,6 +82,26 @@ const _schema = i.schema({
             created: i.date(),
             updated: i.date(),
         }),
+        behaviors: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            points: i.number().indexed(),
+            created: i.date(),
+            updated: i.date(),
+        }),
+        reward_items: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            cost: i.number().indexed(),
+            created: i.date(),
+            updated: i.date(),
+        }),
+        behavior_logs: i.entity({
+            createdAt: i.date().indexed(),
+        }),
+        reward_redemptions: i.entity({
+            createdAt: i.date().indexed(),
+        }),
     },
     links: {
         userClasses: {
@@ -357,6 +377,132 @@ const _schema = i.schema({
                 has: "many",
                 label: "studentDashboardPreferences",
             }, // Each class can have many student preferences (one per student)
+        },
+        classBehaviors: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "behaviors",
+            },
+            reverse: {
+                on: "behaviors",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        classRewardItems: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "rewardItems",
+            },
+            reverse: {
+                on: "reward_items",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        classBehaviorLogs: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "behaviorLogs",
+            },
+            reverse: {
+                on: "behavior_logs",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        behaviorLogBehavior: {
+            forward: {
+                on: "behavior_logs",
+                has: "one",
+                label: "behavior",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "behaviors",
+                has: "many",
+                label: "behaviorLogs",
+            },
+        },
+        behaviorLogStudent: {
+            forward: {
+                on: "behavior_logs",
+                has: "one",
+                label: "student",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "behaviorLogsAsStudent",
+            },
+        },
+        behaviorLogCreatedBy: {
+            forward: {
+                on: "behavior_logs",
+                has: "one",
+                label: "createdBy",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "behaviorLogsAsCreatedBy",
+            },
+        },
+        classRewardRedemptions: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "rewardRedemptions",
+            },
+            reverse: {
+                on: "reward_redemptions",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        rewardRedemptionRewardItem: {
+            forward: {
+                on: "reward_redemptions",
+                has: "one",
+                label: "rewardItem",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "reward_items",
+                has: "many",
+                label: "rewardRedemptions",
+            },
+        },
+        rewardRedemptionStudent: {
+            forward: {
+                on: "reward_redemptions",
+                has: "one",
+                label: "student",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "rewardRedemptionsAsStudent",
+            },
+        },
+        rewardRedemptionCreatedBy: {
+            forward: {
+                on: "reward_redemptions",
+                has: "one",
+                label: "createdBy",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "rewardRedemptionsAsCreatedBy",
+            },
         },
     },
     rooms: {},
