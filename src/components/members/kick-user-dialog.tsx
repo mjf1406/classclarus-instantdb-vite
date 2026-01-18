@@ -31,6 +31,7 @@ type ClassWithRoles = InstaQLEntity<
         classAssistantTeachers: {};
         classStudents: {};
         classGuardians: {};
+        classRoster: {};
     }
 >;
 
@@ -90,6 +91,9 @@ export function KickUserDialog({
                       classAssistantTeachers: {},
                       classStudents: {},
                       classGuardians: {},
+                      classRoster: {
+                          $: { where: { "student.id": user.id } },
+                      },
                   },
               }
             : null;
@@ -175,6 +179,13 @@ export function KickUserDialog({
                             classStudents: user.id,
                         })
                     );
+                    // Delete class_roster rows for this (class, student)
+                    const rosterRows = classEntity.classRoster ?? [];
+                    for (const row of rosterRows) {
+                        if (row?.id) {
+                            transactions.push(db.tx.class_roster[row.id].delete());
+                        }
+                    }
                 }
                 if (
                     classEntity.classGuardians?.some((g) => g.id === user.id)

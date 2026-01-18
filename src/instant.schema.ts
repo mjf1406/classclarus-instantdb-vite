@@ -20,6 +20,7 @@ const _schema = i.schema({
             plan: i.string().optional(),
             firstName: i.string().optional(),
             lastName: i.string().optional(),
+            gender: i.string().optional(),
             created: i.date().optional(),
             updated: i.date().optional(),
             lastLogon: i.date().optional(),
@@ -110,6 +111,9 @@ const _schema = i.schema({
             icon: i.string().optional(),
             created: i.date(),
             updated: i.date(),
+        }),
+        class_roster: i.entity({
+            number: i.number().optional(),
         }),
     },
     links: {
@@ -548,6 +552,32 @@ const _schema = i.schema({
                 on: "folders",
                 has: "many",
                 label: "rewardItems",
+            },
+        },
+        classClassRoster: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "classRoster",
+            },
+            reverse: {
+                on: "class_roster",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        classRosterStudent: {
+            forward: {
+                on: "class_roster",
+                has: "one",
+                label: "student",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "studentClassRoster",
             },
         },
     },

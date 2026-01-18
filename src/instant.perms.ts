@@ -210,6 +210,15 @@ const studentDashboardPreferencesBinds = {
     isClassMember: "auth.id in data.ref('class.classStudents.id') || auth.id in data.ref('class.classTeachers.id') || auth.id in data.ref('class.classAssistantTeachers.id')",
 };
 
+const classRosterBinds = {
+    isClassRosterClassOwner: "auth.id in data.ref('class.owner.id')",
+    isClassRosterClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isClassRosterClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isClassRosterClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isClassRosterStudent: "auth.id in data.ref('student.id')",
+    isGuardianOfClassRosterStudent: "auth.id in data.ref('student.guardians.id')",
+};
+
 // ============================================================
 //                  COMBINED BIND OBJECTS
 // ============================================================
@@ -289,7 +298,7 @@ const USER_CAN_VIEW_PRIVATE_INFO = `isAuthenticated && ( ${USER_SELF_AND_FAMILY}
 
 // User update permissions
 const USER_CLASS_ADMIN_UPDATE =
-    "auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('guardianClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('assistantTeacherClasses.classAdmins.id') || auth.id in data.ref('teacherOrganizations.admins.id')";
+    "auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('studentClasses.classTeachers.id') || auth.id in data.ref('studentClasses.classAssistantTeachers.id') || auth.id in data.ref('guardianClasses.classAdmins.id') || auth.id in data.ref('teacherClasses.classAdmins.id') || auth.id in data.ref('assistantTeacherClasses.classAdmins.id') || auth.id in data.ref('teacherOrganizations.admins.id')";
 
 const USER_CAN_UPDATE = `isAuthenticated && ((isOwner && isStillOwner) || (${USER_CLASS_ADMIN_UPDATE}))`;
 
@@ -338,6 +347,7 @@ const rules = {
             avatarURL: USER_CAN_VIEW_PROFILE,
             firstName: USER_CAN_VIEW_PROFILE,
             lastName: USER_CAN_VIEW_PROFILE,
+            gender: USER_CAN_VIEW_PROFILE,
             // Private fields: only self and family
             type: USER_CAN_VIEW_PRIVATE_INFO,
             plan: USER_CAN_VIEW_PRIVATE_INFO,
@@ -445,6 +455,19 @@ const rules = {
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...studentDashboardPreferencesBinds,
+        }),
+    },
+
+    class_roster: {
+        allow: {
+            create: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
+            view: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher || isClassRosterStudent || isGuardianOfClassRosterStudent)",
+            update: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
+            delete: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...classRosterBinds,
         }),
     },
 
