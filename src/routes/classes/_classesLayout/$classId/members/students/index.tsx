@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, X, MoreVertical, Pencil } from "lucide-react";
+import { Users, Plus, X, MoreVertical, Pencil, LayoutGrid, Table2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/lib/db/db";
 import { useState } from "react";
@@ -50,6 +50,15 @@ import { RoleManager } from "@/components/members/role-manager";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { EditStudentDialog } from "@/routes/classes/_classesLayout/$classId/behavior/points/-components/edit-student-dialog";
 import { displayNameForStudent } from "@/lib/roster-utils";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/students/"
@@ -177,6 +186,16 @@ function StudentCard({
                                     {student.email}
                                 </div>
                             )}
+                            <div className="text-xs text-muted-foreground mt-0.5 space-y-0.5">
+                                <div>
+                                    User: {student.firstName || "—"} {student.lastName || "—"}
+                                    {" · "}
+                                    Last logon: {student.lastLogon ? format(new Date(student.lastLogon), "MMM d, yyyy") : "—"}
+                                </div>
+                                <div>
+                                    Roster: #{roster?.number ?? "—"} · {roster?.firstName || "—"} {roster?.lastName || "—"} · {roster?.gender ?? "—"}
+                                </div>
+                            </div>
                         </div>
                         {canManage && (
                             <DropdownMenu>
@@ -369,9 +388,120 @@ function StudentCard({
     );
 }
 
+function StudentsTable({
+    students,
+    canManage,
+    classId,
+    rosterByStudentId,
+    guardianNamesByStudentId,
+}: {
+    students: InstaQLEntity<AppSchema, "$users">[];
+    canManage: boolean;
+    classId: string;
+    rosterByStudentId: Map<string, RosterForDisplay>;
+    guardianNamesByStudentId: Map<string, string[]>;
+}) {
+    return (
+        <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>First name (account)</TableHead>
+                        <TableHead>Last name (account)</TableHead>
+                        <TableHead>Last logon</TableHead>
+                        <TableHead>Class number</TableHead>
+                        <TableHead>First name (class)</TableHead>
+                        <TableHead>Last name (class)</TableHead>
+                        <TableHead>Gender (class)</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Guardians</TableHead>
+                        {canManage && <TableHead className="w-[60px]">Actions</TableHead>}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {students.map((student) => {
+                        const roster = rosterByStudentId.get(student.id) ?? null;
+                        const displayName = displayNameForStudent(student, roster);
+                        const initials = displayName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2);
+                        const guardianNames = guardianNamesByStudentId.get(student.id) ?? [];
+                        const guardianNamesStr = guardianNames.length > 0 ? guardianNames.join(", ") : "—";
+                        const lastLogonStr = student.lastLogon
+                            ? format(new Date(student.lastLogon), "MMM d, yyyy")
+                            : "—";
+                        return (
+                            <TableRow key={student.id}>
+                                <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={student.avatarURL || student.imageURL} />
+                                            <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-medium">{displayName}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{student.firstName || "—"}</TableCell>
+                                <TableCell className="text-muted-foreground">{student.lastName || "—"}</TableCell>
+                                <TableCell className="text-muted-foreground whitespace-nowrap">{lastLogonStr}</TableCell>
+                                <TableCell className="text-muted-foreground tabular-nums">{roster?.number ?? "—"}</TableCell>
+                                <TableCell className="text-muted-foreground">{roster?.firstName || "—"}</TableCell>
+                                <TableCell className="text-muted-foreground">{roster?.lastName || "—"}</TableCell>
+                                <TableCell className="text-muted-foreground">{roster?.gender || "—"}</TableCell>
+                                <TableCell className="text-muted-foreground">
+                                    {student.email || "—"}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground max-w-[200px] align-top">
+                                    <span className="line-clamp-2 whitespace-normal" title={guardianNamesStr}>
+                                        {guardianNamesStr}
+                                    </span>
+                                </TableCell>
+                                {canManage && (
+                                    <TableCell>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <MoreVertical className="size-4" />
+                                                    <span className="sr-only">More options</span>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <EditStudentDialog
+                                                    student={student}
+                                                    classId={classId}
+                                                    existingRoster={roster}
+                                                    asDropdownItem
+                                                >
+                                                    <Pencil className="size-4" /> Edit student
+                                                </EditStudentDialog>
+                                                <KickUserDialog
+                                                    user={student}
+                                                    contextType="class"
+                                                    contextId={classId}
+                                                    canKick={canManage}
+                                                    asDropdownItem
+                                                />
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </div>
+    );
+}
+
 function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
+    const [view, setView] = useState<"grid" | "table">("grid");
     
     if (!classId) {
         return null;
@@ -404,6 +534,28 @@ function RouteComponent() {
     }, [(rosterData as { class_roster?: unknown[] } | undefined)?.class_roster]);
 
     const students = classEntity?.classStudents || [];
+    const studentIds = students.map((s) => s.id);
+    const { data: guardiansData } = db.useQuery(
+        studentIds.length > 0
+            ? { $users: { $: { where: { id: { $in: studentIds } } }, guardians: {} } }
+            : null
+    );
+    const guardianNamesByStudentId = useMemo(() => {
+        const m = new Map<string, string[]>();
+        type Guardian = { id?: string; firstName?: string; lastName?: string; email?: string };
+        const list =
+            (guardiansData as { $users?: { id: string; guardians?: Guardian[] }[] } | undefined)
+                ?.$users ?? [];
+        for (const u of list) {
+            const names = (u.guardians ?? []).map((g) => {
+                const full = `${g.firstName ?? ""} ${g.lastName ?? ""}`.trim();
+                return full || g.email || "Unknown";
+            });
+            m.set(u.id, names);
+        }
+        return m;
+    }, [(guardiansData as { $users?: unknown[] } | undefined)?.$users]);
+
     const guardians = classEntity?.classGuardians || [];
     const canManage =
         roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
@@ -429,6 +581,26 @@ function RouteComponent() {
                                 View and manage students in your class
                             </p>
                         </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant={view === "grid" ? "secondary" : "ghost"}
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setView("grid")}
+                            aria-label="Grid view"
+                        >
+                            <LayoutGrid className="size-4" />
+                        </Button>
+                        <Button
+                            variant={view === "table" ? "secondary" : "ghost"}
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setView("table")}
+                            aria-label="Table view"
+                        >
+                            <Table2 className="size-4" />
+                        </Button>
                     </div>
                 </div>
 
@@ -485,22 +657,32 @@ function RouteComponent() {
                                             Active Students
                                         </h2>
                                     </div>
-                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                        {students.map((student) => (
-                                            <StudentCard
-                                                key={student.id}
-                                                student={student}
-                                                canManage={canManage}
-                                                classGuardians={guardians}
-                                                classId={classId}
-                                                roster={
-                                                    rosterByStudentId.get(
-                                                        student.id
-                                                    ) ?? null
-                                                }
-                                            />
-                                        ))}
-                                    </div>
+                                    {view === "grid" ? (
+                                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                            {students.map((student) => (
+                                                <StudentCard
+                                                    key={student.id}
+                                                    student={student}
+                                                    canManage={canManage}
+                                                    classGuardians={guardians}
+                                                    classId={classId}
+                                                    roster={
+                                                        rosterByStudentId.get(
+                                                            student.id
+                                                        ) ?? null
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <StudentsTable
+                                            students={students}
+                                            canManage={canManage}
+                                            classId={classId}
+                                            rosterByStudentId={rosterByStudentId}
+                                            guardianNamesByStudentId={guardianNamesByStudentId}
+                                        />
+                                    )}
                                 </>
                             )}
                         </div>
