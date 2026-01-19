@@ -74,6 +74,7 @@ const _schema = i.schema({
         classDashboardSettings: i.entity({
             groupsTeamsDisplay: i.string().indexed(),
             showPointsWidget: i.boolean().optional(),
+            showExpectationsWidget: i.boolean().optional(),
             created: i.date(),
             updated: i.date(),
         }),
@@ -136,6 +137,21 @@ const _schema = i.schema({
             firstName: i.string().optional(),
             lastName: i.string().optional(),
             gender: i.string().optional(),
+        }),
+        expectations: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            inputType: i.string().indexed(), // 'number' | 'numberRange'
+            unit: i.string().indexed(),
+            created: i.date(),
+            updated: i.date(),
+        }),
+        student_expectations: i.entity({
+            value: i.number().optional(), // for 'number' input type
+            minValue: i.number().optional(), // for 'numberRange' input type
+            maxValue: i.number().optional(), // for 'numberRange' input type
+            created: i.date(),
+            updated: i.date(),
         }),
     },
     links: {
@@ -600,6 +616,57 @@ const _schema = i.schema({
                 on: "$users",
                 has: "many",
                 label: "studentClassRoster",
+            },
+        },
+        classExpectations: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "expectations",
+            },
+            reverse: {
+                on: "expectations",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        expectationStudentExpectations: {
+            forward: {
+                on: "student_expectations",
+                has: "one",
+                label: "expectation",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "expectations",
+                has: "many",
+                label: "studentExpectations",
+            },
+        },
+        studentExpectationStudent: {
+            forward: {
+                on: "student_expectations",
+                has: "one",
+                label: "student",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "studentExpectationsAsStudent",
+            },
+        },
+        classStudentExpectations: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "studentExpectations",
+            },
+            reverse: {
+                on: "student_expectations",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
             },
         },
     },

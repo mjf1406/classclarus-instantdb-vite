@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PointsWidget } from "../../main/dashboard/-components/points-widget";
+import { ExpectationsWidget } from "../../main/dashboard/-components/expectations-widget";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -147,6 +148,7 @@ function SettingsPanel() {
     const typedSettingsData = (settingsData as DashboardSettingsQueryResult | undefined) ?? null;
     const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
     const showPointsWidget = existingSettings?.showPointsWidget ?? false;
+    const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
 
     const handleTogglePointsWidget = (enabled: boolean) => {
         if (!classId) return;
@@ -169,6 +171,35 @@ function SettingsPanel() {
                     .create({
                         groupsTeamsDisplay: "groups", // Default value
                         showPointsWidget: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleToggleExpectationsWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showExpectationsWidget: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showExpectationsWidget: enabled,
                         created: now,
                         updated: now,
                     })
@@ -203,6 +234,25 @@ function SettingsPanel() {
                             </Label>
                             <p className="text-sm text-muted-foreground">
                                 Show points widget on student dashboards
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-start space-x-3 space-y-0">
+                        <Checkbox
+                            id="expectations-widget-toggle"
+                            checked={showExpectationsWidget}
+                            onCheckedChange={handleToggleExpectationsWidget}
+                            className="mt-1"
+                        />
+                        <div className="space-y-1 leading-none">
+                            <Label
+                                htmlFor="expectations-widget-toggle"
+                                className="text-base font-medium cursor-pointer"
+                            >
+                                Expectations Widget
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Show expectations widget on student dashboards
                             </p>
                         </div>
                     </div>
@@ -246,6 +296,7 @@ function PreviewPanel({
     const typedSettingsData = (settingsData as DashboardSettingsQueryResult | undefined) ?? null;
     const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
     const showPointsWidget = existingSettings?.showPointsWidget ?? false;
+    const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
 
     return (
         <Card>
@@ -301,7 +352,7 @@ function PreviewPanel({
                                         This is how the dashboard appears to {displayName}
                                     </p>
                                 </div>
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     {showPointsWidget && classId ? (
                                         <PointsWidget classId={classId} studentId={selectedStudentId} />
                                     ) : (
@@ -309,6 +360,15 @@ function PreviewPanel({
                                             {showPointsWidget
                                                 ? "Loading widget..."
                                                 : "Points widget is disabled. Enable it in Settings to preview."}
+                                        </p>
+                                    )}
+                                    {showExpectationsWidget && classId ? (
+                                        <ExpectationsWidget classId={classId} studentId={selectedStudentId} />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            {showExpectationsWidget
+                                                ? "Loading widget..."
+                                                : "Expectations widget is disabled. Enable it in Settings to preview."}
                                         </p>
                                     )}
                                 </div>

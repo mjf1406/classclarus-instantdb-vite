@@ -7,6 +7,7 @@ import { StudentIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { usePendingMembers } from "@/hooks/use-pending-members";
+import { useClassRoster } from "@/hooks/use-class-roster";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -680,29 +681,7 @@ function RouteComponent() {
     
     const { class: classEntity, isLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
-
-    const rosterQuery =
-        classId && classId.trim() !== ""
-            ? {
-                  class_roster: {
-                      $: { where: { "class.id": classId } },
-                      student: {},
-                  },
-              }
-            : null;
-    const { data: rosterData } = db.useQuery(rosterQuery);
-
-    const rosterByStudentId = useMemo(() => {
-        const m = new Map<
-            string,
-            { id: string; firstName?: string; lastName?: string; gender?: string; number?: number }
-        >();
-        const list = (rosterData as { class_roster?: Array<{ id: string; firstName?: string; lastName?: string; gender?: string; number?: number; student?: { id: string } }> } | undefined)?.class_roster ?? [];
-        for (const r of list) {
-            if (r.student?.id) m.set(r.student.id, r);
-        }
-        return m;
-    }, [(rosterData as { class_roster?: unknown[] } | undefined)?.class_roster]);
+    const { rosterByStudentId } = useClassRoster(classId);
 
     const students = classEntity?.classStudents || [];
     const studentIds = students.map((s) => s.id);

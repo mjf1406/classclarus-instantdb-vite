@@ -219,6 +219,24 @@ const classRosterBinds = {
     isGuardianOfClassRosterStudent: "auth.id in data.ref('student.guardians.id')",
 };
 
+const expectationBinds = {
+    isExpectationClassOwner: "auth.id in data.ref('class.owner.id')",
+    isExpectationClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isExpectationClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isExpectationClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isExpectationClassStudent: "auth.id in data.ref('class.classStudents.id')",
+    isExpectationClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
+};
+
+const studentExpectationBinds = {
+    isStudentExpectationClassOwner: "auth.id in data.ref('class.owner.id')",
+    isStudentExpectationClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isStudentExpectationClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isStudentExpectationClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isStudentExpectationForMyself: "auth.id in data.ref('student.id')",
+    isGuardianOfStudentExpectationStudent: "auth.id in data.ref('student.guardians.id')",
+};
+
 // ============================================================
 //                  COMBINED BIND OBJECTS
 // ============================================================
@@ -240,6 +258,8 @@ const allDataBinds = {
     ...classRoleBinds,
     ...organizationRoleBinds,
     ...groupTeamBinds,
+    ...expectationBinds,
+    ...studentExpectationBinds,
 };
 
 const allBinds = {
@@ -535,6 +555,30 @@ const rules = {
             ...authenticationBinds,
             ...groupTeamBinds,
             ...behaviorRewardLogBinds,
+        }),
+    },
+    expectations: {
+        allow: {
+            view: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher || isExpectationClassAssistantTeacher || isExpectationClassStudent || isExpectationClassGuardian)",
+            create: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
+            update: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
+            delete: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...expectationBinds,
+        }),
+    },
+    student_expectations: {
+        allow: {
+            view: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher || isStudentExpectationForMyself || isGuardianOfStudentExpectationStudent)",
+            create: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
+            update: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
+            delete: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...studentExpectationBinds,
         }),
     },
 } satisfies InstantRules;

@@ -9,6 +9,7 @@ import type { AppSchema } from "@/instant.schema";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PointsWidget } from "./points-widget";
+import { ExpectationsWidget } from "./expectations-widget";
 
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
@@ -134,6 +135,7 @@ export function StudentParentDashboard({
     const typedSettingsData = (settingsData as DashboardSettingsQueryResult | undefined) ?? null;
     const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
     const showPointsWidget = existingSettings?.showPointsWidget ?? false;
+    const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
 
     // Apply personalization styles
     const dashboardStyle: React.CSSProperties = {};
@@ -210,9 +212,14 @@ export function StudentParentDashboard({
                 </div>
             )}
 
-            {showPointsWidget && studentIdForWidget && classId && (
-                <PointsWidget classId={classId} studentId={studentIdForWidget} />
-            )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {showPointsWidget && studentIdForWidget && classId && (
+                    <PointsWidget classId={classId} studentId={studentIdForWidget} />
+                )}
+                {showExpectationsWidget && studentIdForWidget && classId && (
+                    <ExpectationsWidget classId={classId} studentId={studentIdForWidget} />
+                )}
+            </div>
         </div>
     );
 }

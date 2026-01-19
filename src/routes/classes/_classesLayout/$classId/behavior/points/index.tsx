@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassRole } from "@/hooks/use-class-role";
+import { useClassRoster } from "@/hooks/use-class-roster";
 import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -35,7 +36,6 @@ type ClassForPoints = InstaQLEntity<
         classGuardians: {};
         classStudents: { studentGroups: {}; studentTeams: {} };
         groups: { groupTeams: {} };
-        classRoster: { student: {} };
         behaviorLogs: { behavior: {}; student: {} };
         rewardRedemptions: { rewardItem: {}; student: {} };
     }
@@ -63,7 +63,6 @@ function RouteComponent() {
                           studentTeams: {},
                       },
                       groups: { groupTeams: {} },
-                      classRoster: { student: {} },
                       behaviorLogs: { behavior: {}, student: {} },
                       rewardRedemptions: { rewardItem: {}, student: {} },
                   },
@@ -112,6 +111,7 @@ function PointsPageContent({
 }: PointsPageContentProps) {
     const [selectedGroupId, setSelectedGroupId] = useState<string>(ALL_VALUE);
     const [selectedTeamId, setSelectedTeamId] = useState<string>(ALL_VALUE);
+    const { getRosterForStudent } = useClassRoster(classId);
 
     const groups = classEntity?.groups ?? [];
     const selectedGroup = groups.find((g) => g.id === selectedGroupId);
@@ -199,20 +199,6 @@ function PointsPageContent({
         selectedGroupId,
         selectedTeamId,
     ]);
-
-    const getRosterForStudent = (studentId: string) => {
-        const roster = (classEntity?.classRoster ?? []).find(
-            (r) => r.student?.id === studentId
-        );
-        if (!roster) return null;
-        return {
-            id: roster.id,
-            number: roster.number,
-            firstName: roster.firstName,
-            lastName: roster.lastName,
-            gender: roster.gender,
-        };
-    };
 
     type LastAction = {
         type: "behavior" | "redemption";

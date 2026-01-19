@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { GuardianIcon } from "@/components/icons/role-icons";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
+import { useClassRoster } from "@/hooks/use-class-roster";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -364,30 +365,19 @@ function RouteComponent() {
     
     const { class: classEntity, isLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
+    const { rosterByStudentId: rosterByStudentIdFull } = useClassRoster(classId);
 
-    const rosterQuery =
-        classId && classId.trim() !== ""
-            ? {
-                  class_roster: {
-                      $: { where: { "class.id": classId } },
-                      student: {},
-                  },
-              }
-            : null;
-    const { data: rosterData } = db.useQuery(rosterQuery);
-
+    // Convert to RosterOverride format (only firstName and lastName)
     const rosterByStudentId = useMemo(() => {
         const m = new Map<string, RosterOverride>();
-        const list = (rosterData as { class_roster?: Array<{ firstName?: string; lastName?: string; student?: { id: string } }> } | undefined)?.class_roster ?? [];
-        for (const r of list) {
-            if (r.student?.id)
-                m.set(r.student.id, {
-                    firstName: r.firstName,
-                    lastName: r.lastName,
-                });
-        }
+        rosterByStudentIdFull.forEach((roster, studentId) => {
+            m.set(studentId, {
+                firstName: roster.firstName,
+                lastName: roster.lastName,
+            });
+        });
         return m;
-    }, [(rosterData as { class_roster?: unknown[] } | undefined)?.class_roster]);
+    }, [rosterByStudentIdFull]);
 
     const guardians = classEntity?.classGuardians || [];
     const students = classEntity?.classStudents || [];
