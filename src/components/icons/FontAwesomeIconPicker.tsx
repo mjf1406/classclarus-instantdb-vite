@@ -324,7 +324,7 @@ export function FontAwesomeIconPicker({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[560px] p-3" align="start">
+      <PopoverContent className="w-[360px] h-[400px] p-3" align="start">
         <div className="flex flex-col gap-3">
           <Tabs
             value={category}
@@ -408,7 +408,7 @@ export function FontAwesomeIconPicker({
           <Command shouldFilter={false} className="border">
             <ScrollArea
               ref={gridScrollAreaRootRef}
-              className="h-[320px] w-full"
+              className="h-[145px] w-full"
               onWheelCapture={(e) => {
                 // Prevent Popover/DismissableLayer from interfering with wheel.
                 e.stopPropagation();
