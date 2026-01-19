@@ -1,9 +1,9 @@
 /** @format */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import React from "react";
 import { id } from "@instantdb/react";
-import { Trophy, Award, Flag, Gift, Plus, Folder } from "lucide-react";
+import { Trophy, Award, Flag, Gift, Plus, Folder, ArrowUp } from "lucide-react";
 import { db } from "@/lib/db/db";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
@@ -36,6 +36,7 @@ import { CreateRewardItemDialog } from "../../reward-items/-components/create-re
 import { BehaviorCard } from "../../behaviors/-components/behavior-card";
 import { RewardItemCard } from "../../reward-items/-components/reward-item-card";
 import { FolderItemsDialog } from "./folder-items-dialog";
+import { PointHistoryDialog } from "./point-history-dialog";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -229,7 +230,22 @@ export function ApplyActionDialog({
         behaviorIds: string[];
         rewardItemIds: string[];
     } | null>(null);
+    const [showHistoryHint, setShowHistoryHint] = useState(false);
     const { user } = useAuthContext();
+
+    useEffect(() => {
+        const hintDismissed = localStorage.getItem("point-history-hint-dismissed");
+        if (!hintDismissed) {
+            setShowHistoryHint(true);
+        }
+    }, []);
+
+    const handleHistoryClick = () => {
+        if (showHistoryHint) {
+            localStorage.setItem("point-history-hint-dismissed", "true");
+            setShowHistoryHint(false);
+        }
+    };
 
     const { data: behaviorsData } = db.useQuery(
         classId
@@ -533,7 +549,7 @@ export function ApplyActionDialog({
             >
                 {children}
             </div>
-            <CredenzaContent className="max-w-4xl">
+            <CredenzaContent className="max-w-4xl gap-0.5">
                 <CredenzaHeader>
                     <div className="relative w-full">
                         {rosterNumber !== undefined && rosterNumber !== null && (
@@ -552,19 +568,42 @@ export function ApplyActionDialog({
                                 <Trophy className="size-5 md:size-8 text-yellow-500" />
                                 <span className="text-xl md:text-2xl font-semibold">{totalPoints}</span>
                             </div>
-                            <div className="flex items-center justify-center gap-3 md:gap-6 mb-3 md:mb-6">
-                                <div className="flex items-center gap-1 md:gap-2">
-                                    <Award className="size-4 md:size-6 text-muted-foreground" />
-                                    <span className="text-sm md:text-lg">{awardedPoints}</span>
-                                </div>
-                                <div className="flex items-center gap-1 md:gap-2">
-                                    <Flag className="size-4 md:size-6 text-muted-foreground" />
-                                    <span className="text-sm md:text-lg">-{removedPoints}</span>
-                                </div>
-                                <div className="flex items-center gap-1 md:gap-2">
-                                    <Gift className="size-4 md:size-6 text-muted-foreground" />
-                                    <span className="text-sm md:text-lg">{redeemedPoints}</span>
-                                </div>
+                            <div className="mb-3 md:mb-6">
+                                <PointHistoryDialog
+                                    student={student}
+                                    classId={classId}
+                                    existingRoster={existingRoster}
+                                    canManage={canManage}
+                                >
+                                    <div
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleHistoryClick();
+                                        }}
+                                        className="flex items-center justify-center gap-3 md:gap-6 cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-1 md:gap-2">
+                                            <Award className="size-4 md:size-6 text-muted-foreground" />
+                                            <span className="text-sm md:text-lg">{awardedPoints}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 md:gap-2">
+                                            <Flag className="size-4 md:size-6 text-muted-foreground" />
+                                            <span className="text-sm md:text-lg">-{removedPoints}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 md:gap-2">
+                                            <Gift className="size-4 md:size-6 text-muted-foreground" />
+                                            <span className="text-sm md:text-lg">{redeemedPoints}</span>
+                                        </div>
+                                    </div>
+                                </PointHistoryDialog>
+                                {showHistoryHint && (
+                                    <div className="flex flex-col items-center mt-1 md:mt-2">
+                                        <ArrowUp className="size-4 md:size-5 text-muted-foreground mb-1 animate-pulse" />
+                                        <p className="text-center text-xs md:text-sm text-muted-foreground">
+                                            Click the 3 icons row to view history
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -3,23 +3,33 @@
 import * as React from "react";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
-import type { IconCategory, IconOption } from "@/lib/fontawesome-icon-catalog";
-import { loadIconOptions } from "@/lib/fontawesome-icon-catalog";
-import { UI_CATEGORIES } from "@/lib/fa-icon-categories";
+import { resolveIconId } from "@/lib/fontawesome-icon-catalog";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Command } from "@/components/ui/command";
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+
+import iconCategoriesData from "@/lib/fontawesome-icon-categories.json";
+
+type IconCategoriesData = {
+  metadata: {
+    scrape_date: string;
+    total_categories: number;
+    total_icons: number;
+  };
+  categories: Record<string, string[]>;
+};
+
+const categoriesData = iconCategoriesData as IconCategoriesData;
 
 export type FontAwesomeIconPickerProps = {
   value?: IconDefinition | null;
@@ -27,23 +37,47 @@ export type FontAwesomeIconPickerProps = {
 
   placeholder?: string;
   disabled?: boolean;
-  defaultCategory?: IconCategory;
 
   className?: string;
 };
 
-type LoadState =
-  | { status: "idle" | "loading"; icons: IconOption[] }
-  | { status: "ready"; icons: IconOption[] }
-  | { status: "error"; icons: IconOption[]; error: unknown };
+type ParsedIcon = {
+  id: string; // e.g. "fas:address-card"
+  iconName: string;
+  prefix: "fas" | "far";
+  iconString: string;
+};
 
-function categoryLabel(cat: IconCategory) {
-  switch (cat) {
-    case "solid":
-      return "Solid";
-    case "regular":
-      return "Regular";
+type IconLoadState = {
+  status: "idle" | "loading" | "loaded" | "error";
+  icon: IconDefinition | null;
+};
+
+function parseIconClassString(iconString: string): ParsedIcon | null {
+  // Parse "fa-classic fa-solid fa-address-card" or "fa-classic fa-regular fa-address-card"
+  const parts = iconString.split(" ");
+  const solidIndex = parts.indexOf("fa-solid");
+  const regularIndex = parts.indexOf("fa-regular");
+  
+  let prefix: "fas" | "far" | null = null;
+  let iconName: string | null = null;
+
+  if (solidIndex !== -1 && parts[solidIndex + 1]?.startsWith("fa-")) {
+    prefix = "fas";
+    iconName = parts[solidIndex + 1].replace("fa-", "");
+  } else if (regularIndex !== -1 && parts[regularIndex + 1]?.startsWith("fa-")) {
+    prefix = "far";
+    iconName = parts[regularIndex + 1].replace("fa-", "");
   }
+
+  if (!prefix || !iconName) return null;
+
+  return {
+    id: `${prefix}:${iconName}`,
+    iconName,
+    prefix,
+    iconString,
+  };
 }
 
 function findScrollAreaViewport(root: HTMLElement | null) {
@@ -55,28 +89,164 @@ function findScrollAreaViewport(root: HTMLElement | null) {
   );
 }
 
-function getLigatures(icon: IconOption): string {
-  // IconDefinition.icon is: [w, h, ligatures, unicode, svgPathData]
-  const ligatures = icon.icon.icon?.[2];
-  if (!Array.isArray(ligatures) || ligatures.length === 0) return "";
-  return ligatures
-    .filter((x) => typeof x === "string")
-    .join(" ")
-    .toLowerCase()
-    .replace(/-/g, " ");
+function formatCategoryName(categoryId: string): string {
+  return categoryId
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
-function computeCategoryIds(text: string): string[] {
-  const hits: string[] = [];
-  for (const c of UI_CATEGORIES) {
-    for (const kw of c.keywords) {
-      if (text.includes(kw)) {
-        hits.push(c.id);
-        break;
-      }
+function formatIconNameForDisplay(iconName: string): string[] {
+  return iconName.split("-");
+}
+
+// Simple fuzzy search - checks if query characters appear in order in the text
+function fuzzyMatch(text: string, query: string): { match: boolean; score: number } {
+  if (!query) return { match: true, score: 0 };
+  
+  const textLower = text.toLowerCase();
+  const queryLower = query.toLowerCase();
+  
+  // Exact match gets highest score
+  if (textLower === queryLower) return { match: true, score: 1000 };
+  
+  // Starts with query gets high score
+  if (textLower.startsWith(queryLower)) return { match: true, score: 500 };
+  
+  // Contains query gets medium score
+  if (textLower.includes(queryLower)) return { match: true, score: 100 };
+  
+  // Fuzzy match: check if all query characters appear in order
+  let textIndex = 0;
+  let queryIndex = 0;
+  let consecutiveMatches = 0;
+  let maxConsecutive = 0;
+  
+  while (textIndex < textLower.length && queryIndex < queryLower.length) {
+    if (textLower[textIndex] === queryLower[queryIndex]) {
+      queryIndex++;
+      consecutiveMatches++;
+      maxConsecutive = Math.max(maxConsecutive, consecutiveMatches);
+    } else {
+      consecutiveMatches = 0;
     }
+    textIndex++;
   }
-  return hits;
+  
+  // All query characters found in order
+  if (queryIndex === queryLower.length) {
+    // Score based on how close together the matches are
+    const score = maxConsecutive * 10 + (queryLower.length / textLower.length) * 50;
+    return { match: true, score };
+  }
+  
+  return { match: false, score: 0 };
+}
+
+type LazyIconCellProps = {
+  parsedIcon: ParsedIcon;
+  isSelected: boolean;
+  onSelect: (icon: IconDefinition) => void;
+};
+
+function LazyIconCell({ parsedIcon, isSelected, onSelect }: LazyIconCellProps) {
+  const [loadState, setLoadState] = React.useState<IconLoadState>({
+    status: "idle",
+    icon: null,
+  });
+  const cellRef = React.useRef<HTMLButtonElement>(null);
+  const hasStartedLoadingRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const cell = cellRef.current;
+    if (!cell || hasStartedLoadingRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting && !hasStartedLoadingRef.current) {
+          hasStartedLoadingRef.current = true;
+          setLoadState({ status: "loading", icon: null });
+          resolveIconId(parsedIcon.id)
+            .then((icon) => {
+              if (icon) {
+                setLoadState({ status: "loaded", icon });
+              } else {
+                setLoadState({ status: "error", icon: null });
+              }
+            })
+            .catch(() => {
+              setLoadState({ status: "error", icon: null });
+            });
+        }
+      },
+      { rootMargin: "50px" }
+    );
+
+    observer.observe(cell);
+    return () => observer.disconnect();
+  }, [parsedIcon.id]);
+
+  const handleClick = () => {
+    if (loadState.status === "loaded" && loadState.icon) {
+      onSelect(loadState.icon);
+    }
+  };
+
+  return (
+    <Button
+      ref={cellRef}
+      type="button"
+      variant={isSelected ? "default" : "ghost"}
+      size="icon"
+      className="h-auto w-full min-w-0 flex flex-col items-center justify-center gap-1 p-2"
+      onClick={handleClick}
+      disabled={loadState.status !== "loaded"}
+    >
+      {loadState.status === "loading" || loadState.status === "idle" ? (
+        <>
+          <FontAwesomeIcon
+            icon={faImage}
+            className="text-muted-foreground animate-pulse text-2xl"
+            fixedWidth
+          />
+          <span className="text-[8px] text-muted-foreground leading-none">
+            Loading...
+          </span>
+        </>
+      ) : loadState.status === "error" ? (
+        <>
+          <div className="text-muted-foreground text-xs">?</div>
+          <div className="text-[10px] text-muted-foreground leading-tight w-full min-w-0 text-center">
+            {(() => {
+              const words = formatIconNameForDisplay(parsedIcon.iconName);
+              return words.map((word, idx) => (
+                <React.Fragment key={idx}>
+                  {word}
+                  {idx < words.length - 1 && <br />}
+                </React.Fragment>
+              ));
+            })()}
+          </div>
+        </>
+      ) : loadState.icon ? (
+        <>
+          <FontAwesomeIcon icon={loadState.icon} className="text-2xl" fixedWidth />
+          <div className="text-[10px] leading-tight w-full min-w-0 text-center">
+            {(() => {
+              const words = formatIconNameForDisplay(parsedIcon.iconName);
+              return words.map((word, idx) => (
+                <React.Fragment key={idx}>
+                  {word}
+                  {idx < words.length - 1 && <br />}
+                </React.Fragment>
+              ));
+            })()}
+          </div>
+        </>
+      ) : null}
+    </Button>
+  );
 }
 
 export function FontAwesomeIconPicker({
@@ -84,91 +254,71 @@ export function FontAwesomeIconPicker({
   onChange,
   placeholder = "Pick an icon",
   disabled,
-  defaultCategory = "solid",
   className,
 }: FontAwesomeIconPickerProps) {
   const [open, setOpen] = React.useState(false);
-  const [category, setCategory] = React.useState<IconCategory>(defaultCategory);
-
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
   const deferredQuery = React.useDeferredValue(query.trim().toLowerCase());
 
-  const [selectedCatIds, setSelectedCatIds] = React.useState<string[]>([]);
-  const selectedCatSet = React.useMemo(
-    () => new Set(selectedCatIds),
-    [selectedCatIds],
-  );
-
-  const [state, setState] = React.useState<LoadState>({
-    status: "idle",
-    icons: [],
-  });
-
-  React.useEffect(() => {
-    if (!open) return;
-
-    let cancelled = false;
-
-    setState((s) => ({ status: "loading", icons: s.icons }));
-    loadIconOptions(category)
-      .then((icons) => {
-        if (cancelled) return;
-        setState({ status: "ready", icons });
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        setState({ status: "error", icons: [], error });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open, category]);
-
-  const iconsWithMeta = React.useMemo(() => {
-    return state.icons.map((icon) => {
-      const ligatures = getLigatures(icon);
-      const text = `${icon.search} ${ligatures}`.trim();
-      const catIds = computeCategoryIds(text);
-      return { icon, text, catIds };
-    });
-  }, [state.icons]);
-
-  const categoryCounts = React.useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const c of UI_CATEGORIES) counts.set(c.id, 0);
-
-    for (const it of iconsWithMeta) {
-      for (const cid of it.catIds) {
-        counts.set(cid, (counts.get(cid) ?? 0) + 1);
-      }
-    }
-    return counts;
-  }, [iconsWithMeta]);
-
-  const filtered = React.useMemo(() => {
-    const q = deferredQuery;
-    const filterByCats = selectedCatSet.size > 0;
-
-    const out: IconOption[] = [];
-    for (const it of iconsWithMeta) {
-      if (filterByCats) {
-        let ok = false;
-        for (const cid of it.catIds) {
-          if (selectedCatSet.has(cid)) {
-            ok = true;
-            break;
-          }
+  // Load ALL icons from all categories (for search)
+  const allIcons = React.useMemo(() => {
+    const unique = new Map<string, ParsedIcon>();
+    for (const categoryId of Object.keys(categoriesData.categories)) {
+      const iconStrings = categoriesData.categories[categoryId] || [];
+      const parsed = iconStrings
+        .map(parseIconClassString)
+        .filter((p): p is ParsedIcon => p !== null);
+      for (const icon of parsed) {
+        if (!unique.has(icon.id)) {
+          unique.set(icon.id, icon);
         }
-        if (!ok) continue;
       }
-
-      if (q && !it.text.includes(q)) continue;
-      out.push(it.icon);
     }
+    return Array.from(unique.values());
+  }, []);
 
-    return out;
-  }, [iconsWithMeta, deferredQuery, selectedCatSet]);
+  // Parse icons from the selected category (when not searching)
+  const parsedIcons = React.useMemo(() => {
+    if (deferredQuery) return []; // Don't use category icons when searching
+    if (!selectedCategory) return [];
+    const iconStrings = categoriesData.categories[selectedCategory] || [];
+    const parsed = iconStrings
+      .map(parseIconClassString)
+      .filter((p): p is ParsedIcon => p !== null);
+    // Remove duplicates by id (in case same icon appears multiple times)
+    const unique = new Map<string, ParsedIcon>();
+    for (const icon of parsed) {
+      if (!unique.has(icon.id)) {
+        unique.set(icon.id, icon);
+      }
+    }
+    return Array.from(unique.values()).sort((a, b) =>
+      a.iconName.localeCompare(b.iconName)
+    );
+  }, [selectedCategory, deferredQuery]);
+
+  // Filter icons by search query using fuzzy search
+  const filteredIcons = React.useMemo(() => {
+    if (!deferredQuery) return parsedIcons;
+    
+    // Search across all icons when there's a query
+    const results = allIcons
+      .map((icon) => {
+        const match = fuzzyMatch(icon.iconName, deferredQuery);
+        return { icon, ...match };
+      })
+      .filter((result) => result.match)
+      .sort((a, b) => b.score - a.score) // Sort by score descending
+      .map((result) => result.icon);
+    
+    return results;
+  }, [allIcons, parsedIcons, deferredQuery]);
+
+  // Get category list from JSON
+  const categories = React.useMemo(() => {
+    return Object.keys(categoriesData.categories).sort();
+  }, []);
 
   // Vertical icon grid ScrollArea
   const gridScrollAreaRootRef = React.useRef<HTMLDivElement | null>(null);
@@ -199,27 +349,12 @@ export function FontAwesomeIconPicker({
       cancelled = true;
       window.cancelAnimationFrame(raf);
     };
-  }, [open, category]);
+  }, [open]);
 
-  const [cols, setCols] = React.useState(8);
+  const cols = 4; // Fixed to 4 columns for larger icons
 
-  React.useEffect(() => {
-    if (!gridViewportEl) return;
-
-    const ro = new ResizeObserver(() => {
-      const width = gridViewportEl.clientWidth;
-      const cell = 44;
-      const gap = 8;
-      const next = Math.max(4, Math.min(12, Math.floor(width / (cell + gap))));
-      setCols(next);
-    });
-
-    ro.observe(gridViewportEl);
-    return () => ro.disconnect();
-  }, [gridViewportEl]);
-
-  const rowSize = 52;
-  const rowCount = Math.ceil(filtered.length / cols);
+  const rowSize = 90; // Increased to accommodate larger icon + text
+  const rowCount = Math.ceil(filteredIcons.length / cols);
 
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
@@ -231,7 +366,7 @@ export function FontAwesomeIconPicker({
   React.useEffect(() => {
     if (!gridViewportEl) return;
     rowVirtualizer.measure();
-  }, [gridViewportEl, cols, filtered.length, rowVirtualizer]);
+  }, [gridViewportEl, cols, filteredIcons.length, rowVirtualizer]);
 
   // Horizontal categories ScrollArea (wheel -> horizontal)
   const catScrollAreaRootRef = React.useRef<HTMLDivElement | null>(null);
@@ -262,7 +397,7 @@ export function FontAwesomeIconPicker({
       cancelled = true;
       window.cancelAnimationFrame(raf);
     };
-  }, [open, category]);
+  }, [open]);
 
   React.useEffect(() => {
     const el = catViewportEl;
@@ -288,25 +423,19 @@ export function FontAwesomeIconPicker({
 
   const selectedId = value ? `${value.prefix}:${value.iconName}` : null;
 
-  function toggleUiCategory(id: string) {
-    setSelectedCatIds((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      return [...prev, id];
-    });
-  }
-
-  function clearUiCategories() {
-    setSelectedCatIds([]);
-  }
-
-  function handleSelect(option: IconOption) {
-    onChange?.(option.icon);
+  function handleSelect(icon: IconDefinition) {
+    onChange?.(icon);
     setOpen(false);
   }
 
+  function handleCategorySelect(categoryId: string) {
+    setSelectedCategory(categoryId);
+    setQuery(""); // Clear search when selecting category
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button
           type="button"
           variant="outline"
@@ -322,182 +451,141 @@ export function FontAwesomeIconPicker({
             <span className="text-muted-foreground">{placeholder}</span>
           )}
         </Button>
-      </PopoverTrigger>
+      </DialogTrigger>
 
-      <PopoverContent className="w-[360px] h-[400px] p-3" align="start">
-        <div className="flex flex-col gap-3">
-          <Tabs
-            value={category}
-            onValueChange={(v) => setCategory(v as IconCategory)}
+      <DialogContent className="w-[600px] h-[600px] p-3 flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search icons…"
+            autoComplete="off"
+            spellCheck={false}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setQuery("")}
+            disabled={!query}
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="solid">{categoryLabel("solid")}</TabsTrigger>
-              <TabsTrigger value="regular">
-                {categoryLabel("regular")}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <div className="flex items-center gap-2">
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search icons…"
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setQuery("")}
-              disabled={!query}
-            >
-              Clear
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-xs text-muted-foreground">
-              Categories (multi-select)
-              {selectedCatIds.length ? `: ${selectedCatIds.length} selected` : ""}
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={clearUiCategories}
-              disabled={selectedCatIds.length === 0}
-            >
-              Clear categories
-            </Button>
-          </div>
-
-          <ScrollArea
-            ref={catScrollAreaRootRef}
-            className="w-full rounded-md border"
-          >
-            <div className="flex w-max gap-2 p-2">
-              {UI_CATEGORIES.map((c) => {
-                const active = selectedCatSet.has(c.id);
-                const count = categoryCounts.get(c.id) ?? 0;
-                const disabledCat = state.status !== "ready" || count === 0;
-
-                return (
-                  <Button
-                    key={c.id}
-                    type="button"
-                    size="sm"
-                    variant={active ? "default" : "secondary"}
-                    className={cn(
-                      "shrink-0 gap-2",
-                      disabledCat && "opacity-50",
-                    )}
-                    onClick={() => toggleUiCategory(c.id)}
-                    disabled={disabledCat}
-                    title={`${c.label} (${count})`}
-                  >
-                    <span>{c.label}</span>
-                    <span className="text-xs opacity-70">{count}</span>
-                  </Button>
-                );
-              })}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-
-          <Command shouldFilter={false} className="border">
-            <ScrollArea
-              ref={gridScrollAreaRootRef}
-              className="h-[145px] w-full"
-              onWheelCapture={(e) => {
-                // Prevent Popover/DismissableLayer from interfering with wheel.
-                e.stopPropagation();
-              }}
-            >
-              <div className="relative p-2">
-                {state.status === "loading" && state.icons.length === 0 ? (
-                  <div className="p-2 text-sm text-muted-foreground">
-                    Loading {categoryLabel(category)} icons…
-                  </div>
-                ) : state.status === "error" ? (
-                  <div className="p-2 text-sm text-destructive">
-                    Failed to load icons.
-                  </div>
-                ) : filtered.length === 0 ? (
-                  <div className="p-2 text-sm text-muted-foreground">
-                    No results.
-                  </div>
-                ) : !gridViewportEl ? (
-                  <div className="p-2 text-sm text-muted-foreground">
-                    Initializing…
-                  </div>
-                ) : (
-                  <div
-                    className="relative"
-                    style={{ height: rowVirtualizer.getTotalSize() }}
-                  >
-                    {rowVirtualizer.getVirtualItems().map((row) => {
-                      const start = row.index * cols;
-                      const end = Math.min(start + cols, filtered.length);
-                      const slice = filtered.slice(start, end);
-
-                      return (
-                        <div
-                          key={row.key}
-                          className="absolute left-0 top-0 w-full"
-                          style={{ transform: `translateY(${row.start}px)` }}
-                        >
-                          <div
-                            className="grid gap-2"
-                            style={{
-                              gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-                            }}
-                          >
-                            {slice.map((opt) => {
-                              const active = opt.id === selectedId;
-
-                              return (
-                                <Button
-                                  key={opt.id}
-                                  type="button"
-                                  variant={active ? "default" : "ghost"}
-                                  size="icon"
-                                  className="h-11 w-11"
-                                  title={opt.name}
-                                  onClick={() => handleSelect(opt)}
-                                >
-                                  <FontAwesomeIcon icon={opt.icon} fixedWidth />
-                                </Button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <ScrollBar orientation="vertical" />
-            </ScrollArea>
-
-            <div className="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground">
-              <span>
-                {state.status === "ready" || state.status === "loading"
-                  ? `${filtered.length.toLocaleString()} shown`
-                  : "—"}
-              </span>
-              <span>
-                {state.status === "ready"
-                  ? `${categoryLabel(category)} loaded`
-                  : state.status === "loading"
-                    ? "Loading…"
-                    : ""}
-              </span>
-            </div>
-          </Command>
+            Clear
+          </Button>
         </div>
-      </PopoverContent>
-    </Popover>
+
+        <div className="text-xs text-muted-foreground">
+          {deferredQuery
+            ? `Searching all icons (${filteredIcons.length} results)`
+            : "Select a category to browse icons"}
+        </div>
+
+        <ScrollArea
+          ref={catScrollAreaRootRef}
+          className="w-full rounded-md border"
+        >
+          <div className="flex w-max gap-2 p-2">
+            {categories.map((categoryId) => {
+              const active = selectedCategory === categoryId;
+              const count = categoriesData.categories[categoryId]?.length ?? 0;
+
+              return (
+                <Button
+                  key={categoryId}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "secondary"}
+                  className="shrink-0 gap-2"
+                  onClick={() => handleCategorySelect(categoryId)}
+                  title={`${formatCategoryName(categoryId)} (${count} icons)`}
+                >
+                  <span>{formatCategoryName(categoryId)}</span>
+                  <span className="text-xs opacity-70">{count}</span>
+                </Button>
+              );
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+
+        <div className="flex-1 border rounded-md overflow-hidden">
+          <ScrollArea
+            ref={gridScrollAreaRootRef}
+            className="h-full w-full"
+            onWheelCapture={(e) => {
+              // Prevent Dialog from interfering with wheel.
+              e.stopPropagation();
+            }}
+          >
+            <div className="relative p-2">
+              {!deferredQuery && !selectedCategory ? (
+                <div className="p-4 text-sm text-muted-foreground text-center">
+                  Select a category above to view icons
+                </div>
+              ) : filteredIcons.length === 0 ? (
+                <div className="p-4 text-sm text-muted-foreground text-center">
+                  {deferredQuery ? "No icons match your search." : "No icons in this category."}
+                </div>
+              ) : !gridViewportEl ? (
+                <div className="p-4 text-sm text-muted-foreground text-center">
+                  Initializing…
+                </div>
+              ) : (
+                <div
+                  className="relative"
+                  style={{ height: rowVirtualizer.getTotalSize() }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((row) => {
+                    const start = row.index * cols;
+                    const end = Math.min(start + cols, filteredIcons.length);
+                    const slice = filteredIcons.slice(start, end);
+
+                    return (
+                      <div
+                        key={row.key}
+                        className="absolute left-0 top-0 w-full"
+                        style={{ transform: `translateY(${row.start}px)` }}
+                      >
+                        <div
+                          className="grid gap-2"
+                          style={{
+                            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+                          }}
+                        >
+                          {slice.map((parsedIcon) => {
+                            const active = parsedIcon.id === selectedId;
+
+                            return (
+                              <LazyIconCell
+                                key={parsedIcon.id}
+                                parsedIcon={parsedIcon}
+                                isSelected={active}
+                                onSelect={handleSelect}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <ScrollBar orientation="vertical" />
+          </ScrollArea>
+        </div>
+
+        <div className="flex items-center justify-between border-t px-3 py-2 text-xs text-muted-foreground">
+          <span>
+            {selectedCategory
+              ? `${filteredIcons.length.toLocaleString()} ${filteredIcons.length === 1 ? "icon" : "icons"} shown`
+              : "—"}
+          </span>
+          <span>
+            {selectedCategory ? formatCategoryName(selectedCategory) : ""}
+          </span>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
