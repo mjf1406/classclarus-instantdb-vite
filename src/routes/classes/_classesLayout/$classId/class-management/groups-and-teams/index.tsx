@@ -9,9 +9,16 @@ import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { lazy, Suspense } from "react";
 import { CreateGroupDialog } from "./-components/create-group-dialog";
 import { GroupCard } from "./-components/group-card";
-import { ExportPDFDialog } from "./-components/export-pdf-dialog";
+
+// Lazy-load ExportPDFDialog to defer react-pdf loading until needed
+const ExportPDFDialog = lazy(() =>
+    import("./-components/export-pdf-dialog").then((m) => ({
+        default: m.ExportPDFDialog,
+    }))
+);
 import { useMemo } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -156,15 +163,17 @@ function RouteComponent() {
                 </div>
                 <div className="flex items-center gap-2">
                     {groups.length > 0 && (
-                        <ExportPDFDialog
-                            groups={groups}
-                            className={classEntity?.name || "Class"}
-                        >
-                            <Button variant="outline">
-                                <Download className="size-4 mr-2" />
-                                Export
-                            </Button>
-                        </ExportPDFDialog>
+                        <Suspense fallback={<Button variant="outline" disabled><Download className="size-4 mr-2" />Export</Button>}>
+                            <ExportPDFDialog
+                                groups={groups}
+                                className={classEntity?.name || "Class"}
+                            >
+                                <Button variant="outline">
+                                    <Download className="size-4 mr-2" />
+                                    Export
+                                </Button>
+                            </ExportPDFDialog>
+                        </Suspense>
                     )}
                     {canManage && (
                         <CreateGroupDialog classId={classId}>

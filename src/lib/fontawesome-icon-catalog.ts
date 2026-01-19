@@ -25,8 +25,10 @@ function isIconDefinition(value: unknown): value is IconDefinition {
 async function importCategory(category: IconCategory): Promise<unknown> {
   switch (category) {
     case "solid":
+      // Dynamic import - code-split by Vite via manualChunks config
       return import("@fortawesome/free-solid-svg-icons");
     case "regular":
+      // Dynamic import - code-split by Vite via manualChunks config
       return import("@fortawesome/free-regular-svg-icons");
     default:
       return category satisfies never;

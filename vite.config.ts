@@ -33,31 +33,65 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    // Core React
-                    "vendor-react": ["react", "react-dom"],
-                    // InstantDB (typically large)
-                    "vendor-instant": ["@instantdb/react", "@instantdb/core"],
-                    // Router
-                    "vendor-router": ["@tanstack/react-router"],
-                    // UI libraries
-                    "vendor-ui": [
-                        "@radix-ui/react-avatar",
-                        "@radix-ui/react-dialog",
-                        "vaul",
-                        "class-variance-authority",
-                        "clsx",
-                        "tailwind-merge",
-                    ],
-                    // Icons (often large due to tree-shaking limits)
-                    "vendor-icons": ["lucide-react"],
+                manualChunks: (id) => {
+                    // Only process node_modules packages to avoid circular dependencies
+                    if (!id.includes("node_modules")) {
+                        return null;
+                    }
+                    
+                    // FontAwesome icon packages - separate chunks, loaded on-demand
+                    if (id.includes("@fortawesome/free-solid-svg-icons")) {
+                        return "fa-icons-solid";
+                    }
+                    if (id.includes("@fortawesome/free-regular-svg-icons")) {
+                        return "fa-icons-regular";
+                    }
                     // FontAwesome runtime (small; icon sets are dynamic-imported in fontawesome-icon-catalog)
-                    "vendor-fa": [
-                        "@fortawesome/react-fontawesome",
-                        "@fortawesome/fontawesome-svg-core",
-                    ],
+                    if (
+                        id.includes("@fortawesome/react-fontawesome") ||
+                        id.includes("@fortawesome/fontawesome-svg-core")
+                    ) {
+                        return "vendor-fa";
+                    }
+                    // Core React - be specific to avoid matching other packages
+                    if (
+                        id.includes("node_modules/react/") ||
+                        id.includes("node_modules/react-dom/")
+                    ) {
+                        return "vendor-react";
+                    }
+                    // InstantDB (typically large)
+                    if (id.includes("@instantdb/react") || id.includes("@instantdb/core")) {
+                        return "vendor-instant";
+                    }
+                    // Router
+                    if (id.includes("@tanstack/react-router")) {
+                        return "vendor-router";
+                    }
+                    // UI libraries
+                    if (
+                        id.includes("@radix-ui") ||
+                        id.includes("node_modules/vaul/") ||
+                        id.includes("node_modules/class-variance-authority/") ||
+                        id.includes("node_modules/clsx/") ||
+                        id.includes("node_modules/tailwind-merge/")
+                    ) {
+                        return "vendor-ui";
+                    }
+                    // Icons (often large due to tree-shaking limits)
+                    if (id.includes("lucide-react")) {
+                        return "vendor-icons";
+                    }
                     // Virtual list — only used by FontAwesomeIconPicker (lazy-loaded)
-                    "vendor-virtual": ["@tanstack/react-virtual"],
+                    if (id.includes("@tanstack/react-virtual")) {
+                        return "vendor-virtual";
+                    }
+                    // React-PDF - only used in groups-and-teams route (lazy-loaded)
+                    if (id.includes("@react-pdf/")) {
+                        return "vendor-react-pdf";
+                    }
+                    // Default: let Vite handle it
+                    return null;
                 },
             },
         },

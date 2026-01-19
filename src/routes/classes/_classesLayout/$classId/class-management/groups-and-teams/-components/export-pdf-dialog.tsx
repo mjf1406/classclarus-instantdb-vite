@@ -1,7 +1,6 @@
 /** @format */
 
 import { useState, useMemo } from "react";
-import { pdf } from "@react-pdf/renderer";
 import {
     Dialog,
     DialogContent,
@@ -15,11 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Users, Users2 } from "lucide-react";
-import {
-    GroupsTeamsPDFDocument,
-    type SelectedItem,
-    type Group,
-} from "./groups-teams-pdf-document";
+import type { SelectedItem, Group } from "./groups-teams-pdf-document";
 
 interface ExportPDFDialogProps {
     children: React.ReactNode;
@@ -146,6 +141,12 @@ export function ExportPDFDialog({
         setIsExporting(true);
 
         try {
+            // Lazy-load react-pdf and PDF document component only when exporting
+            const [{ pdf }, { GroupsTeamsPDFDocument }] = await Promise.all([
+                import("@react-pdf/renderer"),
+                import("./groups-teams-pdf-document"),
+            ]);
+
             const selectedItems = buildSelectedItems();
             const generatedDate = new Date().toLocaleDateString("en-US", {
                 year: "numeric",
