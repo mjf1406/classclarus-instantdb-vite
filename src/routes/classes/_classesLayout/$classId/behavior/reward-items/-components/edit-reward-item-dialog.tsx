@@ -4,14 +4,15 @@ import { useState, useEffect } from "react";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { db } from "@/lib/db/db";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+    Credenza,
+    CredenzaTrigger,
+    CredenzaContent,
+    CredenzaDescription,
+    CredenzaFooter,
+    CredenzaHeader,
+    CredenzaTitle,
+    CredenzaBody,
+} from "@/components/ui/credenza";
 import { Button } from "@/components/ui/button";
 import {
     Field,
@@ -21,6 +22,9 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { FontAwesomeIconPickerLazy } from "@/components/icons/FontAwesomeIconPickerLazy";
 import { FolderSelect } from "../../-components/folders/folder-select";
@@ -53,6 +57,14 @@ export function EditRewardItemDialog({
     const [iconDef, setIconDef] = useState<IconDefinition | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Purchase limit fields
+    const [purchaseLimitEnabled, setPurchaseLimitEnabled] = useState(false);
+    const [purchaseLimitCount, setPurchaseLimitCount] = useState<string>("1");
+    const [purchaseLimitType, setPurchaseLimitType] = useState<"recurring" | "dateRange">("recurring");
+    const [purchaseLimitPeriod, setPurchaseLimitPeriod] = useState<"day" | "week" | "month">("week");
+    const [purchaseLimitPeriodMultiplier, setPurchaseLimitPeriodMultiplier] = useState<string>("1");
+    const [purchaseLimitStartDate, setPurchaseLimitStartDate] = useState<string>("");
+    const [purchaseLimitEndDate, setPurchaseLimitEndDate] = useState<string>("");
 
     useEffect(() => {
         if (open && rewardItem) {
@@ -68,6 +80,36 @@ export function EditRewardItemDialog({
                 resolveIconId(rewardItem.icon).then(setIconDef);
             } else {
                 setIconDef(null);
+            }
+            // Load purchase limit fields
+            setPurchaseLimitEnabled(rewardItem.purchaseLimitEnabled ?? false);
+            setPurchaseLimitCount(
+                rewardItem.purchaseLimitCount !== undefined && rewardItem.purchaseLimitCount !== null
+                    ? String(rewardItem.purchaseLimitCount)
+                    : "1"
+            );
+            setPurchaseLimitType(
+                (rewardItem.purchaseLimitType as "recurring" | "dateRange") ?? "recurring"
+            );
+            setPurchaseLimitPeriod(
+                (rewardItem.purchaseLimitPeriod as "day" | "week" | "month") ?? "week"
+            );
+            setPurchaseLimitPeriodMultiplier(
+                rewardItem.purchaseLimitPeriodMultiplier !== undefined && rewardItem.purchaseLimitPeriodMultiplier !== null
+                    ? String(rewardItem.purchaseLimitPeriodMultiplier)
+                    : "1"
+            );
+            if (rewardItem.purchaseLimitStartDate) {
+                const startDate = new Date(rewardItem.purchaseLimitStartDate);
+                setPurchaseLimitStartDate(startDate.toISOString().split("T")[0]);
+            } else {
+                setPurchaseLimitStartDate("");
+            }
+            if (rewardItem.purchaseLimitEndDate) {
+                const endDate = new Date(rewardItem.purchaseLimitEndDate);
+                setPurchaseLimitEndDate(endDate.toISOString().split("T")[0]);
+            } else {
+                setPurchaseLimitEndDate("");
             }
         }
     }, [open, rewardItem]);
@@ -87,6 +129,34 @@ export function EditRewardItemDialog({
             return;
         }
 
+        // Validate purchase limit if enabled
+        if (purchaseLimitEnabled) {
+            const limitCount = Number(purchaseLimitCount);
+            if (Number.isNaN(limitCount) || limitCount <= 0) {
+                setError("Purchase limit count must be a positive number");
+                return;
+            }
+
+            if (purchaseLimitType === "recurring") {
+                const multiplier = Number(purchaseLimitPeriodMultiplier);
+                if (Number.isNaN(multiplier) || multiplier <= 0) {
+                    setError("Period multiplier must be a positive number");
+                    return;
+                }
+            } else if (purchaseLimitType === "dateRange") {
+                if (!purchaseLimitStartDate || !purchaseLimitEndDate) {
+                    setError("Start date and end date are required for date range limits");
+                    return;
+                }
+                const start = new Date(purchaseLimitStartDate);
+                const end = new Date(purchaseLimitEndDate);
+                if (start >= end) {
+                    setError("End date must be after start date");
+                    return;
+                }
+            }
+        }
+
         setIsSubmitting(true);
 
         try {
@@ -98,6 +168,13 @@ export function EditRewardItemDialog({
                     icon: iconDef ? `${iconDef.prefix}:${iconDef.iconName}` : undefined,
                     cost,
                     updated: now,
+                    purchaseLimitEnabled: purchaseLimitEnabled || undefined,
+                    purchaseLimitCount: purchaseLimitEnabled ? Number(purchaseLimitCount) : undefined,
+                    purchaseLimitType: purchaseLimitEnabled ? purchaseLimitType : undefined,
+                    purchaseLimitPeriod: purchaseLimitEnabled && purchaseLimitType === "recurring" ? purchaseLimitPeriod : undefined,
+                    purchaseLimitPeriodMultiplier: purchaseLimitEnabled && purchaseLimitType === "recurring" ? Number(purchaseLimitPeriodMultiplier) : undefined,
+                    purchaseLimitStartDate: purchaseLimitEnabled && purchaseLimitType === "dateRange" ? new Date(purchaseLimitStartDate) : undefined,
+                    purchaseLimitEndDate: purchaseLimitEnabled && purchaseLimitType === "dateRange" ? new Date(purchaseLimitEndDate) : undefined,
                 }),
             ];
             if (
@@ -139,18 +216,28 @@ export function EditRewardItemDialog({
             setFolderId(null);
             setIconDef(null);
             setError(null);
+            setPurchaseLimitEnabled(false);
+            setPurchaseLimitCount("1");
+            setPurchaseLimitType("recurring");
+            setPurchaseLimitPeriod("week");
+            setPurchaseLimitPeriodMultiplier("1");
+            setPurchaseLimitStartDate("");
+            setPurchaseLimitEndDate("");
         }
     };
 
     const formContent = (
-        <form onSubmit={handleSubmit}>
-            <DialogHeader>
-                <DialogTitle>Edit Reward Item</DialogTitle>
-                <DialogDescription>
+        <CredenzaContent className="flex flex-col max-h-[90vh]">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+            <CredenzaHeader>
+                <CredenzaTitle>Edit Reward Item</CredenzaTitle>
+                <CredenzaDescription>
                     Update reward item details and cost.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
+                </CredenzaDescription>
+            </CredenzaHeader>
+            <CredenzaBody className="flex-1 overflow-hidden min-h-0">
+                <ScrollArea className="h-full">
+                    <div className="space-y-4 pr-4 pb-4">
                 <Field>
                     <FieldLabel htmlFor="edit-reward-name">Name *</FieldLabel>
                     <FieldContent>
@@ -230,9 +317,164 @@ export function EditRewardItemDialog({
                     </FieldContent>
                 </Field>
 
+                <Field>
+                    <FieldContent>
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="edit-purchase-limit-enabled"
+                                checked={purchaseLimitEnabled}
+                                onCheckedChange={(checked) => setPurchaseLimitEnabled(checked === true)}
+                                disabled={isSubmitting}
+                            />
+                            <FieldLabel htmlFor="edit-purchase-limit-enabled" className="cursor-pointer">
+                                Enable purchase limit
+                            </FieldLabel>
+                        </div>
+                    </FieldContent>
+                </Field>
+
+                {purchaseLimitEnabled && (
+                    <>
+                        <Field>
+                            <FieldLabel htmlFor="edit-purchase-limit-count">
+                                Maximum purchases *
+                            </FieldLabel>
+                            <FieldContent>
+                                <Input
+                                    id="edit-purchase-limit-count"
+                                    type="number"
+                                    min={1}
+                                    value={purchaseLimitCount}
+                                    onChange={(e) => setPurchaseLimitCount(e.target.value)}
+                                    placeholder="e.g. 1"
+                                    disabled={isSubmitting}
+                                    required
+                                />
+                            </FieldContent>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Maximum number of times this item can be purchased.
+                            </p>
+                        </Field>
+
+                        <Field>
+                            <FieldLabel htmlFor="edit-purchase-limit-type">
+                                Limit type *
+                            </FieldLabel>
+                            <FieldContent>
+                                <Select
+                                    value={purchaseLimitType}
+                                    onValueChange={(value) => setPurchaseLimitType(value as "recurring" | "dateRange")}
+                                    disabled={isSubmitting}
+                                >
+                                    <SelectTrigger id="edit-purchase-limit-type">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="recurring">Recurring Period</SelectItem>
+                                        <SelectItem value="dateRange">Date Range Cycle</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FieldContent>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {purchaseLimitType === "recurring"
+                                    ? "Limit resets every X days/weeks/months."
+                                    : "Limit resets after the end date, then repeats."}
+                            </p>
+                        </Field>
+
+                        {purchaseLimitType === "recurring" && (
+                            <>
+                                <Field>
+                                    <FieldLabel htmlFor="edit-purchase-limit-period">
+                                        Period *
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Select
+                                            value={purchaseLimitPeriod}
+                                            onValueChange={(value) => setPurchaseLimitPeriod(value as "day" | "week" | "month")}
+                                            disabled={isSubmitting}
+                                        >
+                                            <SelectTrigger id="edit-purchase-limit-period">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="day">Day</SelectItem>
+                                                <SelectItem value="week">Week</SelectItem>
+                                                <SelectItem value="month">Month</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FieldContent>
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="edit-purchase-limit-multiplier">
+                                        Every X {purchaseLimitPeriod}s *
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="edit-purchase-limit-multiplier"
+                                            type="number"
+                                            min={1}
+                                            value={purchaseLimitPeriodMultiplier}
+                                            onChange={(e) => setPurchaseLimitPeriodMultiplier(e.target.value)}
+                                            placeholder="e.g. 1"
+                                            disabled={isSubmitting}
+                                            required
+                                        />
+                                    </FieldContent>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Example: "1" = every week, "2" = every 2 weeks
+                                    </p>
+                                </Field>
+                            </>
+                        )}
+
+                        {purchaseLimitType === "dateRange" && (
+                            <>
+                                <Field>
+                                    <FieldLabel htmlFor="edit-purchase-limit-start-date">
+                                        Start date *
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="edit-purchase-limit-start-date"
+                                            type="date"
+                                            value={purchaseLimitStartDate}
+                                            onChange={(e) => setPurchaseLimitStartDate(e.target.value)}
+                                            disabled={isSubmitting}
+                                            required
+                                        />
+                                    </FieldContent>
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="edit-purchase-limit-end-date">
+                                        End date *
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="edit-purchase-limit-end-date"
+                                            type="date"
+                                            value={purchaseLimitEndDate}
+                                            onChange={(e) => setPurchaseLimitEndDate(e.target.value)}
+                                            disabled={isSubmitting}
+                                            required
+                                        />
+                                    </FieldContent>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        After the end date, the cycle resets and continues.
+                                    </p>
+                                </Field>
+                            </>
+                        )}
+                    </>
+                )}
+
                 {error && <FieldError>{error}</FieldError>}
-            </div>
-            <DialogFooter>
+                    </div>
+                </ScrollArea>
+            </CredenzaBody>
+            <CredenzaFooter>
                 <Button
                     type="button"
                     variant="outline"
@@ -244,8 +486,9 @@ export function EditRewardItemDialog({
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Saving..." : "Save Changes"}
                 </Button>
-            </DialogFooter>
-        </form>
+            </CredenzaFooter>
+            </form>
+        </CredenzaContent>
     );
 
     if (asDropdownItem) {
@@ -260,19 +503,21 @@ export function EditRewardItemDialog({
                 >
                     {children || "Edit"}
                 </DropdownMenuItem>
-                <Dialog open={open} onOpenChange={handleOpenChange}>
-                    <DialogContent>{formContent}</DialogContent>
-                </Dialog>
+                <Credenza open={open} onOpenChange={handleOpenChange}>
+                    {formContent}
+                </Credenza>
             </>
         );
     }
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
-                {children}
-            </DialogTrigger>
-            <DialogContent>{formContent}</DialogContent>
-        </Dialog>
+        <Credenza open={open} onOpenChange={handleOpenChange}>
+            <CredenzaTrigger asChild>
+                <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                    {children}
+                </div>
+            </CredenzaTrigger>
+            {formContent}
+        </Credenza>
     );
 }

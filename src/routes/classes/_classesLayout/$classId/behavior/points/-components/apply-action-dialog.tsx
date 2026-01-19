@@ -38,6 +38,7 @@ import { RewardItemCard } from "../../reward-items/-components/reward-item-card"
 import { FolderItemsDialog } from "./folder-items-dialog";
 import { PointHistoryDialog } from "./point-history-dialog";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
+import { checkPurchaseLimits } from "@/lib/purchase-limit-utils";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import type { ExistingRoster } from "./edit-student-dialog";
@@ -57,10 +58,16 @@ interface ApplyActionDialogProps {
 type Behavior = InstaQLEntity<AppSchema, "behaviors", { class?: {}; folder?: {} }>;
 type RewardItem = InstaQLEntity<AppSchema, "reward_items", { class?: {}; folder?: {} }>;
 type FolderType = InstaQLEntity<AppSchema, "folders", { class?: {} }>;
+type RewardRedemption = InstaQLEntity<
+    AppSchema,
+    "reward_redemptions",
+    { rewardItem?: { folder?: {} } }
+>;
 
 type BehaviorsQueryResult = { behaviors: Behavior[] };
 type RewardItemsQueryResult = { reward_items: RewardItem[] };
 type FoldersQueryResult = { folders: FolderType[] };
+type RewardRedemptionsQueryResult = { reward_redemptions: RewardRedemption[] };
 
 interface ActionTabControlsProps {
     quantityId: string;
@@ -226,9 +233,14 @@ export function ApplyActionDialog({
     const [selectedFolder, setSelectedFolder] = useState<FolderType | null>(null);
     const [folderItemType, setFolderItemType] = useState<"behavior" | "reward">("behavior");
     const [negativePointsDialogOpen, setNegativePointsDialogOpen] = useState(false);
+    const [purchaseLimitDialogOpen, setPurchaseLimitDialogOpen] = useState(false);
     const [pendingRedemption, setPendingRedemption] = useState<{
         behaviorIds: string[];
         rewardItemIds: string[];
+    } | null>(null);
+    const [purchaseLimitError, setPurchaseLimitError] = useState<{
+        reason: string;
+        type: "item" | "folder";
     } | null>(null);
     const [showHistoryHint, setShowHistoryHint] = useState(false);
     const { user } = useAuthContext();
@@ -282,6 +294,24 @@ export function ApplyActionDialog({
             : null
     );
 
+    const { data: rewardRedemptionsData } = db.useQuery(
+        classId && student.id
+            ? {
+                  reward_redemptions: {
+                      $: {
+                          where: {
+                              "student.id": student.id,
+                              "class.id": classId,
+                          },
+                      },
+                      rewardItem: {
+                          folder: {},
+                      },
+                  },
+              }
+            : null
+    );
+
     const typedBehaviors = (behaviorsData as BehaviorsQueryResult | undefined) ?? null;
     const behaviors = typedBehaviors?.behaviors ?? [];
 
@@ -292,6 +322,9 @@ export function ApplyActionDialog({
     const folders = (typedFolders?.folders ?? []).sort((a, b) =>
         (a.name ?? "").localeCompare(b.name ?? "")
     );
+
+    const typedRewardRedemptions = (rewardRedemptionsData as RewardRedemptionsQueryResult | undefined) ?? null;
+    const rewardRedemptions = typedRewardRedemptions?.reward_redemptions ?? [];
 
     // Group behaviors by folder
     const positiveBehaviorsByFolder = useMemo(() => {
@@ -380,7 +413,7 @@ export function ApplyActionDialog({
     const fullName = lastName ? `${firstName} ${lastName}` : firstName;
     const gender = (existingRoster?.gender ?? student.gender)?.trim() || "—";
 
-    const applyAction = async (behaviorIds?: string[], rewardItemIds?: string[], skipNegativeCheck = false) => {
+    const applyAction = async (behaviorIds?: string[], rewardItemIds?: string[], skipNegativeCheck = false, skipPurchaseLimitCheck = false) => {
         if (!user?.id || !canManage) return;
 
         const qty = Number(quantity);
@@ -403,6 +436,35 @@ export function ApplyActionDialog({
                 setPendingRedemption({ behaviorIds: targetBehaviorIds, rewardItemIds: targetRewardItemIds });
                 setNegativePointsDialogOpen(true);
                 return;
+            }
+
+            // Check purchase limits for each reward item
+            if (!skipPurchaseLimitCheck) {
+                for (const rewardItemId of targetRewardItemIds) {
+                    const rewardItem = rewardItems.find((r) => r.id === rewardItemId);
+                    if (!rewardItem) continue;
+
+                    const folder = rewardItem.folder
+                        ? folders.find((f) => f.id === rewardItem.folder!.id)
+                        : null;
+
+                    const limitCheck = checkPurchaseLimits(
+                        rewardItem,
+                        folder ?? null,
+                        rewardRedemptions,
+                        qty
+                    );
+
+                    if (!limitCheck.allowed) {
+                        setPendingRedemption({ behaviorIds: targetBehaviorIds, rewardItemIds: targetRewardItemIds });
+                        setPurchaseLimitError({
+                            reason: limitCheck.reason ?? "Purchase limit exceeded",
+                            type: limitCheck.type ?? "item",
+                        });
+                        setPurchaseLimitDialogOpen(true);
+                        return;
+                    }
+                }
             }
         }
 
@@ -799,6 +861,55 @@ export function ApplyActionDialog({
                                     setPendingRedemption(null);
                                 }
                                 setNegativePointsDialogOpen(false);
+                            }}
+                        >
+                            Override & Proceed
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog
+                open={purchaseLimitDialogOpen}
+                onOpenChange={(open) => {
+                    setPurchaseLimitDialogOpen(open);
+                    if (!open) {
+                        setPendingRedemption(null);
+                        setPurchaseLimitError(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Purchase Limit Exceeded</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {purchaseLimitError && (
+                                <>
+                                    {purchaseLimitError.reason}
+                                    {purchaseLimitError.type === "folder" && (
+                                        <span className="block mt-2">
+                                            This limit applies to all items in the folder. You can override this if needed.
+                                        </span>
+                                    )}
+                                    {purchaseLimitError.type === "item" && (
+                                        <span className="block mt-2">
+                                            This limit applies to this specific item. You can override this if needed.
+                                        </span>
+                                    )}
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (pendingRedemption) {
+                                    // Skip both negative check and purchase limit check
+                                    applyAction(pendingRedemption.behaviorIds, pendingRedemption.rewardItemIds, true, true);
+                                    setPendingRedemption(null);
+                                }
+                                setPurchaseLimitDialogOpen(false);
+                                setPurchaseLimitError(null);
                             }}
                         >
                             Override & Proceed

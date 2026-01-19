@@ -1,7 +1,8 @@
 /** @format */
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Pencil, Trash2, Coins } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Star, Pencil, Trash2, Coins, Clock } from "lucide-react";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
 import { CardActionMenu } from "../../-components/card-action-menu";
 import { EditRewardItemDialog } from "./edit-reward-item-dialog";
@@ -25,6 +26,27 @@ export function RewardItemCardMobile({
     canManage,
 }: RewardItemCardMobileProps) {
     const cost = rewardItem.cost ?? 0;
+
+    const getPurchaseLimitText = () => {
+        if (!rewardItem.purchaseLimitEnabled || !rewardItem.purchaseLimitCount) return null;
+
+        const count = rewardItem.purchaseLimitCount;
+        if (rewardItem.purchaseLimitType === "recurring") {
+            const period = rewardItem.purchaseLimitPeriod ?? "week";
+            const multiplier = rewardItem.purchaseLimitPeriodMultiplier ?? 1;
+            const periodText = period === "day" ? "day" : period === "week" ? "week" : "month";
+            if (multiplier === 1) {
+                return `${count}/${periodText}`;
+            } else {
+                return `${count}/every ${multiplier} ${periodText}s`;
+            }
+        } else if (rewardItem.purchaseLimitType === "dateRange") {
+            return `${count}/cycle`;
+        }
+        return null;
+    };
+
+    const purchaseLimitText = getPurchaseLimitText();
 
     const iconBlock = (
         <div className="flex size-10 md:size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
@@ -67,6 +89,12 @@ export function RewardItemCardMobile({
                 <div className="mt-0 md:mt-1 flex items-center gap-1 text-[10px] md:text-xs text-amber-700 dark:text-amber-400">
                     <Coins className="size-3 md:size-4" />{cost}
                 </div>
+                {purchaseLimitText && (
+                    <Badge variant="outline" className="mt-0.5 md:mt-1 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0 md:py-0.5">
+                        <Clock className="size-2.5 md:size-3 mr-0.5" />
+                        {purchaseLimitText}
+                    </Badge>
+                )}
             </CardContent>
         </Card>
     );

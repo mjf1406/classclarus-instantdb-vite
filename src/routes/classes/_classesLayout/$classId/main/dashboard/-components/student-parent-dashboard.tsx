@@ -8,6 +8,7 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { PointsWidget } from "./points-widget";
 
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
@@ -21,6 +22,12 @@ type PreferencesQueryResult = {
 
 type UserQueryResult = {
     $users: Array<InstaQLEntity<AppSchema, "$users", { children: {} }>>;
+};
+
+type ClassDashboardSettings = InstaQLEntity<AppSchema, "classDashboardSettings", { class?: {} }>;
+
+type DashboardSettingsQueryResult = {
+    classDashboardSettings: ClassDashboardSettings[];
 };
 
 interface StudentParentDashboardProps {
@@ -110,6 +117,24 @@ export function StudentParentDashboard({
     const typedPrefsData = (prefsData as PreferencesQueryResult | undefined) ?? null;
     const preferences = typedPrefsData?.studentDashboardPreferences?.[0];
 
+    // Query class dashboard settings to check if points widget is enabled
+    const { data: settingsData } = db.useQuery(
+        classId
+            ? {
+                  classDashboardSettings: {
+                      $: {
+                          where: { "class.id": classId },
+                      },
+                      class: {},
+                  },
+              }
+            : null
+    );
+
+    const typedSettingsData = (settingsData as DashboardSettingsQueryResult | undefined) ?? null;
+    const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
+    const showPointsWidget = existingSettings?.showPointsWidget ?? false;
+
     // Apply personalization styles
     const dashboardStyle: React.CSSProperties = {};
     if (preferences?.color) {
@@ -185,6 +210,9 @@ export function StudentParentDashboard({
                 </div>
             )}
 
+            {showPointsWidget && studentIdForWidget && classId && (
+                <PointsWidget classId={classId} studentId={studentIdForWidget} />
+            )}
         </div>
     );
 }

@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FontAwesomeIconPickerLazy } from "@/components/icons/FontAwesomeIconPickerLazy";
 
 interface CreateFolderDialogProps {
@@ -39,6 +41,14 @@ export function CreateFolderDialog({
     const [iconDef, setIconDef] = useState<IconDefinition | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Purchase limit fields
+    const [purchaseLimitEnabled, setPurchaseLimitEnabled] = useState(false);
+    const [purchaseLimitCount, setPurchaseLimitCount] = useState<string>("1");
+    const [purchaseLimitType, setPurchaseLimitType] = useState<"recurring" | "dateRange">("recurring");
+    const [purchaseLimitPeriod, setPurchaseLimitPeriod] = useState<"day" | "week" | "month">("week");
+    const [purchaseLimitPeriodMultiplier, setPurchaseLimitPeriodMultiplier] = useState<string>("1");
+    const [purchaseLimitStartDate, setPurchaseLimitStartDate] = useState<string>("");
+    const [purchaseLimitEndDate, setPurchaseLimitEndDate] = useState<string>("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,6 +57,34 @@ export function CreateFolderDialog({
         if (!name.trim()) {
             setError("Name is required");
             return;
+        }
+
+        // Validate purchase limit if enabled
+        if (purchaseLimitEnabled) {
+            const limitCount = Number(purchaseLimitCount);
+            if (Number.isNaN(limitCount) || limitCount <= 0) {
+                setError("Purchase limit count must be a positive number");
+                return;
+            }
+
+            if (purchaseLimitType === "recurring") {
+                const multiplier = Number(purchaseLimitPeriodMultiplier);
+                if (Number.isNaN(multiplier) || multiplier <= 0) {
+                    setError("Period multiplier must be a positive number");
+                    return;
+                }
+            } else if (purchaseLimitType === "dateRange") {
+                if (!purchaseLimitStartDate || !purchaseLimitEndDate) {
+                    setError("Start date and end date are required for date range limits");
+                    return;
+                }
+                const start = new Date(purchaseLimitStartDate);
+                const end = new Date(purchaseLimitEndDate);
+                if (start >= end) {
+                    setError("End date must be after start date");
+                    return;
+                }
+            }
         }
 
         setIsSubmitting(true);
@@ -62,12 +100,26 @@ export function CreateFolderDialog({
                     icon: iconDef ? `${iconDef.prefix}:${iconDef.iconName}` : undefined,
                     created: now,
                     updated: now,
+                    purchaseLimitEnabled: purchaseLimitEnabled || undefined,
+                    purchaseLimitCount: purchaseLimitEnabled ? Number(purchaseLimitCount) : undefined,
+                    purchaseLimitType: purchaseLimitEnabled ? purchaseLimitType : undefined,
+                    purchaseLimitPeriod: purchaseLimitEnabled && purchaseLimitType === "recurring" ? purchaseLimitPeriod : undefined,
+                    purchaseLimitPeriodMultiplier: purchaseLimitEnabled && purchaseLimitType === "recurring" ? Number(purchaseLimitPeriodMultiplier) : undefined,
+                    purchaseLimitStartDate: purchaseLimitEnabled && purchaseLimitType === "dateRange" ? new Date(purchaseLimitStartDate) : undefined,
+                    purchaseLimitEndDate: purchaseLimitEnabled && purchaseLimitType === "dateRange" ? new Date(purchaseLimitEndDate) : undefined,
                 }),
                 db.tx.folders[folderId].link({ class: classId }),
             ]);
 
             setName("");
             setDescription("");
+            setPurchaseLimitEnabled(false);
+            setPurchaseLimitCount("1");
+            setPurchaseLimitType("recurring");
+            setPurchaseLimitPeriod("week");
+            setPurchaseLimitPeriodMultiplier("1");
+            setPurchaseLimitStartDate("");
+            setPurchaseLimitEndDate("");
             setOpen(false);
         } catch (err) {
             setError(
@@ -85,6 +137,13 @@ export function CreateFolderDialog({
             setDescription("");
             setIconDef(null);
             setError(null);
+            setPurchaseLimitEnabled(false);
+            setPurchaseLimitCount("1");
+            setPurchaseLimitType("recurring");
+            setPurchaseLimitPeriod("week");
+            setPurchaseLimitPeriodMultiplier("1");
+            setPurchaseLimitStartDate("");
+            setPurchaseLimitEndDate("");
         }
     };
 
@@ -156,6 +215,159 @@ export function CreateFolderDialog({
                                 </div>
                             </FieldContent>
                         </Field>
+
+                        <Field>
+                            <FieldContent>
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="folder-purchase-limit-enabled"
+                                        checked={purchaseLimitEnabled}
+                                        onCheckedChange={(checked) => setPurchaseLimitEnabled(checked === true)}
+                                        disabled={isSubmitting}
+                                    />
+                                    <FieldLabel htmlFor="folder-purchase-limit-enabled" className="cursor-pointer">
+                                        Enable purchase limit (applies to all items in folder)
+                                    </FieldLabel>
+                                </div>
+                            </FieldContent>
+                        </Field>
+
+                        {purchaseLimitEnabled && (
+                            <>
+                                <Field>
+                                    <FieldLabel htmlFor="folder-purchase-limit-count">
+                                        Maximum purchases *
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="folder-purchase-limit-count"
+                                            type="number"
+                                            min={1}
+                                            value={purchaseLimitCount}
+                                            onChange={(e) => setPurchaseLimitCount(e.target.value)}
+                                            placeholder="e.g. 1"
+                                            disabled={isSubmitting}
+                                            required
+                                        />
+                                    </FieldContent>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Maximum number of items from this folder that can be purchased.
+                                    </p>
+                                </Field>
+
+                                <Field>
+                                    <FieldLabel htmlFor="folder-purchase-limit-type">
+                                        Limit type *
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Select
+                                            value={purchaseLimitType}
+                                            onValueChange={(value) => setPurchaseLimitType(value as "recurring" | "dateRange")}
+                                            disabled={isSubmitting}
+                                        >
+                                            <SelectTrigger id="folder-purchase-limit-type">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="recurring">Recurring Period</SelectItem>
+                                                <SelectItem value="dateRange">Date Range Cycle</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FieldContent>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {purchaseLimitType === "recurring"
+                                            ? "Limit resets every X days/weeks/months."
+                                            : "Limit resets after the end date, then repeats."}
+                                    </p>
+                                </Field>
+
+                                {purchaseLimitType === "recurring" && (
+                                    <>
+                                        <Field>
+                                            <FieldLabel htmlFor="folder-purchase-limit-period">
+                                                Period *
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Select
+                                                    value={purchaseLimitPeriod}
+                                                    onValueChange={(value) => setPurchaseLimitPeriod(value as "day" | "week" | "month")}
+                                                    disabled={isSubmitting}
+                                                >
+                                                    <SelectTrigger id="folder-purchase-limit-period">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="day">Day</SelectItem>
+                                                        <SelectItem value="week">Week</SelectItem>
+                                                        <SelectItem value="month">Month</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FieldContent>
+                                        </Field>
+
+                                        <Field>
+                                            <FieldLabel htmlFor="folder-purchase-limit-multiplier">
+                                                Every X {purchaseLimitPeriod}s *
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="folder-purchase-limit-multiplier"
+                                                    type="number"
+                                                    min={1}
+                                                    value={purchaseLimitPeriodMultiplier}
+                                                    onChange={(e) => setPurchaseLimitPeriodMultiplier(e.target.value)}
+                                                    placeholder="e.g. 1"
+                                                    disabled={isSubmitting}
+                                                    required
+                                                />
+                                            </FieldContent>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Example: "1" = every week, "2" = every 2 weeks
+                                            </p>
+                                        </Field>
+                                    </>
+                                )}
+
+                                {purchaseLimitType === "dateRange" && (
+                                    <>
+                                        <Field>
+                                            <FieldLabel htmlFor="folder-purchase-limit-start-date">
+                                                Start date *
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="folder-purchase-limit-start-date"
+                                                    type="date"
+                                                    value={purchaseLimitStartDate}
+                                                    onChange={(e) => setPurchaseLimitStartDate(e.target.value)}
+                                                    disabled={isSubmitting}
+                                                    required
+                                                />
+                                            </FieldContent>
+                                        </Field>
+
+                                        <Field>
+                                            <FieldLabel htmlFor="folder-purchase-limit-end-date">
+                                                End date *
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="folder-purchase-limit-end-date"
+                                                    type="date"
+                                                    value={purchaseLimitEndDate}
+                                                    onChange={(e) => setPurchaseLimitEndDate(e.target.value)}
+                                                    disabled={isSubmitting}
+                                                    required
+                                                />
+                                            </FieldContent>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                After the end date, the cycle resets and continues.
+                                            </p>
+                                        </Field>
+                                    </>
+                                )}
+                            </>
+                        )}
 
                         {error && <FieldError>{error}</FieldError>}
                     </div>

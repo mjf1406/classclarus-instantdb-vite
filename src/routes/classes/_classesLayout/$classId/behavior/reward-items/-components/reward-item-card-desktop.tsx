@@ -1,7 +1,8 @@
 /** @format */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, Coins, Folder, Pencil, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Star, Coins, Folder, Pencil, Trash2, Clock } from "lucide-react";
 import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId";
 import { CardActionMenu } from "../../-components/card-action-menu";
 import { EditRewardItemDialog } from "./edit-reward-item-dialog";
@@ -25,6 +26,27 @@ export function RewardItemCardDesktop({
     canManage,
 }: RewardItemCardDesktopProps) {
     const cost = rewardItem.cost ?? 0;
+
+    const getPurchaseLimitText = () => {
+        if (!rewardItem.purchaseLimitEnabled || !rewardItem.purchaseLimitCount) return null;
+
+        const count = rewardItem.purchaseLimitCount;
+        if (rewardItem.purchaseLimitType === "recurring") {
+            const period = rewardItem.purchaseLimitPeriod ?? "week";
+            const multiplier = rewardItem.purchaseLimitPeriodMultiplier ?? 1;
+            const periodText = period === "day" ? "day" : period === "week" ? "week" : "month";
+            if (multiplier === 1) {
+                return `${count}/${periodText}`;
+            } else {
+                return `${count}/every ${multiplier} ${periodText}s`;
+            }
+        } else if (rewardItem.purchaseLimitType === "dateRange") {
+            return `${count}/cycle`;
+        }
+        return null;
+    };
+
+    const purchaseLimitText = getPurchaseLimitText();
 
     const iconBlock = (
         <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
@@ -85,6 +107,12 @@ export function RewardItemCardDesktop({
                             <Folder className="size-4" />
                             <span>{rewardItem.folder.name ?? "Unnamed"}</span>
                         </div>
+                    )}
+                    {purchaseLimitText && (
+                        <Badge variant="outline" className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs">
+                            <Clock className="size-3" />
+                            <span>{purchaseLimitText}</span>
+                        </Badge>
                     )}
                 </div>
             </CardContent>

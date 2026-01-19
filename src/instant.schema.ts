@@ -73,6 +73,7 @@ const _schema = i.schema({
         }),
         classDashboardSettings: i.entity({
             groupsTeamsDisplay: i.string().indexed(),
+            showPointsWidget: i.boolean().optional(),
             created: i.date(),
             updated: i.date(),
         }),
@@ -98,6 +99,14 @@ const _schema = i.schema({
             cost: i.number().indexed(),
             created: i.date(),
             updated: i.date(),
+            // Purchase limit fields
+            purchaseLimitEnabled: i.boolean().optional(),
+            purchaseLimitCount: i.number().optional(),
+            purchaseLimitType: i.string().optional(), // "recurring" | "dateRange"
+            purchaseLimitPeriod: i.string().optional(), // "day" | "week" | "month" (for recurring)
+            purchaseLimitPeriodMultiplier: i.number().optional(), // Multiplier for period (e.g., 2 = "every 2 weeks")
+            purchaseLimitStartDate: i.date().indexed().optional(), // Start date for date range mode
+            purchaseLimitEndDate: i.date().indexed().optional(), // End date for date range mode
         }),
         behavior_logs: i.entity({
             createdAt: i.date().indexed(),
@@ -113,6 +122,14 @@ const _schema = i.schema({
             icon: i.string().optional(),
             created: i.date(),
             updated: i.date(),
+            // Purchase limit fields
+            purchaseLimitEnabled: i.boolean().optional(),
+            purchaseLimitCount: i.number().optional(),
+            purchaseLimitType: i.string().optional(), // "recurring" | "dateRange"
+            purchaseLimitPeriod: i.string().optional(), // "day" | "week" | "month" (for recurring)
+            purchaseLimitPeriodMultiplier: i.number().optional(), // Multiplier for period (e.g., 2 = "every 2 weeks")
+            purchaseLimitStartDate: i.date().indexed().optional(), // Start date for date range mode
+            purchaseLimitEndDate: i.date().indexed().optional(), // End date for date range mode
         }),
         class_roster: i.entity({
             number: i.number().optional(),
