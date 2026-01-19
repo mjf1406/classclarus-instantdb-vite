@@ -1,0 +1,192 @@
+/** @format */
+
+import { useState, useEffect } from "react";
+import { Pencil } from "lucide-react";
+import { db } from "@/lib/db/db";
+import {
+    Credenza,
+    CredenzaTrigger,
+    CredenzaContent,
+    CredenzaDescription,
+    CredenzaFooter,
+    CredenzaHeader,
+    CredenzaTitle,
+    CredenzaBody,
+} from "@/components/ui/credenza";
+import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AssignerForm } from "./assigner-form";
+import type { InstaQLEntity } from "@instantdb/react";
+import type { AppSchema } from "@/instant.schema";
+
+interface EditAssignerDialogProps {
+    children?: React.ReactNode;
+    assigner: InstaQLEntity<AppSchema, "random_assigners">;
+    asDropdownItem?: boolean;
+}
+
+export function EditAssignerDialog({
+    children,
+    assigner,
+    asDropdownItem = false,
+}: EditAssignerDialogProps) {
+    const [open, setOpen] = useState(false);
+    const [name, setName] = useState("");
+    const [itemsText, setItemsText] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Parse text input to array - handles both "c,e,f" and "c, d, e, f" formats
+    const parseItemsText = (text: string): string[] => {
+        if (!text || !text.trim()) return [];
+        return text
+            .split(/[,\n]/)
+            .map((item) => item.trim())
+            .filter((item) => item.length > 0);
+    };
+
+    useEffect(() => {
+        if (open && assigner) {
+            setName(assigner.name || "");
+            // Parse JSON string to array and convert to text
+            try {
+                const parsedItems =
+                    assigner.items && assigner.items.trim()
+                        ? JSON.parse(assigner.items)
+                        : [];
+                const itemsArray = Array.isArray(parsedItems) ? parsedItems : [];
+                // Initialize itemsText from items
+                setItemsText(itemsArray.filter((item) => item.trim()).join("\n"));
+            } catch (err) {
+                // If parsing fails, treat as empty
+                setItemsText("");
+            }
+        }
+    }, [open, assigner]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+
+        if (!name.trim()) {
+            setError("Name is required");
+            return;
+        }
+
+        // Parse items from text input
+        const validItems = parseItemsText(itemsText);
+        
+        if (validItems.length === 0) {
+            setError("At least one item is required");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const now = new Date();
+
+            // Store items as JSON string
+            const itemsJson = JSON.stringify(validItems);
+
+            db.transact([
+                db.tx.random_assigners[assigner.id].update({
+                    name: name.trim(),
+                    items: itemsJson,
+                    updated: now,
+                }),
+            ]);
+
+            setOpen(false);
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Failed to update assigner"
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen);
+        if (!newOpen) {
+            setName("");
+            setItemsText("");
+            setError(null);
+        }
+    };
+
+    const formContent = (
+        <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0 overflow-hidden">
+            <CredenzaHeader className="shrink-0">
+                <CredenzaTitle>Edit Random Assigner</CredenzaTitle>
+                <CredenzaDescription>
+                    Update the assigner details and items.
+                </CredenzaDescription>
+            </CredenzaHeader>
+            <CredenzaBody className="flex-1 min-h-0 overflow-hidden">
+                <ScrollArea className="h-full">
+                    <div className="space-y-4 pr-4 pb-4">
+                        <AssignerForm
+                            name={name}
+                            itemsText={itemsText}
+                            onNameChange={setName}
+                            onItemsTextChange={setItemsText}
+                            disabled={isSubmitting}
+                            error={error}
+                        />
+                    </div>
+                </ScrollArea>
+            </CredenzaBody>
+            <CredenzaFooter className="shrink-0">
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOpen(false)}
+                    disabled={isSubmitting}
+                >
+                    Cancel
+                </Button>
+            </CredenzaFooter>
+        </form>
+    );
+
+    if (asDropdownItem) {
+        return (
+            <>
+                <DropdownMenuItem
+                    onSelect={(e) => {
+                        e.preventDefault();
+                        setOpen(true);
+                    }}
+                    className="flex items-center gap-2"
+                >
+                    <Pencil className="size-4" />
+                    {children || "Edit"}
+                </DropdownMenuItem>
+                <Credenza open={open} onOpenChange={handleOpenChange}>
+                    <CredenzaContent className="flex flex-col max-h-[90vh]">
+                        {formContent}
+                    </CredenzaContent>
+                </Credenza>
+            </>
+        );
+    }
+
+    return (
+        <Credenza open={open} onOpenChange={handleOpenChange}>
+            <CredenzaTrigger asChild>
+                <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                    {children}
+                </div>
+            </CredenzaTrigger>
+            <CredenzaContent className="flex flex-col max-h-[90vh]">
+                {formContent}
+            </CredenzaContent>
+        </Credenza>
+    );
+}

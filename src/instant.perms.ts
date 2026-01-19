@@ -530,6 +530,45 @@ const rules = {
         }),
     },
 
+    random_assigners: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+        }),
+    },
+
+    rotating_assigners: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+        }),
+    },
+
+    equitable_assigners: {
+        allow: {
+            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...groupTeamBinds,
+        }),
+    },
+
     behavior_logs: {
         allow: {
             view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isBehaviorLogForMyself || isGuardianOfBehaviorLogStudent)",

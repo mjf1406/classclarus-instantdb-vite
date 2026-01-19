@@ -153,6 +153,26 @@ const _schema = i.schema({
             created: i.date(),
             updated: i.date(),
         }),
+        random_assigners: i.entity({
+            name: i.string().indexed(),
+            items: i.string(), // JSON array of strings
+            created: i.date(),
+            updated: i.date(),
+        }),
+        rotating_assigners: i.entity({
+            name: i.string().indexed(),
+            items: i.string(), // JSON array of strings
+            balanceGender: i.boolean().optional(),
+            created: i.date(),
+            updated: i.date(),
+        }),
+        equitable_assigners: i.entity({
+            name: i.string().indexed(),
+            items: i.string(), // JSON array of strings
+            balanceGender: i.boolean().optional(),
+            created: i.date(),
+            updated: i.date(),
+        }),
     },
     links: {
         userClasses: {
@@ -664,6 +684,45 @@ const _schema = i.schema({
             },
             reverse: {
                 on: "student_expectations",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        classRandomAssigners: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "randomAssigners",
+            },
+            reverse: {
+                on: "random_assigners",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        classRotatingAssigners: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "rotatingAssigners",
+            },
+            reverse: {
+                on: "rotating_assigners",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        classEquitableAssigners: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "equitableAssigners",
+            },
+            reverse: {
+                on: "equitable_assigners",
                 has: "one",
                 label: "class",
                 onDelete: "cascade",

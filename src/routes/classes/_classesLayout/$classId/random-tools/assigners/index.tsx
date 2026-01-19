@@ -2,11 +2,17 @@ import { createFileRoute, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { UnderConstruction } from '@/components/under-construction'
-import { LayoutGrid, Shuffle, RotateCw, Users, Scale, AlertTriangle } from 'lucide-react'
+import { LayoutGrid, Shuffle, RotateCw, Users, Scale, Plus } from 'lucide-react'
 import { RestrictedRoute } from '@/components/auth/restricted-route'
 import { useClassById } from '@/hooks/use-class-hooks'
 import { useClassRole } from '@/hooks/use-class-role'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { RandomTabContent } from './-components/random/random-tab-content'
+import { RotatingTabContent } from './-components/rotating/rotating-tab-content'
+import { EquitableTabContent } from './-components/equitable/equitable-tab-content'
+import { Button } from '@/components/ui/button'
+import { CreateAssignerDialog as CreateRandomAssignerDialog } from './-components/random/create-assigner-dialog'
+import { CreateAssignerDialog as CreateRotatingAssignerDialog } from './-components/rotating/create-assigner-dialog'
+import { CreateAssignerDialog as CreateEquitableAssignerDialog } from './-components/equitable/create-assigner-dialog'
 
 export const Route = createFileRoute(
   '/classes/_classesLayout/$classId/random-tools/assigners/',
@@ -40,29 +46,63 @@ function RouteComponent() {
               </p>
             </div>
           </div>
+          {activeTab === 'random' && (roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher) && (
+            <CreateRandomAssignerDialog classId={classId ?? ''}>
+              <Button size="lg">
+                <Plus className="size-4" />
+                <span className="sr-only">Create Random Assigner</span>
+                <span className="hidden md:block">
+                  Create Random Assigner
+                </span>
+              </Button>
+            </CreateRandomAssignerDialog>
+          )}
+          {activeTab === 'rotating' && (roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher) && (
+            <CreateRotatingAssignerDialog classId={classId ?? ''}>
+              <Button size="lg">
+                <Plus className="size-4" />
+                <span className="sr-only">Create Rotating Assigner</span>
+                <span className="hidden md:block">
+                  Create Rotating Assigner
+                </span>
+              </Button>
+            </CreateRotatingAssignerDialog>
+          )}
+          {activeTab === 'equitable' && (roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher) && (
+            <CreateEquitableAssignerDialog classId={classId ?? ''}>
+              <Button size="lg">
+                <Plus className="size-4" />
+                <span className="sr-only">Create Equitable Assigner</span>
+                <span className="hidden md:block">
+                  Create Equitable Assigner
+                </span>
+              </Button>
+            </CreateEquitableAssignerDialog>
+          )}
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="seats" className="gap-2">
               <LayoutGrid className="size-4" />
-              Seats
+              <span className="hidden md:block">Seats</span>
             </TabsTrigger>
             <TabsTrigger value="random" className="gap-2">
               <Shuffle className="size-4" />
-              Random
+              <span className="hidden md:block">Random</span>
             </TabsTrigger>
             <TabsTrigger value="rotating" className="gap-2">
               <RotateCw className="size-4" />
-              Rotating
+              <span className="hidden md:block">Rotating</span>
             </TabsTrigger>
-            <TabsTrigger value="fair-play" className="gap-2">
+            <TabsTrigger value="equitable" className="gap-2">
               <Scale className="size-4" />
-              Fair Play
+              <span className="hidden md:block">Equitable</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="seats" className="mt-4">
-            <div className="space-y-4">
+            <div className="w-full flex flex-col items-center justify-center">
+            <div className="space-y-4 w-full max-w-2xl">
               <div className="rounded-lg border bg-card p-6">
                 <h3 className="text-lg font-semibold mb-2">Seats</h3>
                 <p className="text-muted-foreground">
@@ -73,54 +113,28 @@ function RouteComponent() {
               </div>
               <UnderConstruction />
             </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="random" className="mt-4">
-            <div className="space-y-4">
-              <div className="rounded-lg border bg-card p-6">
-                <h3 className="text-lg font-semibold mb-2">Random</h3>
-                <p className="text-muted-foreground">
-                  Generate truly random assignments using a proven shuffling algorithm. Perfect for distributing 
-                  resources that are the same for everyone, but still require tracking for each student, like Chromebooks, tablets, etc.
-                </p>
-              </div>
-              <UnderConstruction />
-            </div>
+            <RandomTabContent
+              classId={classId ?? ''}
+              canManage={roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher}
+            />
           </TabsContent>
 
           <TabsContent value="rotating" className="mt-4">
-            <div className="space-y-4">
-              <div className="rounded-lg border bg-card p-6">
-                <h3 className="text-lg font-semibold mb-2">Rotating</h3>
-                <p className="text-muted-foreground">
-                  Create predictable, rotating assignments that move students through a sequence. Choose to rotate 
-                  right (moving the last person to the front) or left (moving the first person to the back) for 
-                  consistent, fair rotation patterns.
-                </p>
-              </div>
-              <Alert className="border-yellow-500/50 bg-yellow-500/10 text-yellow-900 dark:text-yellow-200 [&>svg]:text-yellow-600 dark:[&>svg]:text-yellow-400">
-                <AlertTriangle className="size-4" />
-                <AlertTitle className="text-yellow-900 dark:text-yellow-200">Important</AlertTitle>
-                <AlertDescription className="text-yellow-800 dark:text-yellow-300">
-                  This does not work if groups/teams are changed frequently as it does not ensure everyone gets a turn fairly. If you change groups/teams frequently, use Fair Play instead.
-                </AlertDescription>
-              </Alert>
-              <UnderConstruction />
-            </div>
+            <RotatingTabContent
+              classId={classId ?? ''}
+              canManage={roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher}
+            />
           </TabsContent>
 
-          <TabsContent value="fair-play" className="mt-4">
-            <div className="space-y-4">
-              <div className="rounded-lg border bg-card p-6">
-                <h3 className="text-lg font-semibold mb-2">Fair Play</h3>
-                <p className="text-muted-foreground">
-                  Assign jobs and tasks fairly by balancing experience across all students. Students with the least 
-                  overall experience get priority, and then the system ensures everyone gets a chance at jobs they've 
-                  done the fewest times. Works separately for boys and girls to maintain balanced participation.
-                </p>
-              </div>
-              <UnderConstruction />
-            </div>
+          <TabsContent value="equitable" className="mt-4">
+            <EquitableTabContent
+              classId={classId ?? ''}
+              canManage={roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher}
+            />
           </TabsContent>
         </Tabs>
       </div>
