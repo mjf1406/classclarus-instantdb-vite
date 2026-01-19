@@ -112,7 +112,7 @@ export function LeaveClassDialog({
     const trigger = children || (
         <Button variant="ghost" size="sm">
             <LogOut className="size-4 mr-2" />
-            Leave Class
+            <span className="hidden md:block">Leave Class</span>
         </Button>
     );
 

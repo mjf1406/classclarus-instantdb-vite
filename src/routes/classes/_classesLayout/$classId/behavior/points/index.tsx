@@ -1,12 +1,11 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import { Coins, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Skeleton } from "@/components/ui/skeleton";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassRole } from "@/hooks/use-class-role";
 import { db } from "@/lib/db/db";
@@ -14,6 +13,7 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { StudentPointsCard } from "./-components/student-points-card";
 import { ApplyActionDialog } from "./-components/apply-action-dialog";
+import { PointsPageSkeleton } from "./-components/points-page-skeleton";
 
 const ALL_VALUE = "__all__";
 
@@ -46,8 +46,6 @@ type PointsQueryResult = { classes: ClassForPoints[] };
 function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
-    const [selectedGroupId, setSelectedGroupId] = useState<string>(ALL_VALUE);
-    const [selectedTeamId, setSelectedTeamId] = useState<string>(ALL_VALUE);
 
     const pointsQuery =
         classId && classId.trim() !== ""
@@ -77,8 +75,43 @@ function RouteComponent() {
     const classEntity = typedData?.classes?.[0];
     const roleInfo = useClassRole(classEntity);
 
-    const canManage =
-        roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher || roleInfo.isAssistantTeacher;
+    const isLoading = !classEntity && pointsQuery !== null;
+
+    return (
+        <RestrictedRoute
+            role={roleInfo.role}
+            isLoading={isLoading}
+            backUrl={classId ? `/classes/${classId}` : "/classes"}
+        >
+            <Suspense fallback={<PointsPageSkeleton />}>
+                <PointsPageContent
+                    classEntity={classEntity}
+                    classId={classId ?? ""}
+                    canManage={
+                        roleInfo.isOwner ||
+                        roleInfo.isAdmin ||
+                        roleInfo.isTeacher ||
+                        roleInfo.isAssistantTeacher
+                    }
+                />
+            </Suspense>
+        </RestrictedRoute>
+    );
+}
+
+interface PointsPageContentProps {
+    classEntity: ClassForPoints | undefined;
+    classId: string;
+    canManage: boolean;
+}
+
+function PointsPageContent({
+    classEntity,
+    classId,
+    canManage,
+}: PointsPageContentProps) {
+    const [selectedGroupId, setSelectedGroupId] = useState<string>(ALL_VALUE);
+    const [selectedTeamId, setSelectedTeamId] = useState<string>(ALL_VALUE);
 
     const groups = classEntity?.groups ?? [];
     const selectedGroup = groups.find((g) => g.id === selectedGroupId);
@@ -235,15 +268,12 @@ function RouteComponent() {
         };
     };
 
-    const isLoading = !classEntity && pointsQuery !== null;
+    if (!classEntity) {
+        return <PointsPageSkeleton />;
+    }
 
     return (
-        <RestrictedRoute
-            role={roleInfo.role}
-            isLoading={isLoading}
-            backUrl={classId ? `/classes/${classId}` : "/classes"}
-        >
-            <div className="space-y-6">
+        <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Coins className="size-12 md:size-16 text-primary" />
@@ -314,13 +344,7 @@ function RouteComponent() {
                 </div>
 
                 {/* Cards */}
-                {isLoading ? (
-                    <div className="grid grid-cols-4 gap-2 md:gap-4">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                            <Skeleton key={i} className="h-[100px] lg:h-[120px]" />
-                        ))}
-                    </div>
-                ) : filteredStudents.length === 0 ? (
+                {filteredStudents.length === 0 ? (
                     <Card>
                         <CardContent className="py-12 text-center">
                             <Users className="size-12 mx-auto text-muted-foreground mb-4" />
@@ -339,7 +363,7 @@ function RouteComponent() {
                                 <StudentPointsCard
                                     key={student.id}
                                     student={student}
-                                    classId={classId ?? ""}
+                                    classId={classId}
                                     totalPoints={pointsMap.get(student.id) ?? 0}
                                     existingRoster={getRosterForStudent(student.id)}
                                     canManage={canManage}
@@ -355,7 +379,7 @@ function RouteComponent() {
                                     <ApplyActionDialog
                                         key={student.id}
                                         student={student}
-                                        classId={classId ?? ""}
+                                        classId={classId}
                                         totalPoints={pointsMap.get(student.id) ?? 0}
                                         existingRoster={getRosterForStudent(student.id)}
                                         awardedPoints={aggregates.awardedPoints}
@@ -373,6 +397,5 @@ function RouteComponent() {
                     </div>
                 )}
             </div>
-        </RestrictedRoute>
     );
 }
