@@ -1,6 +1,6 @@
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
-export type IconCategory = "solid" | "regular" | "brands";
+export type IconCategory = "solid" | "regular";
 
 export type IconOption = {
   id: string; // e.g. "fas:address-book"
@@ -28,8 +28,6 @@ async function importCategory(category: IconCategory): Promise<unknown> {
       return import("@fortawesome/free-solid-svg-icons");
     case "regular":
       return import("@fortawesome/free-regular-svg-icons");
-    case "brands":
-      return import("@fortawesome/free-brands-svg-icons");
     default:
       return category satisfies never;
   }
@@ -74,7 +72,6 @@ const icons = Array.from(unique.values()).sort((a, b) =>
 const PREFIX_TO_CATEGORY: Record<string, IconCategory> = {
   fas: "solid",
   far: "regular",
-  fab: "brands",
 };
 
 export async function resolveIconId(id: string): Promise<IconDefinition | null> {

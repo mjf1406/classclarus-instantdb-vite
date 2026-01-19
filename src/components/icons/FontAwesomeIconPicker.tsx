@@ -43,8 +43,6 @@ function categoryLabel(cat: IconCategory) {
       return "Solid";
     case "regular":
       return "Regular";
-    case "brands":
-      return "Brands";
   }
 }
 
@@ -332,12 +330,11 @@ export function FontAwesomeIconPicker({
             value={category}
             onValueChange={(v) => setCategory(v as IconCategory)}
           >
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="solid">{categoryLabel("solid")}</TabsTrigger>
               <TabsTrigger value="regular">
                 {categoryLabel("regular")}
               </TabsTrigger>
-              <TabsTrigger value="brands">{categoryLabel("brands")}</TabsTrigger>
             </TabsList>
           </Tabs>
 

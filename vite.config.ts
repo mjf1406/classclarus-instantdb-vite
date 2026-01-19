@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,7 +16,15 @@ export default defineConfig({
         }),
         react(),
         tailwindcss(),
+        // Bundle analyzer - only runs when ANALYZE env var is set
+        visualizer({
+            filename: "./dist/stats.html",
+            open: true,
+            gzipSize: true,
+            brotliSize: true,
+        }),
     ],
+    // ... existing code ...
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
