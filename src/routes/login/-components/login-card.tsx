@@ -8,7 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { GoogleOAuthButton } from "@/components/auth/google-oauth";
 import { MagicCodeAuth } from "@/components/auth/magic-code-auth";
 // import TryAsGuestButton from "@/components/auth/guest-auth";
@@ -39,14 +39,14 @@ export function LoginCard() {
                     </CardDescription>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-4 mt-8">
                 <GoogleOAuthButton />
                 <MagicCodeAuth />
-                <div className="flex items-center gap-4 py-2">
+                {/* <div className="flex items-center gap-4 py-2">
                     <Separator className="flex-1" />
                     <span className="text-xs text-muted-foreground">OR</span>
                     <Separator className="flex-1" />
-                </div>
+                </div> */}
                 {/* <TryAsGuestButton /> */}
                 {/* <GuestDescription /> */}
                 {/* <GuestLimitations /> */}

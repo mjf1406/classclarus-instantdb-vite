@@ -46,16 +46,18 @@ export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
             {trigger ? (
                 <div onClick={() => setOpen(true)}>{trigger}</div>
             ) : (
-                <Button
-                    onClick={() => setOpen(true)}
-                    onTouchStart={() => setOpen(true)}
-                    variant="outline"
-                    className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80"
-                    size="lg"
-                >
-                    <Mail className="h-5 w-5" />
-                    Sign in with Email
-                </Button>
+                <div className="flex justify-center">
+                    <Button
+                        onClick={() => setOpen(true)}
+                        onTouchStart={() => setOpen(true)}
+                        variant="outline"
+                        className="h-10 px-3 items-center gap-2.5 justify-start bg-white text-gray-900 hover:bg-white/90 rounded-full border border-gray-300 font-roboto-medium text-sm leading-5 dark:bg-[#1f1f1f] dark:text-gray-300 dark:hover:bg-[#2d2d2d] dark:border-[#3c3c3c] cursor-pointer w-[175px]"
+                        aria-label="Sign in with Email"
+                    >
+                        <Mail className="h-5 w-5" />
+                        Sign in with Email
+                    </Button>
+                </div>
             )}
             <Credenza
                 open={open}
