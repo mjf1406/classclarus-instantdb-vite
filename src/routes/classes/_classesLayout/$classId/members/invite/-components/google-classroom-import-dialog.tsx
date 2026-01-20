@@ -333,11 +333,13 @@ export function GoogleClassroomImportDialog({
                                 Connect your Google account to import students from
                                 Google Classroom.
                             </p>
-                            <GoogleClassroomButton
-                                onClick={handleConnect}
-                                disabled={isLoading}
-                                isLoading={isLoading}
-                            />
+                            <div className="flex justify-center">
+                                <GoogleClassroomButton
+                                    onClick={handleConnect}
+                                    disabled={isLoading}
+                                    isLoading={isLoading}
+                                    />
+                            </div>
                         </div>
                     )}
 

@@ -42,6 +42,9 @@ export function LoginCard() {
             <CardContent className="space-y-4 mt-8">
                 <GoogleOAuthButton />
                 <MagicCodeAuth />
+                {/* <div className="flex justify-center">
+                    <GoogleClassroomButton onClick={() => {}} />
+                </div> */}
                 {/* <div className="flex items-center gap-4 py-2">
                     <Separator className="flex-1" />
                     <span className="text-xs text-muted-foreground">OR</span>
