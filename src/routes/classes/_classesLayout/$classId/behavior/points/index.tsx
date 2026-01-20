@@ -1,7 +1,7 @@
 /** @format */
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { useMemo, useState, useEffect, Suspense } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Coins, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -69,31 +69,32 @@ function RouteComponent() {
               }
             : null;
 
-    const { data } = db.useQuery(pointsQuery);
+    const { data, isLoading: dataLoading } = db.useQuery(pointsQuery);
     const typedData = (data as PointsQueryResult | undefined) ?? null;
     const classEntity = typedData?.classes?.[0];
     const roleInfo = useClassRole(classEntity);
 
-    const isLoading = !classEntity && pointsQuery !== null;
+    // Show skeleton while data is loading, before RestrictedRoute blocks the render
+    if (dataLoading) {
+        return <PointsPageSkeleton />;
+    }
 
     return (
         <RestrictedRoute
             role={roleInfo.role}
-            isLoading={isLoading}
+            isLoading={!classEntity && pointsQuery !== null}
             backUrl={classId ? `/classes/${classId}` : "/classes"}
         >
-            <Suspense fallback={<PointsPageSkeleton />}>
-                <PointsPageContent
-                    classEntity={classEntity}
-                    classId={classId ?? ""}
-                    canManage={
-                        roleInfo.isOwner ||
-                        roleInfo.isAdmin ||
-                        roleInfo.isTeacher ||
-                        roleInfo.isAssistantTeacher
-                    }
-                />
-            </Suspense>
+            <PointsPageContent
+                classEntity={classEntity}
+                classId={classId ?? ""}
+                canManage={
+                    roleInfo.isOwner ||
+                    roleInfo.isAdmin ||
+                    roleInfo.isTeacher ||
+                    roleInfo.isAssistantTeacher
+                }
+            />
         </RestrictedRoute>
     );
 }
@@ -253,10 +254,6 @@ function PointsPageContent({
             },
         };
     };
-
-    if (!classEntity) {
-        return <PointsPageSkeleton />;
-    }
 
     return (
         <div className="space-y-6">

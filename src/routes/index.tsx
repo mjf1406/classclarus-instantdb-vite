@@ -6,11 +6,18 @@ import {
     useNavigate,
     useSearch,
 } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { ThemeSwitcher } from "@/components/themes/theme-switcher";
 import { LoginCard } from "@/routes/login/-components/login-card";
 import { HomeSelection } from "./-components/home-selection";
 import { LogoBig } from "@/components/brand/logo";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 
 export const Route = createFileRoute("/")({
     component: Index,
@@ -40,13 +47,36 @@ function Index() {
                 <ThemeSwitcher />
             </div>
             {user?.id ? (
-                <>
-                    <div className="mt-8">
-                        <LogoBig />
+                isLoading ? (
+                    // Authenticated but data is still loading
+                    <div className="flex min-h-screen items-center justify-center p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="text-center space-y-3">
+                                <div className="flex justify-center">
+                                    <LogoBig />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-2xl">
+                                        Logging you in...
+                                    </CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex justify-center py-6">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            </CardContent>
+                        </Card>
                     </div>
-                    <HomeSelection />
-                </>
+                ) : (
+                    // Authenticated and data loaded
+                    <>
+                        <div className="mt-8">
+                            <LogoBig />
+                        </div>
+                        <HomeSelection />
+                    </>
+                )
             ) : (
+                // Not authenticated
                 <div className="flex min-h-screen items-center justify-center p-4">
                     <LoginCard />
                 </div>
