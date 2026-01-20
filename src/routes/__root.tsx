@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import type { MyRouterContext } from "@/main";
+import ReloadPrompt from "@/components/pwa/ReloadPrompt";
 
 const RootLayout = () => {
     return (
@@ -19,6 +20,7 @@ const RootLayout = () => {
                 <Outlet />
             </ThemeProvider>
             <TanStackRouterDevtools position="bottom-right" />
+            <ReloadPrompt />
         </GoogleOAuthProvider>
     );
 };

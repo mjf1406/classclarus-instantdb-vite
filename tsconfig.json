@@ -23,7 +23,11 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"]
-        }
+        },
+        "types": [
+            "vite-plugin-pwa/react",
+            "node"
+        ]
     },
     "include": ["src"],
     "exclude": ["scripts"]
