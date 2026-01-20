@@ -136,12 +136,11 @@ export function GoogleOAuthButton() {
             <Button
                 onClick={handleGoogleButtonClick}
                 variant="outline"
-                className="w-full items-center gap-2 justify-start bg-white text-black hover:bg-white/80 dark:bg-black dark:text-white dark:hover:bg-black/80"
-                size="lg"
+                className="w-full h-10 px-3 items-center gap-2.5 justify-start bg-white text-gray-900 hover:bg-white/90 rounded-full border border-gray-300 font-roboto-medium text-sm leading-5 dark:bg-white dark:text-gray-900 dark:hover:bg-white/90 dark:border-gray-300"
                 aria-label="Sign in with Google"
             >
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -200,13 +199,12 @@ export function GoogleOAuthButtonSmall() {
             </div>
             <Button
                 onClick={handleGoogleButtonClick}
-                variant="secondary"
-                size="sm"
-                className="flex-1 h-8 text-xs"
+                variant="outline"
+                className="flex-1 h-10 px-3 items-center gap-2.5 justify-start bg-white text-gray-900 hover:bg-white/90 rounded-full border border-gray-300 font-roboto-medium text-sm leading-5 dark:bg-white dark:text-gray-900 dark:hover:bg-white/90 dark:border-gray-300"
                 aria-label="Sign in with Google"
             >
                 <svg
-                    className="h-3.5 w-3.5 mr-1.5"
+                    className="w-5 h-5"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -248,23 +246,22 @@ export function ContinueWithGoogleButton({
     disabled = false,
     isLoading = false,
     className = "",
-    variant = "default",
-    size = "default",
+    variant: _variant = "default",
+    size: _size = "default",
 }: ContinueWithGoogleButtonProps) {
     return (
         <Button
             onClick={onClick}
             disabled={disabled || isLoading}
-            variant={variant}
-            size={size}
-            className={`w-full items-center gap-2 justify-start ${className}`}
+            variant="outline"
+            className={`w-full h-10 px-3 items-center gap-2.5 justify-start bg-white text-gray-900 hover:bg-white/90 rounded-full border border-gray-300 font-roboto-medium text-sm leading-5 dark:bg-white dark:text-gray-900 dark:hover:bg-white/90 dark:border-gray-300 ${className}`}
             aria-label="Continue with Google"
         >
             {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -288,6 +285,46 @@ export function ContinueWithGoogleButton({
                 </svg>
             )}
             Continue with Google
+        </Button>
+    );
+}
+
+interface GoogleClassroomButtonProps {
+    onClick: () => void;
+    disabled?: boolean;
+    isLoading?: boolean;
+    className?: string;
+}
+
+export function GoogleClassroomButton({
+    onClick,
+    disabled = false,
+    isLoading = false,
+    className = "",
+}: GoogleClassroomButtonProps) {
+    return (
+        <Button
+            onClick={onClick}
+            disabled={disabled || isLoading}
+            variant="default"
+            size="default"
+            className={`w-full items-center justify-start pl-4 pr-4 py-2 gap-4 ${className}`}
+            aria-label="Choose from your Google Classroom classes"
+            style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontWeight: 500,
+            }}
+        >
+            {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+                <img
+                    src="/64x64_yellow_stroke_icon@1x.png"
+                    alt="Google Classroom"
+                    className="w-16 h-16"
+                />
+            )}
+            <span>Choose from your Google Classroom classes</span>
         </Button>
     );
 }

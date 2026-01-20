@@ -7,6 +7,7 @@
 @import "shadcn/tailwind.css";
 
 @import "@fontsource-variable/noto-sans";
+@import "@fontsource/roboto/500.css";
 
 /*---break--- */
 
@@ -183,6 +184,12 @@ body {
     html {
         @apply font-sans;
     }
+}
+
+/* Roboto Medium utility class for Google sign-in buttons */
+.font-roboto-medium {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
 }
 
 /* Disable all transitions during theme switch for instant feedback */

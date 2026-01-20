@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { ContinueWithGoogleButton } from "@/components/auth/google-oauth";
+import { GoogleClassroomButton } from "@/components/auth/google-oauth";
 
 interface GoogleClassroomClass {
     id: string;
@@ -333,7 +333,7 @@ export function GoogleClassroomImportDialog({
                                 Connect your Google account to import students from
                                 Google Classroom.
                             </p>
-                            <ContinueWithGoogleButton
+                            <GoogleClassroomButton
                                 onClick={handleConnect}
                                 disabled={isLoading}
                                 isLoading={isLoading}
