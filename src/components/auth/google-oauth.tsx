@@ -272,7 +272,7 @@ export function GoogleClassroomButton({
             disabled={disabled || isLoading}
             variant="default"
             size="default"
-            className={`w-full items-center justify-start pl-4 pr-4 py-2 gap-4 ${className}`}
+            className={`w-fit items-center justify-start pl-4 pr-4 py-2 gap-4 ${className}`}
             aria-label="Choose from your Google Classroom classes"
             style={{
                 fontFamily: "'Roboto', sans-serif",
@@ -285,7 +285,7 @@ export function GoogleClassroomButton({
                 <img
                     src="/google/yellow_classroom_logo.png"
                     alt="Google Classroom"
-                    className="w-16 h-16"
+                    className="w-[32px] h-[32px]"
                 />
             )}
             <span>Google Classroom</span>
