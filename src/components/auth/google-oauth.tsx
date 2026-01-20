@@ -270,10 +270,10 @@ export function GoogleClassroomButton({
         <Button
             onClick={onClick}
             disabled={disabled || isLoading}
-            variant="default"
+            variant="outline"
             size="default"
             className={`w-fit items-center justify-start pl-4 pr-4 py-2 gap-4 ${className}`}
-            aria-label="Choose from your Google Classroom classes"
+            aria-label="Google Classroom"
             style={{
                 fontFamily: "'Roboto', sans-serif",
                 fontWeight: 500,
