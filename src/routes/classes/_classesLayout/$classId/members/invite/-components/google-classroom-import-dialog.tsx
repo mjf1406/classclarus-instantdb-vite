@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState, useEffect } from "react";
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
     Dialog,
@@ -41,7 +42,8 @@ interface GoogleClassroomImportDialogProps {
     onImportComplete?: () => void;
 }
 
-export function GoogleClassroomImportDialog({
+// Inner component that uses the Google OAuth hook
+function GoogleClassroomImportDialogContent({
     open,
     onOpenChange,
     classId,
@@ -125,7 +127,63 @@ export function GoogleClassroomImportDialog({
         }
     };
 
-    const handleConnect = async () => {
+    // Use Google OAuth login hook with authorization code flow
+    const googleLogin = useGoogleLogin({
+        flow: 'auth-code',
+        scope: 'https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.rosters.readonly https://www.googleapis.com/auth/classroom.profile.emails',
+        onSuccess: async (codeResponse) => {
+            if (!user?.refresh_token) {
+                setError("You must be logged in to connect Google Classroom");
+                setIsLoading(false);
+                return;
+            }
+
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                // Send authorization code to backend to exchange for tokens
+                const response = await fetch("/api/google-classroom/exchange", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: user.refresh_token,
+                    },
+                    body: JSON.stringify({
+                        code: codeResponse.code,
+                        redirectUri: window.location.origin,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Failed to exchange authorization code");
+                }
+
+                // Connection successful
+                setError(null);
+                setStep("select");
+                await loadClasses();
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to connect");
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        onError: (errorResponse) => {
+            setIsLoading(false);
+            const errorCode = errorResponse.error;
+            const errorString = String(errorCode || '');
+            if (errorString.includes('popup_closed') || errorString.includes('popup_blocked') || errorString.includes('cancelled')) {
+                setError("Connection cancelled. Please try again.");
+            } else {
+                setError(`Google login failed: ${errorString || 'Unknown error'}`);
+            }
+        },
+    });
+
+    const handleConnect = () => {
         if (!user?.refresh_token) {
             setError("You must be logged in to connect Google Classroom");
             return;
@@ -133,75 +191,7 @@ export function GoogleClassroomImportDialog({
 
         setIsLoading(true);
         setError(null);
-
-        try {
-            const response = await fetch("/api/google-classroom/connect", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    token: user.refresh_token,
-                },
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || "Failed to initiate OAuth");
-            }
-
-            // Open Google OAuth in new window
-            const authWindow = window.open(
-                data.authUrl,
-                "Google Classroom Authorization",
-                "width=500,height=600"
-            );
-
-            // Listen for postMessage from popup
-            const messageHandler = (event: MessageEvent) => {
-                // In production, you should verify event.origin for security
-                if (event.data?.type === 'google-classroom-connected') {
-                    window.removeEventListener('message', messageHandler);
-                    if (authWindow) {
-                        authWindow.close();
-                    }
-                    if (event.data.success) {
-                        setError(null);
-                        setStep("select");
-                        loadClasses();
-                    } else {
-                        setError(event.data.error || "Connection failed");
-                        setStep("connect");
-                    }
-                    setIsLoading(false);
-                }
-            };
-
-            window.addEventListener('message', messageHandler);
-
-            // Fallback: Poll for window close (in case postMessage doesn't work)
-            const checkInterval = setInterval(async () => {
-                if (authWindow?.closed) {
-                    clearInterval(checkInterval);
-                    window.removeEventListener('message', messageHandler);
-                    // Check if connection succeeded
-                    await checkConnection();
-                }
-            }, 1000);
-
-            // Timeout after 5 minutes
-            setTimeout(() => {
-                clearInterval(checkInterval);
-                window.removeEventListener('message', messageHandler);
-                if (authWindow && !authWindow.closed) {
-                    authWindow.close();
-                    setError("Connection timed out. Please try again.");
-                    setIsLoading(false);
-                }
-            }, 300000);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to connect");
-            setIsLoading(false);
-        }
+        googleLogin();
     };
 
     const loadClasses = async () => {
@@ -517,5 +507,41 @@ export function GoogleClassroomImportDialog({
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+    );
+}
+
+// Wrapper component that provides GoogleOAuthProvider for Google Classroom
+export function GoogleClassroomImportDialog({
+    open,
+    onOpenChange,
+    classId,
+    onImportComplete,
+}: GoogleClassroomImportDialogProps) {
+    const gcClientId = import.meta.env.VITE_GC_CLIENT_ID;
+    
+    if (!gcClientId) {
+        return (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent>
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                            Google Classroom OAuth is not configured. Please set VITE_GC_CLIENT_ID environment variable.
+                        </AlertDescription>
+                    </Alert>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    return (
+        <GoogleOAuthProvider clientId={gcClientId}>
+            <GoogleClassroomImportDialogContent
+                open={open}
+                onOpenChange={onOpenChange}
+                classId={classId}
+                onImportComplete={onImportComplete}
+            />
+        </GoogleOAuthProvider>
     );
 }

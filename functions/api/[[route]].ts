@@ -12,14 +12,8 @@ import { createGoogleClassroomRoute } from "./routes/google-classroom";
 
 const app = new Hono<HonoContext>();
 
-// Apply auth middleware to all routes except callback
-app.use("*", async (c, next) => {
-    // Skip auth for Google OAuth callback (called by Google)
-    if (c.req.path === "/api/google-classroom/callback") {
-        return next();
-    }
-    return authMiddleware(c, next);
-});
+// Apply auth middleware to all routes
+app.use("*", authMiddleware);
 
 // Apply rate limiting to join endpoints
 // Update paths to match route paths

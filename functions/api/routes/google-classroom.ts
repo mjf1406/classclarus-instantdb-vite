@@ -7,7 +7,6 @@ import type { HonoContext } from "../types";
 import type { Env } from "../types";
 
 // Google OAuth 2.0 configuration
-const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_CLASSROOM_API_BASE = "https://classroom.googleapis.com/v1";
 const SCOPES = [
@@ -16,27 +15,6 @@ const SCOPES = [
     "https://www.googleapis.com/auth/classroom.profile.emails",
 ].join(" ");
 
-// Generate a state token with user ID encoded
-function generateStateToken(userId: string): string {
-    const random = Math.random().toString(36).substring(2, 15);
-    // Use btoa for base64 encoding (works in Cloudflare Workers)
-    const encoded = btoa(userId).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-    return `${encoded}.${random}`;
-}
-
-// Extract user ID from state token
-function extractUserIdFromState(state: string): string | null {
-    try {
-        const parts = state.split(".");
-        if (parts.length !== 2) return null;
-        // Use atob for base64 decoding (works in Cloudflare Workers)
-        const base64 = parts[0].replace(/-/g, "+").replace(/_/g, "/");
-        const userId = atob(base64);
-        return userId;
-    } catch {
-        return null;
-    }
-}
 
 // Get Google OAuth credentials from environment
 function getGoogleCredentials(env: Env) {
@@ -173,8 +151,8 @@ async function makeClassroomRequest(
 }
 
 export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
-    // POST /api/google-classroom/connect - Initiate OAuth flow
-    app.post("/api/google-classroom/connect", async (c) => {
+    // POST /api/google-classroom/exchange - Exchange authorization code for tokens
+    app.post("/api/google-classroom/exchange", async (c) => {
         try {
             const env = (c.env as Env) || {};
             const dbAdmin = c.get("dbAdmin") as ReturnType<
@@ -182,120 +160,25 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
             >;
             const userId = c.get("userId") as string;
 
-            const { clientId, redirectUri } = getGoogleCredentials(env);
-            const state = generateStateToken(userId);
+            const body = await c.req.json();
+            const { code, redirectUri: frontendRedirectUri } = body;
 
-            const authUrl = new URL(GOOGLE_AUTH_URL);
-            authUrl.searchParams.set("client_id", clientId);
-            authUrl.searchParams.set("redirect_uri", redirectUri);
-            authUrl.searchParams.set("response_type", "code");
-            authUrl.searchParams.set("scope", SCOPES);
-            authUrl.searchParams.set("access_type", "offline");
-            authUrl.searchParams.set("prompt", "consent");
-            authUrl.searchParams.set("state", state);
-
-            return c.json({
-                authUrl: authUrl.toString(),
-                state,
-            });
-        } catch (error) {
-            console.error("[Google Classroom Connect] Error:", error);
-            return c.json(
-                {
-                    error: "Failed to initiate OAuth",
-                    message:
-                        error instanceof Error
-                            ? error.message
-                            : "Unknown error",
-                },
-                500
-            );
-        }
-    });
-
-    // GET /api/google-classroom/callback - Handle OAuth callback
-    // This endpoint is called by Google, so it doesn't use auth middleware
-    app.get("/api/google-classroom/callback", async (c) => {
-        try {
-            const env = (c.env as Env) || {};
-            const dbAdmin = initDbAdmin(env);
-
-            const code = c.req.query("code");
-            const state = c.req.query("state");
-            const error = c.req.query("error");
-
-            if (error) {
-                return c.html(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Google Classroom Connection Error</title>
-                    </head>
-                    <body>
-                        <script>
-                            if (window.opener) {
-                                window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(error)} }, '*');
-                                window.close();
-                            } else {
-                                window.location.href = '/?google-error=${encodeURIComponent(error)}';
-                            }
-                        </script>
-                        <p>Connection failed. This window will close automatically...</p>
-                    </body>
-                    </html>
-                `);
+            if (!code) {
+                return c.json(
+                    {
+                        error: "Missing authorization code",
+                        message: "Authorization code is required",
+                    },
+                    400
+                );
             }
 
-            if (!code || !state) {
-                const errorMsg = "Missing authorization code or state";
-                return c.html(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Google Classroom Connection Error</title>
-                    </head>
-                    <body>
-                        <script>
-                            if (window.opener) {
-                                window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(errorMsg)} }, '*');
-                                window.close();
-                            } else {
-                                window.location.href = '/?google-error=${encodeURIComponent(errorMsg)}';
-                            }
-                        </script>
-                        <p>Connection failed. This window will close automatically...</p>
-                    </body>
-                    </html>
-                `);
-            }
-
-            // Extract user ID from state
-            const userId = extractUserIdFromState(state);
-            if (!userId) {
-                const errorMsg = "Invalid state token";
-                return c.html(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Google Classroom Connection Error</title>
-                    </head>
-                    <body>
-                        <script>
-                            if (window.opener) {
-                                window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(errorMsg)} }, '*');
-                                window.close();
-                            } else {
-                                window.location.href = '/?google-error=${encodeURIComponent(errorMsg)}';
-                            }
-                        </script>
-                        <p>Connection failed. This window will close automatically...</p>
-                    </body>
-                    </html>
-                `);
-            }
-
-            const { clientId, clientSecret, redirectUri } =
+            const { clientId, clientSecret, redirectUri: backendRedirectUri } =
                 getGoogleCredentials(env);
+
+            // Use redirect URI from frontend if provided, otherwise use backend default
+            // This ensures compatibility with @react-oauth/google which uses window.location.origin
+            const redirectUri = frontendRedirectUri || backendRedirectUri;
 
             // Exchange code for tokens
             const tokens = await exchangeCodeForTokens(
@@ -313,51 +196,22 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 }),
             ]);
 
-            // Return HTML page that closes the popup and notifies parent
-            return c.html(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Google Classroom Connected</title>
-                </head>
-                <body>
-                    <script>
-                        // Notify parent window that connection succeeded
-                        if (window.opener) {
-                            window.opener.postMessage({ type: 'google-classroom-connected', success: true }, '*');
-                            window.close();
-                        } else {
-                            // If popup was blocked or closed, redirect
-                            window.location.href = '/?google-connected=true';
-                        }
-                    </script>
-                    <p>Connection successful! This window will close automatically...</p>
-                </body>
-                </html>
-            `);
+            return c.json({
+                success: true,
+                message: "Google Classroom connected successfully",
+            });
         } catch (error) {
-            console.error("[Google Classroom Callback] Error:", error);
-            const errorMessage =
-                error instanceof Error ? error.message : "Unknown error";
-            return c.html(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Google Classroom Connection Error</title>
-                </head>
-                <body>
-                    <script>
-                        if (window.opener) {
-                            window.opener.postMessage({ type: 'google-classroom-connected', success: false, error: ${JSON.stringify(errorMessage)} }, '*');
-                            window.close();
-                        } else {
-                            window.location.href = '/?google-error=${encodeURIComponent(errorMessage)}';
-                        }
-                    </script>
-                    <p>Connection failed. This window will close automatically...</p>
-                </body>
-                </html>
-            `);
+            console.error("[Google Classroom Exchange] Error:", error);
+            return c.json(
+                {
+                    error: "Failed to exchange authorization code",
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : "Unknown error",
+                },
+                500
+            );
         }
     });
 
