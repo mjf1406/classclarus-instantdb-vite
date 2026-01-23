@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UnauthorizedUserIndexRouteImport } from './routes/unauthorized-user/index'
 import { Route as JoinIndexRouteImport } from './routes/join/index'
 import { Route as BlockedIndexRouteImport } from './routes/blocked/index'
 import { Route as UserSettingsRouteImport } from './routes/user/settings'
@@ -70,6 +71,11 @@ const SplatRoute = SplatRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnauthorizedUserIndexRoute = UnauthorizedUserIndexRouteImport.update({
+  id: '/unauthorized-user/',
+  path: '/unauthorized-user/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinIndexRoute = JoinIndexRouteImport.update({
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/user/settings': typeof UserSettingsRoute
   '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
+  '/unauthorized-user': typeof UnauthorizedUserIndexRoute
   '/classes/': typeof ClassesClassesLayoutIndexRoute
   '/join/class': typeof JoinClassIndexRoute
   '/join/organization': typeof JoinOrganizationIndexRoute
@@ -432,6 +439,7 @@ export interface FileRoutesByTo {
   '/user/settings': typeof UserSettingsRoute
   '/blocked': typeof BlockedIndexRoute
   '/join': typeof JoinIndexRoute
+  '/unauthorized-user': typeof UnauthorizedUserIndexRoute
   '/classes': typeof ClassesClassesLayoutIndexRoute
   '/join/class': typeof JoinClassIndexRoute
   '/join/organization': typeof JoinOrganizationIndexRoute
@@ -487,6 +495,7 @@ export interface FileRoutesById {
   '/user/settings': typeof UserSettingsRoute
   '/blocked/': typeof BlockedIndexRoute
   '/join/': typeof JoinIndexRoute
+  '/unauthorized-user/': typeof UnauthorizedUserIndexRoute
   '/classes/_classesLayout/': typeof ClassesClassesLayoutIndexRoute
   '/join/class/': typeof JoinClassIndexRoute
   '/join/organization/': typeof JoinOrganizationIndexRoute
@@ -543,6 +552,7 @@ export interface FileRouteTypes {
     | '/user/settings'
     | '/blocked'
     | '/join'
+    | '/unauthorized-user'
     | '/classes/'
     | '/join/class'
     | '/join/organization'
@@ -595,6 +605,7 @@ export interface FileRouteTypes {
     | '/user/settings'
     | '/blocked'
     | '/join'
+    | '/unauthorized-user'
     | '/classes'
     | '/join/class'
     | '/join/organization'
@@ -649,6 +660,7 @@ export interface FileRouteTypes {
     | '/user/settings'
     | '/blocked/'
     | '/join/'
+    | '/unauthorized-user/'
     | '/classes/_classesLayout/'
     | '/join/class/'
     | '/join/organization/'
@@ -704,6 +716,7 @@ export interface RootRouteChildren {
   UserSettingsRoute: typeof UserSettingsRoute
   BlockedIndexRoute: typeof BlockedIndexRoute
   JoinIndexRoute: typeof JoinIndexRoute
+  UnauthorizedUserIndexRoute: typeof UnauthorizedUserIndexRoute
   JoinClassIndexRoute: typeof JoinClassIndexRoute
   JoinOrganizationIndexRoute: typeof JoinOrganizationIndexRoute
 }
@@ -722,6 +735,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unauthorized-user/': {
+      id: '/unauthorized-user/'
+      path: '/unauthorized-user'
+      fullPath: '/unauthorized-user'
+      preLoaderRoute: typeof UnauthorizedUserIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join/': {
@@ -1227,6 +1247,7 @@ const rootRouteChildren: RootRouteChildren = {
   UserSettingsRoute: UserSettingsRoute,
   BlockedIndexRoute: BlockedIndexRoute,
   JoinIndexRoute: JoinIndexRoute,
+  UnauthorizedUserIndexRoute: UnauthorizedUserIndexRoute,
   JoinClassIndexRoute: JoinClassIndexRoute,
   JoinOrganizationIndexRoute: JoinOrganizationIndexRoute,
 }

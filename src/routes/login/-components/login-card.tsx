@@ -1,5 +1,6 @@
 /** @format */
 
+import { useState } from "react";
 import { LogoBig } from "@/components/brand/logo";
 import {
     Card,
@@ -8,6 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 // import { Separator } from "@/components/ui/separator";
 import { GoogleOAuthButton } from "@/components/auth/google-oauth";
 import { MagicCodeAuth } from "@/components/auth/magic-code-auth";
@@ -16,6 +18,8 @@ import { MagicCodeAuth } from "@/components/auth/magic-code-auth";
 // import GuestLimitations from "@/components/guest/guest-limitations-section";
 
 export function LoginCard() {
+    const [termsAccepted, setTermsAccepted] = useState(false);
+
     return (
         <Card className="w-full max-w-md">
             <CardHeader className="text-center space-y-3">
@@ -40,8 +44,54 @@ export function LoginCard() {
                 </div>
             </CardHeader>
             <CardContent className="space-y-4 mt-8">
-                <GoogleOAuthButton />
-                <MagicCodeAuth />
+                <div className="flex items-start space-x-2 pb-2">
+                    <Checkbox
+                        id="terms-acceptance"
+                        checked={termsAccepted}
+                        onCheckedChange={(checked) =>
+                            setTermsAccepted(checked === true)
+                        }
+                        className="mt-0.5 bg-background"
+                    />
+                    <label
+                        htmlFor="terms-acceptance"
+                        className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+                    >
+                        I agree to the{" "}
+                        <a
+                            href="https://www.classclarus.com/privacy-policy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline underline-offset-4"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            privacy policy
+                        </a>
+                        ,{" "}
+                        <a
+                            href="https://www.classclarus.com/terms-and-conditions"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline underline-offset-4"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            terms and conditions
+                        </a>
+                        , and{" "}
+                        <a
+                            href="https://www.classclarus.com/cookie-policy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline underline-offset-4"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            cookie policy
+                        </a>
+                        .
+                    </label>
+                </div>
+                <GoogleOAuthButton termsAccepted={termsAccepted} />
+                <MagicCodeAuth termsAccepted={termsAccepted} />
                 {/* <div className="flex justify-center">
                     <GoogleClassroomButton onClick={() => {}} />
                 </div> */}

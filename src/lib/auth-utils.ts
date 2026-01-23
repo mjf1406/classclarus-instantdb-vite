@@ -1,10 +1,13 @@
 /** @format */
 
 import { redirect } from "@tanstack/react-router";
+import { id } from "@instantdb/react";
 import type { AuthContextValue } from "@/components/auth/auth-provider";
 import type { OrganizationWithRelations } from "@/hooks/use-organization-hooks";
 import type { ClassRole } from "@/hooks/use-class-role";
 import type { OrgRole } from "@/hooks/use-org-role";
+import { db } from "@/lib/db/db";
+import { generateJoinCode } from "@/lib/invite-utils";
 
 /**
  * Roles that are restricted from accessing certain routes
@@ -288,5 +291,62 @@ export function requireClassAccess(
         throw redirect({
             to: "/blocked",
         });
+    }
+}
+
+/**
+ * Check if a user has permissions to access the application
+ * by attempting to create a test organization.
+ * @param userId - The user ID to check permissions for
+ * @returns true if user has permissions, false if permission denied
+ */
+export async function checkUserPermissions(userId: string): Promise<boolean> {
+    try {
+        // Generate test org details
+        const orgId = id();
+        const testCode = generateJoinCode();
+        const now = new Date();
+
+        // Attempt to create a test organization
+        // This will fail if the user doesn't have isAllowedEmail permission
+        await db.transact([
+            db.tx.organizations[orgId].create({
+                name: "__PERMISSION_TEST__",
+                description: undefined,
+                icon: undefined,
+                created: now,
+                updated: now,
+                code: testCode,
+            }),
+            db.tx.organizations[orgId].link({ owner: userId }),
+            db.tx.organizations[orgId].link({ admins: userId }),
+        ]);
+
+        // If creation succeeded, user has permissions
+        // Silently delete the test org
+        try {
+            await db.transact([db.tx.organizations[orgId].delete()]);
+        } catch (deleteErr) {
+            // Log error but don't block the user (they're authorized)
+            console.error("Failed to delete test organization:", deleteErr);
+        }
+
+        return true;
+    } catch (err: any) {
+        // Check if this is a permission error
+        const isPermissionError =
+            err?.type === "permission-denied" ||
+            err?.message?.includes("not perms-pass") ||
+            err?.message?.includes("permission denied");
+
+        if (isPermissionError) {
+            // User doesn't have permissions
+            return false;
+        }
+
+        // For other errors (network, etc.), log and allow user through
+        // This prevents blocking legitimate users due to transient errors
+        console.error("Permission check failed with non-permission error:", err);
+        return true;
     }
 }

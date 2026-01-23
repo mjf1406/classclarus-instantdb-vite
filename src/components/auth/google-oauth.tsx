@@ -5,9 +5,11 @@ import { v4 as uuidv4 } from "uuid";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { Loader2 } from "lucide-react";
+import { id } from "@instantdb/react";
 import { Button } from "../ui/button";
 import { db } from "@/lib/db/db";
 import { autoJoinPendingClasses } from "@/lib/pending-members-utils";
+import { checkUserPermissions } from "@/lib/auth-utils";
 
 interface GoogleJwtPayload {
     given_name?: string;
@@ -18,7 +20,8 @@ const GOOGLE_CLIENT_NAME = import.meta.env.VITE_GOOGLE_CLIENT_NAME || "";
 
 function handleGoogleSuccess(
     credentialResponse: { credential?: string },
-    nonce: string
+    nonce: string,
+    termsAccepted: boolean = true
 ) {
     if (!GOOGLE_CLIENT_NAME) {
         console.error("Google Client Name is not configured");
@@ -75,6 +78,18 @@ function handleGoogleSuccess(
                 // Update user profile directly using client-side transaction
                 db.transact(db.tx.$users[result.user.id].update(updateData));
 
+                // Create terms acceptance record if terms were accepted
+                if (termsAccepted) {
+                    const acceptanceId = id();
+                    db.transact(
+                        db.tx.terms_acceptances[acceptanceId]
+                            .create({
+                                acceptedAt: new Date(),
+                            })
+                            .link({ user: result.user.id })
+                    );
+                }
+
                 // Auto-join pending classes
                 // Extract email from JWT token
                 if (!credentialResponse.credential) {
@@ -86,6 +101,15 @@ function handleGoogleSuccess(
                 if (decoded.email) {
                     await autoJoinPendingClasses(decoded.email, result.user.id);
                 }
+
+                // Check user permissions by attempting to create a test org
+                const hasPermissions = await checkUserPermissions(result.user.id);
+                if (!hasPermissions) {
+                    // User doesn't have permissions - log them out and redirect
+                    db.auth.signOut();
+                    window.location.href = "/unauthorized-user";
+                    return;
+                }
             }
         })
         .catch((err) => {
@@ -93,7 +117,7 @@ function handleGoogleSuccess(
             // Clear token on error
             sessionStorage.removeItem("google_id_token");
             alert(
-                "Failed to sign in with Google: " +
+                "Are you an authorized test user? Failed to sign in with Google: " +
                     (err.body?.message || err.message)
             );
         });
@@ -103,11 +127,16 @@ function handleGoogleError() {
     alert("Google login failed. Please try again.");
 }
 
-export function GoogleOAuthButton() {
+export function GoogleOAuthButton({
+    termsAccepted = true,
+}: {
+    termsAccepted?: boolean;
+}) {
     const googleButtonRef = useRef<HTMLDivElement>(null);
     const [nonce] = useState(() => uuidv4());
 
     const handleGoogleButtonClick = () => {
+        if (!termsAccepted) return;
         const googleButton = googleButtonRef.current?.querySelector(
             'div[role="button"], button'
         ) as HTMLElement;
@@ -124,7 +153,11 @@ export function GoogleOAuthButton() {
             >
                 <GoogleLogin
                     onSuccess={(credentialResponse) =>
-                        handleGoogleSuccess(credentialResponse, nonce)
+                        handleGoogleSuccess(
+                            credentialResponse,
+                            nonce,
+                            termsAccepted
+                        )
                     }
                     onError={handleGoogleError}
                     nonce={nonce}
@@ -136,8 +169,9 @@ export function GoogleOAuthButton() {
             <div className="flex justify-center">
                 <Button
                     onClick={handleGoogleButtonClick}
+                    disabled={!termsAccepted}
                     variant="outline"
-                    className="p-0 bg-transparent! dark:bg-transparent! border-0 dark:border-0 hover:bg-transparent! dark:hover:bg-transparent! rounded-none cursor-pointer"
+                    className="p-0 bg-transparent! dark:bg-transparent! border-0 dark:border-0 hover:bg-transparent! dark:hover:bg-transparent! rounded-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Sign in with Google"
                 >
                     <img

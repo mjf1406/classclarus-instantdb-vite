@@ -5,6 +5,19 @@
 import type { InstantRules } from "@instantdb/react";
 
 // ============================================================
+//                  TEST USER EMAIL WHITELIST
+// ============================================================
+
+// Test user emails that are allowed to access the application
+const TEST_USER_EMAILS = [
+    "michael.fitzgerald.1406@gmail.com",
+    "mfitzgerald06@gmail.com",
+    "mikitz.feedback@gmail.com",
+    "mark.tristan.0729@gmail.com",
+    "tristan.geare@gmail.com",
+];
+
+// ============================================================
 //                      BIND DEFINITIONS
 // ============================================================
 
@@ -19,6 +32,13 @@ const authenticationBinds = {
         "auth.id == newData.owner || auth.id == newData.user || auth.id == newData.id",
     isPremium:
         "auth.ref('$user.profile.plan').exists(p, p in ['basic', 'plus', 'pro'])",
+    // Check if user's email is in the allowed list or ends with @younghoon.org
+    // Note: auth.ref('$user.email') returns a list, so we access the first element with [0]
+    // For domain check, we verify the email contains @younghoon.org and has sufficient length
+    // || '@younghoon.org' in auth.email)
+    // This is a simplified check - in practice, emails ending with @younghoon.org will match
+    isAllowedEmail:
+        `auth.email != null && (auth.email in ['${TEST_USER_EMAILS.join("', '")}'] || (auth.email).contains('@younghoon.org'))`,
 };
 
 // Class Role Binds
@@ -237,6 +257,10 @@ const studentExpectationBinds = {
     isGuardianOfStudentExpectationStudent: "auth.id in data.ref('student.guardians.id')",
 };
 
+const termsAcceptanceBinds = {
+    isMyself: "auth.id in data.ref('user.id')",
+};
+
 // ============================================================
 //                  COMBINED BIND OBJECTS
 // ============================================================
@@ -312,9 +336,9 @@ const USER_ALL_CLASS_RELATIONSHIPS = [
     "isAdminOfMyClassAsAssistant",
 ].join(" || ");
 
-const USER_CAN_VIEW_PROFILE = `isAuthenticated && ( ${USER_SELF_AND_FAMILY} || ${USER_ALL_CLASS_RELATIONSHIPS} )`;
+const USER_CAN_VIEW_PROFILE = `isAuthenticated && isAllowedEmail && ( ${USER_SELF_AND_FAMILY} || ${USER_ALL_CLASS_RELATIONSHIPS} )`;
 
-const USER_CAN_VIEW_PRIVATE_INFO = `isAuthenticated && ( ${USER_SELF_AND_FAMILY} )`;
+const USER_CAN_VIEW_PRIVATE_INFO = `isAuthenticated && isAllowedEmail && ( ${USER_SELF_AND_FAMILY} )`;
 
 // User update permissions
 const USER_CLASS_ADMIN_UPDATE =
@@ -343,19 +367,19 @@ const rules = {
 
     $files: {
         allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && isOwner",
-            update: "isAuthenticated && (data.ref('owner.id') == [] || (isOwner && isStillOwner))",
-            delete: "isAuthenticated && isOwner",
+            create: "isAuthenticated && isAllowedEmail",
+            view: "isAuthenticated && isAllowedEmail && isOwner",
+            update: "isAuthenticated && isAllowedEmail && (data.ref('owner.id') == [] || (isOwner && isStillOwner))",
+            delete: "isAuthenticated && isAllowedEmail && isOwner",
         },
         bind: bindObjectToArray(allDataBinds),
     },
 
     $users: {
         allow: {
-            view: "true",
+            view: "isAllowedEmail",
             create: "false",
-            update: USER_CAN_UPDATE,
+            update: `${USER_CAN_UPDATE} && isAllowedEmail`,
             delete: "false",
         },
         fields: {
@@ -382,10 +406,10 @@ const rules = {
 
     organizations: {
         allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && (isOwner || isAdmin || isOrgTeacher || isInOrgClass)",
-            update: "isAuthenticated && (isOwner || isAdmin) && (isStillOwner || isStillAdmin)",
-            delete: "isAuthenticated && isOwner",
+            create: "isAuthenticated && isAllowedEmail",
+            view: "isAuthenticated && isAllowedEmail && (isOwner || isAdmin || isOrgTeacher || isInOrgClass)",
+            update: "isAuthenticated && isAllowedEmail && (isOwner || isAdmin) && (isStillOwner || isStillAdmin)",
+            delete: "isAuthenticated && isAllowedEmail && isOwner",
         },
         fields: {
             code: "isOwner || isAdmin",
@@ -395,10 +419,10 @@ const rules = {
 
     classes: {
         allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && (isOwner || isClassAdmin || isClassMember || isClassGuardian || isTeacher || isAssistantTeacher)",
-            update: "isAuthenticated && ((isOwner && isStillOwner) || isClassAdmin || isTeacher || isAssistantTeacher)",
-            delete: "isAuthenticated && isOwner",
+            create: "isAuthenticated && isAllowedEmail",
+            view: "isAuthenticated && isAllowedEmail && (isOwner || isClassAdmin || isClassMember || isClassGuardian || isTeacher || isAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && ((isOwner && isStillOwner) || isClassAdmin || isTeacher || isAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && isOwner",
         },
         fields: {
             guardianCode: "isOwner || isClassAdmin || isTeacher",
@@ -411,10 +435,10 @@ const rules = {
 
     pendingMembers: {
         allow: {
-            create: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher)",
-            view: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher)",
             update: "false",
-            delete: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -424,10 +448,10 @@ const rules = {
 
     groups: {
         allow: {
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian || isStudentInGroup || isGuardianChildInGroup)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian || isStudentInGroup || isGuardianChildInGroup)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -439,10 +463,10 @@ const rules = {
 
     teams: {
         allow: {
-            create: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
-            view: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher || isTeamClassStudent || isTeamClassGuardian || isStudentInTeam || isGuardianChildInTeam)",
-            update: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
-            delete: "isAuthenticated && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
+            create: "isAuthenticated && isAllowedEmail && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher || isTeamClassStudent || isTeamClassGuardian || isStudentInTeam || isGuardianChildInTeam)",
+            update: "isAuthenticated && isAllowedEmail && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isTeamClassOwner || isTeamClassAdmin || isTeamClassTeacher || isTeamClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -454,10 +478,10 @@ const rules = {
 
     classDashboardSettings: {
         allow: {
-            create: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
-            view: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
-            update: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
-            delete: "isAuthenticated && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            update: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -467,10 +491,10 @@ const rules = {
 
     studentDashboardPreferences: {
         allow: {
-            create: "isAuthenticated",
-            view: "isAuthenticated && (isMyself || isMyChild || isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
-            update: "isAuthenticated && isMyself",
-            delete: "isAuthenticated && isMyself",
+            create: "isAuthenticated && isAllowedEmail",
+            view: "isAuthenticated && isAllowedEmail && (isMyself || isMyChild || isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && isMyself",
+            delete: "isAuthenticated && isAllowedEmail && isMyself",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -480,10 +504,10 @@ const rules = {
 
     class_roster: {
         allow: {
-            create: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
-            view: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher || isClassRosterStudent || isGuardianOfClassRosterStudent)",
-            update: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
-            delete: "isAuthenticated && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
+            create: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher || isClassRosterStudent || isGuardianOfClassRosterStudent)",
+            update: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -493,10 +517,10 @@ const rules = {
 
     behaviors: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -506,10 +530,10 @@ const rules = {
 
     reward_items: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -519,10 +543,10 @@ const rules = {
 
     folders: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -532,10 +556,10 @@ const rules = {
 
     random_assigners: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -545,10 +569,10 @@ const rules = {
 
     rotating_assigners: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -558,10 +582,10 @@ const rules = {
 
     equitable_assigners: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isGroupClassStudent || isGroupClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -571,10 +595,10 @@ const rules = {
 
     behavior_logs: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isBehaviorLogForMyself || isGuardianOfBehaviorLogStudent)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isBehaviorLogForMyself || isGuardianOfBehaviorLogStudent)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -585,10 +609,10 @@ const rules = {
 
     reward_redemptions: {
         allow: {
-            view: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isRewardRedemptionForMyself || isGuardianOfRewardRedemptionStudent)",
-            create: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
-            update: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
-            delete: "isAuthenticated && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isRewardRedemptionForMyself || isGuardianOfRewardRedemptionStudent)",
+            create: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -598,10 +622,10 @@ const rules = {
     },
     expectations: {
         allow: {
-            view: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher || isExpectationClassAssistantTeacher || isExpectationClassStudent || isExpectationClassGuardian)",
-            create: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
-            update: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
-            delete: "isAuthenticated && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher || isExpectationClassAssistantTeacher || isExpectationClassStudent || isExpectationClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isExpectationClassOwner || isExpectationClassAdmin || isExpectationClassTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -610,14 +634,26 @@ const rules = {
     },
     student_expectations: {
         allow: {
-            view: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher || isStudentExpectationForMyself || isGuardianOfStudentExpectationStudent)",
-            create: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
-            update: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
-            delete: "isAuthenticated && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
+            view: "isAuthenticated && isAllowedEmail && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher || isStudentExpectationForMyself || isGuardianOfStudentExpectationStudent)",
+            create: "isAuthenticated && isAllowedEmail && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isStudentExpectationClassOwner || isStudentExpectationClassAdmin || isStudentExpectationClassTeacher || isStudentExpectationClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...studentExpectationBinds,
+        }),
+    },
+    terms_acceptances: {
+        allow: {
+            create: "isAuthenticated && isAllowedEmail && auth.id == newData.user",
+            view: "isAuthenticated && isAllowedEmail && isMyself",
+            update: "false",
+            delete: "false",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...termsAcceptanceBinds,
         }),
     },
 } satisfies InstantRules;

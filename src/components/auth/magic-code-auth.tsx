@@ -2,11 +2,14 @@
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import { Mail } from "lucide-react";
+import { id } from "@instantdb/react";
+import { useNavigate } from "@tanstack/react-router";
 
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { autoJoinPendingClasses } from "@/lib/pending-members-utils";
+import { checkUserPermissions } from "@/lib/auth-utils";
 import {
     InputOTP,
     InputOTPGroup,
@@ -25,9 +28,14 @@ import { cn } from "@/lib/utils";
 interface MagicCodeAuthProps {
     trigger?: React.ReactNode;
     onSuccess?: () => void;
+    termsAccepted?: boolean;
 }
 
-export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
+export function MagicCodeAuth({
+    trigger,
+    onSuccess,
+    termsAccepted = true,
+}: MagicCodeAuthProps) {
     const [open, setOpen] = useState(false);
     const [sentEmail, setSentEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -44,14 +52,15 @@ export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
     return (
         <>
             {trigger ? (
-                <div onClick={() => setOpen(true)}>{trigger}</div>
+                <div onClick={() => termsAccepted && setOpen(true)}>{trigger}</div>
             ) : (
                 <div className="flex justify-center">
                     <Button
                         onClick={() => setOpen(true)}
                         onTouchStart={() => setOpen(true)}
+                        disabled={!termsAccepted}
                         variant="outline"
-                        className="h-10 px-3 items-center gap-2.5 justify-start bg-white text-gray-900 hover:bg-white/90 rounded-full border border-gray-300 font-roboto-medium text-sm leading-5 dark:bg-[#1f1f1f] dark:text-gray-300 dark:hover:bg-[#2d2d2d] dark:border-[#3c3c3c] cursor-pointer w-[175px]"
+                        className="h-10 px-3 items-center gap-2.5 justify-start bg-white text-gray-900 hover:bg-white/90 rounded-full border border-gray-300 font-roboto-medium text-sm leading-5 dark:bg-[#1f1f1f] dark:text-gray-300 dark:hover:bg-[#2d2d2d] dark:border-[#3c3c3c] cursor-pointer w-[175px] disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="Sign in with Email"
                     >
                         <Mail className="h-5 w-5" />
@@ -100,6 +109,7 @@ export function MagicCodeAuth({ trigger, onSuccess }: MagicCodeAuthProps) {
                                 }}
                                 isLoading={isLoading}
                                 setIsLoading={setIsLoading}
+                                termsAccepted={termsAccepted}
                             />
                         )}
                     </CredenzaBody>
@@ -179,15 +189,18 @@ function CodeStep({
     onSuccess,
     isLoading,
     setIsLoading,
+    termsAccepted = true,
 }: {
     sentEmail: string;
     onBack: () => void;
     onSuccess: () => void;
     isLoading: boolean;
     setIsLoading: (loading: boolean) => void;
+    termsAccepted?: boolean;
 }) {
     const [code, setCode] = useState("");
     const formRef = useRef<HTMLFormElement>(null);
+    const navigate = useNavigate();
 
     // Auto-submit when code is complete
     useEffect(() => {
@@ -225,9 +238,33 @@ function CodeStep({
                         db.tx.$users[result.user.id].update(updateData)
                     );
 
+                    // Create terms acceptance record if terms were accepted
+                    if (termsAccepted) {
+                        const acceptanceId = id();
+                        db.transact(
+                            db.tx.terms_acceptances[acceptanceId]
+                                .create({
+                                    acceptedAt: new Date(),
+                                })
+                                .link({ user: result.user.id })
+                        );
+                    }
+
                     // Auto-join pending classes
                     if (sentEmail) {
                         await autoJoinPendingClasses(sentEmail, result.user.id);
+                    }
+
+                    // Check user permissions by attempting to create a test org
+                    const hasPermissions = await checkUserPermissions(result.user.id);
+                    if (!hasPermissions) {
+                        // User doesn't have permissions - log them out and redirect
+                        db.auth.signOut();
+                        navigate({
+                            to: "/unauthorized-user",
+                        });
+                        setIsLoading(false);
+                        return;
                     }
                 }
                 setIsLoading(false);

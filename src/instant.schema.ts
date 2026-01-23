@@ -173,6 +173,9 @@ const _schema = i.schema({
             created: i.date(),
             updated: i.date(),
         }),
+        terms_acceptances: i.entity({
+            acceptedAt: i.date().indexed(),
+        }),
     },
     links: {
         userClasses: {
@@ -727,6 +730,19 @@ const _schema = i.schema({
                 label: "class",
                 onDelete: "cascade",
             },
+        },
+        userTermsAcceptances: {
+            forward: {
+                on: "terms_acceptances",
+                has: "one",
+                label: "user",
+                onDelete: "cascade",
+            }, // Each terms acceptance belongs to one user
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "termsAcceptances",
+            }, // Each user can have many terms acceptances
         },
     },
     rooms: {},
