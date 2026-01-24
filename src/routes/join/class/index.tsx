@@ -1,12 +1,13 @@
 /** @format */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/auth-utils";
 import { JoinClassForm } from "../-components/join-class-form";
 
 export const Route = createFileRoute("/join/class/")({
-    beforeLoad: ({ context, location }) => {
-        requireAuth(context, location);
+    validateSearch: (search: Record<string, unknown>) => {
+        return {
+            code: (search.code as string) || undefined,
+        };
     },
     component: RouteComponent,
 });

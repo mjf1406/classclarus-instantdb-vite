@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/components/auth/auth-provider";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { Loader2, AlertTriangle } from "lucide-react";
+import { LoginCard } from "@/routes/login/-components/login-card";
 
 export function JoinOrganizationForm() {
     const [code, setCode] = useState("");
@@ -24,7 +25,7 @@ export function JoinOrganizationForm() {
     const [error, setError] = useState<string | null>(null);
     const [isRateLimited, setIsRateLimited] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const { user } = useAuthContext();
+    const { user, isLoading } = useAuthContext();
     const navigate = useNavigate();
     const lastSubmittedCodeRef = useRef<string>("");
     const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -202,10 +203,52 @@ export function JoinOrganizationForm() {
         };
     }, []);
 
+    // Show loading state while auth is loading
+    if (isLoading) {
+        return (
+            <div className="flex min-h-screen items-start md:items-center justify-center p-4 pt-8 md:pt-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="text-center">
+                        <CardTitle className="text-2xl">Loading...</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    // Show login card if user is not authenticated
+    if (!user?.id) {
+        return (
+            <div className="flex min-h-screen items-start md:items-center justify-center p-4 pt-8 md:pt-4">
+                <div className="w-full max-w-md space-y-4">
+                    <LoginCard />
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="w-full"
+                        size="lg"
+                    >
+                        <Link
+                            to="/"
+                            search={{ redirect: undefined }}
+                        >
+                            Go to Home
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
     // Show success state with loading spinner
     if (isSuccess) {
         return (
-            <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="flex min-h-screen items-start md:items-center justify-center p-4 pt-8 md:pt-4">
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
                         <CardTitle className="text-2xl">
@@ -229,7 +272,7 @@ export function JoinOrganizationForm() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="flex min-h-screen items-start md:items-center justify-center p-4 pt-8 md:pt-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
                     <CardTitle className="text-2xl">
@@ -290,6 +333,19 @@ export function JoinOrganizationForm() {
                             {isSubmitting ? "Joining..." : "Join Organization"}
                         </Button>
                     </form>
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="w-full mt-4"
+                        size="lg"
+                    >
+                        <Link
+                            to="/"
+                            search={{ redirect: undefined }}
+                        >
+                            Go to Home
+                        </Link>
+                    </Button>
                 </CardContent>
             </Card>
         </div>
