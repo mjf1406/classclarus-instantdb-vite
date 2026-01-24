@@ -19,6 +19,7 @@ import { CreateClassDialog } from "@/routes/organizations/_orgLayout/$orgId/main
 import { useAllUserClasses } from "@/hooks/use-class-hooks";
 import { LogIn } from "lucide-react";
 import { CreateOrgDialog } from "@/routes/organizations/-components/create-org-dialog";
+import { useAuthContext } from "@/components/auth/auth-provider";
 
 export const Route = createFileRoute("/classes/_classesLayout/")({
     beforeLoad: ({ context, location }) => {
@@ -29,7 +30,11 @@ export const Route = createFileRoute("/classes/_classesLayout/")({
 
 function RouteComponent() {
     const { classes, isLoading } = useAllUserClasses();
+    const { organizations } = useAuthContext();
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+    // Check if user is a member of any organization (owner, admin, or teacher)
+    const isOrgMember = organizations.length > 0;
 
     // Separate active and archived classes
     const activeClasses = classes.filter(
@@ -72,28 +77,46 @@ function RouteComponent() {
                             <ListIcon />
                         </Button>
                     </div>
-                    <CreateClassDialog>
-                        <Button size="lg">
-                            <PlusIcon />
-                            <span className="sr-only">Create Class</span>
-                            <span className="hidden md:block">
-                                Create Class
-                            </span>
+                    {isOrgMember ? (
+                        <>
+                            <CreateClassDialog>
+                                <Button size="lg">
+                                    <PlusIcon />
+                                    <span className="sr-only">Create Class</span>
+                                    <span className="hidden md:block">
+                                        Create Class
+                                    </span>
+                                </Button>
+                            </CreateClassDialog>
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                asChild
+                            >
+                                <Link to="/join">
+                                    <UserPlus />
+                                    <span className="sr-only">Join Organization</span>
+                                    <span className="hidden md:block">
+                                        Join Organization
+                                    </span>
+                                </Link>
+                            </Button>
+                        </>
+                    ) : (
+                        <Button
+                            size="lg"
+                            variant="outline"
+                            asChild
+                        >
+                            <Link to="/join/class">
+                                <LogIn />
+                                <span className="sr-only">Join Class</span>
+                                <span className="hidden md:block">
+                                    Join Class
+                                </span>
+                            </Link>
                         </Button>
-                    </CreateClassDialog>
-                    <Button
-                        size="lg"
-                        variant="outline"
-                        asChild
-                    >
-                        <Link to="/join">
-                            <UserPlus />
-                            <span className="sr-only">Join Organization</span>
-                            <span className="hidden md:block">
-                                Join Organization
-                            </span>
-                        </Link>
-                    </Button>
+                    )}
                 </div>
             </div>
 
@@ -113,53 +136,61 @@ function RouteComponent() {
                 {activeClasses.length === 0 && !isLoading ? (
                     <ClassNoClasses
                         createClassButton={
-                            <CreateClassDialog>
-                                <Button
-                                    size="lg"
-                                    className="w-full"
-                                >
-                                    <PlusIcon />
-                                    <span>Create Class</span>
-                                </Button>
-                            </CreateClassDialog>
+                            isOrgMember ? (
+                                <CreateClassDialog>
+                                    <Button
+                                        size="lg"
+                                        className="w-full"
+                                    >
+                                        <PlusIcon />
+                                        <span>Create Class</span>
+                                    </Button>
+                                </CreateClassDialog>
+                            ) : undefined
                         }
                         createOrgButton={
-                            <CreateOrgDialog>
-                                <Button
-                                    size="lg"
-                                    variant="ghost"
-                                    className="w-full"
-                                >
-                                    <PlusIcon />
-                                    <span>Create Organization</span>
-                                </Button>
-                            </CreateOrgDialog>
+                            isOrgMember ? (
+                                <CreateOrgDialog>
+                                    <Button
+                                        size="lg"
+                                        variant="ghost"
+                                        className="w-full"
+                                    >
+                                        <PlusIcon />
+                                        <span>Create Organization</span>
+                                    </Button>
+                                </CreateOrgDialog>
+                            ) : undefined
                         }
                         joinClassButton={
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                asChild
-                                className="w-full"
-                            >
-                                <Link to="/join/class">
-                                    <LogIn />
-                                    <span>Join Class</span>
-                                </Link>
-                            </Button>
+                            !isOrgMember ? (
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    asChild
+                                    className="w-full"
+                                >
+                                    <Link to="/join/class">
+                                        <LogIn />
+                                        <span>Join Class</span>
+                                    </Link>
+                                </Button>
+                            ) : undefined
                         }
                         joinOrgButton={
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                asChild
-                                className="w-full"
-                            >
-                                <Link to="/join/organization">
-                                    <UserPlus />
-                                    <span>Join Organization</span>
-                                </Link>
-                            </Button>
+                            isOrgMember ? (
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    asChild
+                                    className="w-full"
+                                >
+                                    <Link to="/join/organization">
+                                        <UserPlus />
+                                        <span>Join Organization</span>
+                                    </Link>
+                                </Button>
+                            ) : undefined
                         }
                     />
                 ) : viewMode === "grid" ? (

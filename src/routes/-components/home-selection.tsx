@@ -21,7 +21,7 @@ const options: HomeSelectionOption[] = [
     {
         title: "Student",
         icon: StudentIcon,
-        route: "/join/class",
+        route: "/classes",
     },
     {
         title: "Teacher",
@@ -31,7 +31,7 @@ const options: HomeSelectionOption[] = [
     {
         title: "Parent/Guardian",
         icon: GuardianIcon,
-        route: "/join/class",
+        route: "/classes",
     },
     {
         title: "School Admin",

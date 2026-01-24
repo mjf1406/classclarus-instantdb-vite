@@ -67,7 +67,8 @@ import {
     ensureRosterHasGuardianCode,
     generateRosterGuardianCode,
 } from "@/lib/guardian-utils";
-import { Copy, RefreshCw } from "lucide-react";
+import { Copy, RefreshCw, Download } from "lucide-react";
+import { generateGuardianCodePDF } from "@/lib/guardian-pdf-export";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/students/"
@@ -281,6 +282,7 @@ function StudentCard({
     const [manageGuardiansOpen, setManageGuardiansOpen] = useState(false);
     const [roleManagerOpen, setRoleManagerOpen] = useState(false);
     const [isRegeneratingCode, setIsRegeneratingCode] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
 
     // Query guardians for this student
     const { data: userData } = db.useQuery({
@@ -306,7 +308,8 @@ function StudentCard({
         if (!roster?.guardianCode) return;
         try {
             await navigator.clipboard.writeText(roster.guardianCode);
-            alert(`Copied code: ${roster.guardianCode}`);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 1500);
         } catch (error) {
             console.error("Failed to copy code:", error);
         }
@@ -420,9 +423,13 @@ function StudentCard({
                                             size="icon"
                                             className="h-5 w-5"
                                             onClick={handleCopyCode}
-                                            title="Copy code"
+                                            title={isCopied ? "Copied!" : "Copy code"}
                                         >
-                                            <Copy className="size-3" />
+                                            {isCopied ? (
+                                                <Check className="size-3 text-green-500" />
+                                            ) : (
+                                                <Copy className="size-3" />
+                                            )}
                                         </Button>
                                     </div>
                                 )}
@@ -587,6 +594,7 @@ function StudentsTable({
     const [editingCell, setEditingCell] = useState<{ studentId: string; columnKey: string } | null>(null);
     const [editValue, setEditValue] = useState("");
     const [manageGuardiansForStudent, setManageGuardiansForStudent] = useState<InstaQLEntity<AppSchema, "$users"> | null>(null);
+    const [copiedStudentId, setCopiedStudentId] = useState<string | null>(null);
 
     const handleStartEdit = (studentId: string, columnKey: string, roster: RosterForDisplay) => {
         if (!canManage) return;
@@ -793,14 +801,19 @@ function StudentsTable({
                                                     onClick={async () => {
                                                         try {
                                                             await navigator.clipboard.writeText(roster.guardianCode!);
-                                                            alert(`Copied code: ${roster.guardianCode}`);
+                                                            setCopiedStudentId(student.id);
+                                                            setTimeout(() => setCopiedStudentId(null), 1500);
                                                         } catch (error) {
                                                             console.error("Failed to copy:", error);
                                                         }
                                                     }}
-                                                    title="Copy code"
+                                                    title={copiedStudentId === student.id ? "Copied!" : "Copy code"}
                                                 >
-                                                    <Copy className="size-3" />
+                                                    {copiedStudentId === student.id ? (
+                                                        <Check className="size-3 text-green-500" />
+                                                    ) : (
+                                                        <Copy className="size-3" />
+                                                    )}
                                                 </Button>
                                             </div>
                                         ) : (
@@ -870,6 +883,37 @@ function RouteComponent() {
     // Use hook to fetch pending members filtered by student role
     const { pendingMembers } = usePendingMembers(classId, "student");
 
+    const [isExportingPDF, setIsExportingPDF] = useState(false);
+
+    const handleExportPDF = async () => {
+        if (!classId || !classEntity?.name || students.length === 0) {
+            return;
+        }
+
+        setIsExportingPDF(true);
+        try {
+            // Prepare student data with guardian codes
+            const studentData = students.map((student) => {
+                const roster = rosterByStudentId.get(student.id);
+                return {
+                    studentId: student.id,
+                    studentName: displayNameForStudent(student, roster ?? null),
+                    code: roster?.guardianCode || null,
+                };
+            });
+
+            await generateGuardianCodePDF(
+                studentData,
+                classId,
+                classEntity.name
+            );
+        } catch (error) {
+            console.error("Failed to export PDF:", error);
+        } finally {
+            setIsExportingPDF(false);
+        }
+    };
+
     return (
         <RestrictedRoute
             role={roleInfo.role}
@@ -889,25 +933,38 @@ function RouteComponent() {
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant={view === "grid" ? "secondary" : "ghost"}
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setView("grid")}
-                            aria-label="Grid view"
-                        >
-                            <LayoutGrid className="size-4" />
-                        </Button>
-                        <Button
-                            variant={view === "table" ? "secondary" : "ghost"}
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setView("table")}
-                            aria-label="Table view"
-                        >
-                            <Table2 className="size-4" />
-                        </Button>
+                    <div className="flex items-center gap-2">
+                        {canManage && students.length > 0 && (
+                            <Button
+                                onClick={handleExportPDF}
+                                disabled={isExportingPDF}
+                                variant="outline"
+                                size="sm"
+                            >
+                                <Download className="size-4 mr-2" />
+                                {isExportingPDF ? "Generating..." : "Download Guardian Codes PDF"}
+                            </Button>
+                        )}
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant={view === "grid" ? "secondary" : "ghost"}
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setView("grid")}
+                                aria-label="Grid view"
+                            >
+                                <LayoutGrid className="size-4" />
+                            </Button>
+                            <Button
+                                variant={view === "table" ? "secondary" : "ghost"}
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setView("table")}
+                                aria-label="Table view"
+                            >
+                                <Table2 className="size-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
 

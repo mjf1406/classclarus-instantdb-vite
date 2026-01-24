@@ -9,10 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InviteCodesTabs } from "./-components/invite-codes-tabs";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { GoogleClassroomImportDialog } from "./-components/google-classroom-import-dialog";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { GraduationCap } from "lucide-react";
 import { displayNameForStudent } from "@/lib/roster-utils";
+import { db } from "@/lib/db/db";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/invite/"
@@ -47,21 +48,43 @@ function RouteComponent() {
           }
         : { student: null, teacher: null, guardian: null };
 
-    // Get student guardian codes from roster
+    // Query students with their guardians to get the count
+    const studentIds = classEntity?.classStudents?.map((s) => s.id) || [];
+    const { data: studentsWithGuardiansData } = db.useQuery(
+        studentIds.length > 0
+            ? {
+                  $users: {
+                      $: {
+                          where: {
+                              id: { $in: studentIds },
+                          },
+                      },
+                      guardians: {},
+                  },
+              }
+            : null
+    );
+
+    // Create a map of student ID to guardian count
+    const guardianCountByStudentId = useMemo(() => {
+        const map = new Map<string, number>();
+        studentsWithGuardiansData?.$users?.forEach((student) => {
+            map.set(student.id, student.guardians?.length || 0);
+        });
+        return map;
+    }, [studentsWithGuardiansData]);
+
+    // Get all students with their guardian codes (if available)
     const studentGuardianCodes = classEntity?.classStudents
-        ? classEntity.classStudents
-              .map((student) => {
-                  const roster = rosterByStudentId.get(student.id);
-                  if (roster?.guardianCode) {
-                      return {
-                          studentId: student.id,
-                          studentName: displayNameForStudent(student, roster),
-                          code: roster.guardianCode,
-                      };
-                  }
-                  return null;
-              })
-              .filter((item): item is NonNullable<typeof item> => item !== null)
+        ? classEntity.classStudents.map((student) => {
+              const roster = rosterByStudentId.get(student.id);
+              return {
+                  studentId: student.id,
+                  studentName: displayNameForStudent(student, roster ?? null),
+                  code: roster?.guardianCode || null,
+                  guardianCount: guardianCountByStudentId.get(student.id) || 0,
+              };
+          })
         : [];
 
     return (
@@ -140,6 +163,8 @@ function RouteComponent() {
                         studentGuardianCodes={studentGuardianCodes}
                         isLoading={isLoading}
                         onCopySuccess={handleCopySuccess}
+                        classId={classId}
+                        className={classEntity?.name || ""}
                     />
 
                     {classId && (

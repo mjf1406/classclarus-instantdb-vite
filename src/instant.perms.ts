@@ -428,7 +428,7 @@ const rules = {
             delete: "isAuthenticated && isAllowedEmail && isOwner",
         },
         fields: {
-            guardianCode: "isOwner || isClassAdmin || isTeacher",
+            guardianCode: "false",
             studentCode: "isOwner || isClassAdmin || isTeacher",
             teacherCode: "isOwner || isClassAdmin || isTeacher",
             

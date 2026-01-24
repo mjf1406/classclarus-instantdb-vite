@@ -18,8 +18,9 @@ import {
 import { CopyJoinUrlButton } from "./copy-join-url-button";
 import { CopyCodeButton } from "./copy-code-button";
 import { OpenCodeInWindowButton } from "./open-code-in-window-button";
-import { Copy } from "lucide-react";
+import { Copy, Check, Link, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { generateGuardianCodePDF } from "@/lib/guardian-pdf-export";
 import {
     Table,
     TableBody,
@@ -38,10 +39,13 @@ interface InviteCodesTabsProps {
     studentGuardianCodes?: Array<{
         studentId: string;
         studentName: string;
-        code: string;
+        code: string | null;
+        guardianCount: number;
     }>;
     isLoading?: boolean;
     onCopySuccess?: (type: "student" | "teacher" | "guardian") => void;
+    classId?: string;
+    className?: string;
 }
 
 export function InviteCodesTabs({
@@ -49,8 +53,32 @@ export function InviteCodesTabs({
     studentGuardianCodes = [],
     isLoading = false,
     onCopySuccess,
+    classId,
+    className,
 }: InviteCodesTabsProps) {
     const [activeTab, setActiveTab] = useState<string>("");
+    const [copiedStudentId, setCopiedStudentId] = useState<string | null>(null);
+    const [copiedLinkStudentId, setCopiedLinkStudentId] = useState<string | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExportPDF = async () => {
+        if (!classId || !className || studentGuardianCodes.length === 0) {
+            return;
+        }
+
+        setIsExporting(true);
+        try {
+            await generateGuardianCodePDF(
+                studentGuardianCodes,
+                classId,
+                className
+            );
+        } catch (error) {
+            console.error("Failed to export PDF:", error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const handleCopySuccess = (type: "student" | "teacher" | "guardian") => {
         onCopySuccess?.(type);
@@ -176,13 +204,28 @@ export function InviteCodesTabs({
             <TabsContent value="guardian" className="mt-4">
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <GuardianIcon className="size-5 text-primary" />
-                            <CardTitle>Guardian Codes</CardTitle>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <GuardianIcon className="size-5 text-primary" />
+                                    <CardTitle>Guardian Codes</CardTitle>
+                                </div>
+                                <CardDescription>
+                                    Each student has a unique code for their parents to join as guardians. Share the appropriate code with each student's parents.
+                                </CardDescription>
+                            </div>
+                            {studentGuardianCodes.length > 0 && classId && className && (
+                                <Button
+                                    onClick={handleExportPDF}
+                                    disabled={isExporting}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    <Download className="size-4 mr-2" />
+                                    {isExporting ? "Generating..." : "Download PDF"}
+                                </Button>
+                            )}
                         </div>
-                        <CardDescription>
-                            Each student has a unique code for their parents to join as guardians. Share the appropriate code with each student's parents.
-                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {studentGuardianCodes.length > 0 ? (
@@ -193,7 +236,7 @@ export function InviteCodesTabs({
                                             <TableRow>
                                                 <TableHead>Student</TableHead>
                                                 <TableHead>Guardian Code</TableHead>
-                                                <TableHead className="w-[100px]">Actions</TableHead>
+                                                <TableHead>Guardians</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -203,62 +246,79 @@ export function InviteCodesTabs({
                                                         {item.studentName}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <code className="px-2 py-1 bg-muted rounded text-sm font-mono">
-                                                            {item.code}
-                                                        </code>
+                                                        {item.code ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <code className="px-2 py-1 bg-muted rounded text-sm font-mono">
+                                                                    {item.code}
+                                                                </code>
+                                                                <div className="flex items-center gap-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8"
+                                                                        onClick={async () => {
+                                                                            try {
+                                                                                await navigator.clipboard.writeText(item.code!);
+                                                                                setCopiedStudentId(item.studentId);
+                                                                                setTimeout(() => setCopiedStudentId(null), 1500);
+                                                                            } catch (error) {
+                                                                                console.error("Failed to copy:", error);
+                                                                            }
+                                                                        }}
+                                                                        title={copiedStudentId === item.studentId ? "Copied!" : "Copy code"}
+                                                                    >
+                                                                        {copiedStudentId === item.studentId ? (
+                                                                            <Check className="size-4 text-green-500" />
+                                                                        ) : (
+                                                                            <Copy className="size-4" />
+                                                                        )}
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8"
+                                                                        onClick={async () => {
+                                                                            try {
+                                                                                const link = `${window.location.origin}/join/class?code=${item.code}`;
+                                                                                await navigator.clipboard.writeText(link);
+                                                                                setCopiedLinkStudentId(item.studentId);
+                                                                                setTimeout(() => setCopiedLinkStudentId(null), 1500);
+                                                                            } catch (error) {
+                                                                                console.error("Failed to copy link:", error);
+                                                                            }
+                                                                        }}
+                                                                        title={copiedLinkStudentId === item.studentId ? "Link copied!" : "Copy link"}
+                                                                    >
+                                                                        {copiedLinkStudentId === item.studentId ? (
+                                                                            <Check className="size-4 text-green-500" />
+                                                                        ) : (
+                                                                            <Link className="size-4" />
+                                                                        )}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-muted-foreground text-sm">
+                                                                Not generated
+                                                            </span>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8"
-                                                            onClick={async () => {
-                                                                try {
-                                                                    await navigator.clipboard.writeText(item.code);
-                                                                    alert(`Copied code: ${item.code}`);
-                                                                } catch (error) {
-                                                                    console.error("Failed to copy:", error);
-                                                                }
-                                                            }}
-                                                            title="Copy code"
-                                                        >
-                                                            <Copy className="size-4" />
-                                                        </Button>
+                                                        <span className="text-sm">
+                                                            {item.guardianCount}
+                                                        </span>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
                                     </Table>
                                 </div>
-                                {codes.guardian && (
-                                    <div className="pt-4 border-t">
-                                        <p className="text-sm text-muted-foreground mb-2">
-                                            General Guardian Code (for all guardians):
-                                        </p>
-                                        <CodeCard
-                                            type="guardian"
-                                            code={codes.guardian}
-                                            icon={GuardianIcon}
-                                            title="General Guardian"
-                                            description="Share this code with any guardian to join the class"
-                                        />
-                                    </div>
-                                )}
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 <p className="text-sm text-muted-foreground">
-                                    No students have guardian codes yet. Guardian codes are automatically generated when students join the class.
+                                    No students in this class yet. Guardian codes are automatically generated when students join the class.
                                 </p>
-                                {codes.guardian && (
-                                    <CodeCard
-                                        type="guardian"
-                                        code={codes.guardian}
-                                        icon={GuardianIcon}
-                                        title="General Guardian"
-                                        description="Share this code with guardians to join the class"
-                                    />
-                                )}
                             </div>
                         )}
                     </CardContent>
