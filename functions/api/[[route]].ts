@@ -9,6 +9,7 @@ import { createJoinClassRoute } from "./routes/join-class";
 import { createLeaveOrganizationRoute } from "./routes/leave-organization";
 import { createLeaveClassRoute } from "./routes/leave-class";
 import { createGoogleClassroomRoute } from "./routes/google-classroom";
+import { createDeleteAccountRoute } from "./routes/delete-account";
 
 const app = new Hono<HonoContext>();
 
@@ -24,12 +25,16 @@ app.use("/api/join/class", rateLimitMiddleware);
 app.use("/api/leave/organization", rateLimitMiddleware);
 app.use("/api/leave/class", rateLimitMiddleware);
 
+// Apply rate limiting to delete account endpoint
+app.use("/api/user/delete-account", rateLimitMiddleware);
+
 // Register routes
 createJoinOrganizationRoute(app);
 createJoinClassRoute(app);
 createLeaveOrganizationRoute(app);
 createLeaveClassRoute(app);
 createGoogleClassroomRoute(app);
+createDeleteAccountRoute(app);
 
 // 404 handler for unmatched routes - returns JSON instead of plain text
 app.notFound((c) => {

@@ -3,7 +3,7 @@
 "use client";
 
 import {
-    BadgeCheck,
+    User,
     ChevronsUpDown,
     CreditCard,
     LogOut,
@@ -120,11 +120,11 @@ export function NavUser() {
                         <DropdownMenuGroup>
                             <DropdownMenuItem asChild>
                                 <Link
-                                    to="/user/profile"
+                                    to="/user/account"
                                     className="text-foreground! hover:text-background!"
                                 >
-                                    <BadgeCheck />
-                                    Profile
+                                    <User />
+                                    Account
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>

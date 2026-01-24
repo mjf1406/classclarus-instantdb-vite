@@ -1,12 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { requireAuth } from '@/lib/auth-utils'
 import { CreditCard } from 'lucide-react'
 import { UnderConstruction } from '@/components/under-construction'
 
-export const Route = createFileRoute('/user/billing')({
-  beforeLoad: ({ context, location }) => {
-    requireAuth(context, location);
-  },
+export const Route = createFileRoute('/user/_userLayout/billing')({
   component: RouteComponent,
 })
 

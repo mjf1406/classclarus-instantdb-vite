@@ -8,7 +8,7 @@ import {
     HelpCircle,
     Shield,
     FileText,
-    Lock,
+    Cookie,
 } from "lucide-react";
 import {
     SidebarGroup,
@@ -97,29 +97,29 @@ export function ClassClarusLinks({ onLinkClick }: ClassClarusLinksProps) {
                         tooltip="Terms of Service"
                     >
                         <a
-                            href="https://www.classclarus.com/terms-of-service"
+                            href="https://www.classclarus.com/terms-and-conditions"
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={onLinkClick}
                         >
                             <FileText />
-                            <span>Terms of Service</span>
+                            <span>Terms and Conditions</span>
                         </a>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         asChild
-                        tooltip="Privacy and Security"
+                        tooltip="Cookie Policy"
                     >
                         <a
-                            href="https://www.classclarus.com/privacy-and-security"
+                            href="https://www.classclarus.com/cookie-policy"
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={onLinkClick}
                         >
-                            <Lock />
-                            <span>Privacy and Security</span>
+                            <Cookie />
+                            <span>Cookie Policy</span>
                         </a>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

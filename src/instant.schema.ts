@@ -20,6 +20,8 @@ const _schema = i.schema({
             plan: i.string().optional(),
             firstName: i.string().optional(),
             lastName: i.string().optional(),
+            displayNameForStudents: i.string().optional(),
+            displayNameForParents: i.string().optional(),
             gender: i.string().optional(),
             created: i.date().optional(),
             updated: i.date().optional(),

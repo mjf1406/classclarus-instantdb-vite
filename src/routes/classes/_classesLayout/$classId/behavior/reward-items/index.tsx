@@ -5,7 +5,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Star, Plus, FolderPlus, ChevronDown, Folder, Search, LayoutGrid, List, MoreVertical } from "lucide-react";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
-import { db } from "@/lib/db/db";
+import { useClassRewardItems } from "@/hooks/use-class-reward-items";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,29 +28,12 @@ import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId"
 import { CreateFolderDialog } from "../-components/folders/create-folder-dialog";
 import { EditFolderDialog } from "../-components/folders/edit-folder-dialog";
 import { DeleteFolderDialog } from "../-components/folders/delete-folder-dialog";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/behavior/reward-items/"
 )({
     component: RouteComponent,
 });
-
-type RewardItem = InstaQLEntity<
-    AppSchema,
-    "reward_items",
-    { class: {}; folder?: {} }
->;
-
-type FolderWithRelations = InstaQLEntity<
-    AppSchema,
-    "folders",
-    { class: {}; behaviors: {}; rewardItems: {} }
->;
-
-type RewardItemsQueryResult = { reward_items: RewardItem[] };
-type FoldersQueryResult = { folders: FolderWithRelations[] };
 
 function matchItem(
     item: { name?: string; description?: string },
@@ -88,32 +71,7 @@ function RouteComponent() {
     const { class: classEntity } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
-    const { data, isLoading: dataLoading } = db.useQuery(
-        classId
-            ? {
-                  reward_items: {
-                      $: { where: { "class.id": classId } },
-                      class: {},
-                      folder: {},
-                  },
-                  folders: {
-                      $: { where: { "class.id": classId } },
-                      behaviors: {},
-                      rewardItems: {},
-                      class: {},
-                  },
-              }
-            : null
-    );
-
-    const typedRewardItems =
-        (data as RewardItemsQueryResult | undefined) ?? null;
-    const rewardItems = typedRewardItems?.reward_items ?? [];
-
-    const typedFolders = (data as FoldersQueryResult | undefined) ?? null;
-    const folders = (typedFolders?.folders ?? []).sort((a, b) =>
-        (a.name || "").localeCompare(b.name || "")
-    );
+    const { rewardItems, folders, isLoading: dataLoading } = useClassRewardItems(classId);
 
     const uncategorizedRewardItems = rewardItems.filter((r) => !r.folder);
 

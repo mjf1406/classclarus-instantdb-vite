@@ -15,6 +15,7 @@ const TEST_USER_EMAILS = [
     "mikitz.feedback@gmail.com",
     "mark.tristan.0729@gmail.com",
     "tristan.geare@gmail.com",
+    "marcusmaneater69@gmail.com",
 ];
 
 // ============================================================
@@ -391,6 +392,8 @@ const rules = {
             avatarURL: USER_CAN_VIEW_PROFILE,
             firstName: USER_CAN_VIEW_PROFILE,
             lastName: USER_CAN_VIEW_PROFILE,
+            displayNameForStudents: USER_CAN_VIEW_PROFILE,
+            displayNameForParents: USER_CAN_VIEW_PROFILE,
             gender: USER_CAN_VIEW_PROFILE,
             // Private fields: only self and family
             type: USER_CAN_VIEW_PRIVATE_INFO,

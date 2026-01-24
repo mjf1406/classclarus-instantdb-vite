@@ -2,7 +2,7 @@
 
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-    BadgeCheck,
+    User,
     CreditCard,
     LogOut,
     Settings,
@@ -83,9 +83,9 @@ export function ExpandedUserMenu() {
                             className="w-full justify-start gap-2"
                             asChild
                         >
-                            <Link to="/user/profile">
-                                <BadgeCheck className="size-4" />
-                                Profile
+                            <Link to="/user/account">
+                                <User className="size-4" />
+                                Account
                             </Link>
                         </Button>
                         <Button

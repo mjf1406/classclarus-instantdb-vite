@@ -4,6 +4,10 @@ import { useState, useMemo, useEffect } from "react";
 import React from "react";
 import { id } from "@instantdb/react";
 import { Trophy, Award, Flag, Gift, Plus, Folder, ArrowUp } from "lucide-react";
+import { useClassBehaviors } from "@/hooks/use-class-behaviors";
+import { useClassRewardItems } from "@/hooks/use-class-reward-items";
+import { useClassFolders } from "@/hooks/use-class-folders";
+import { useStudentRewardRedemptions } from "@/hooks/use-student-reward-redemptions";
 import { db } from "@/lib/db/db";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
@@ -58,16 +62,7 @@ interface ApplyActionDialogProps {
 type Behavior = InstaQLEntity<AppSchema, "behaviors", { class?: {}; folder?: {} }>;
 type RewardItem = InstaQLEntity<AppSchema, "reward_items", { class?: {}; folder?: {} }>;
 type FolderType = InstaQLEntity<AppSchema, "folders", { class?: {} }>;
-type RewardRedemption = InstaQLEntity<
-    AppSchema,
-    "reward_redemptions",
-    { rewardItem?: { folder?: {} } }
->;
 
-type BehaviorsQueryResult = { behaviors: Behavior[] };
-type RewardItemsQueryResult = { reward_items: RewardItem[] };
-type FoldersQueryResult = { folders: FolderType[] };
-type RewardRedemptionsQueryResult = { reward_redemptions: RewardRedemption[] };
 
 interface ActionTabControlsProps {
     quantityId: string;
@@ -259,72 +254,14 @@ export function ApplyActionDialog({
         }
     };
 
-    const { data: behaviorsData } = db.useQuery(
-        classId
-            ? {
-                  behaviors: {
-                      $: { where: { "class.id": classId } },
-                      class: {},
-                      folder: {},
-                  },
-              }
-            : null
-    );
+    const { behaviors } = useClassBehaviors(classId);
+    const { rewardItems } = useClassRewardItems(classId);
+    const { folders: foldersUnsorted } = useClassFolders(classId);
+    const { rewardRedemptions } = useStudentRewardRedemptions(classId, student.id);
 
-    const { data: rewardItemsData } = db.useQuery(
-        classId
-            ? {
-                  reward_items: {
-                      $: { where: { "class.id": classId } },
-                      class: {},
-                      folder: {},
-                  },
-              }
-            : null
-    );
-
-    const { data: foldersData } = db.useQuery(
-        classId
-            ? {
-                  folders: {
-                      $: { where: { "class.id": classId } },
-                      class: {},
-                  },
-              }
-            : null
-    );
-
-    const { data: rewardRedemptionsData } = db.useQuery(
-        classId && student.id
-            ? {
-                  reward_redemptions: {
-                      $: {
-                          where: {
-                              "student.id": student.id,
-                              "class.id": classId,
-                          },
-                      },
-                      rewardItem: {
-                          folder: {},
-                      },
-                  },
-              }
-            : null
-    );
-
-    const typedBehaviors = (behaviorsData as BehaviorsQueryResult | undefined) ?? null;
-    const behaviors = typedBehaviors?.behaviors ?? [];
-
-    const typedRewardItems = (rewardItemsData as RewardItemsQueryResult | undefined) ?? null;
-    const rewardItems = typedRewardItems?.reward_items ?? [];
-
-    const typedFolders = (foldersData as FoldersQueryResult | undefined) ?? null;
-    const folders = (typedFolders?.folders ?? []).sort((a, b) =>
+    const folders = foldersUnsorted.sort((a, b) =>
         (a.name ?? "").localeCompare(b.name ?? "")
     );
-
-    const typedRewardRedemptions = (rewardRedemptionsData as RewardRedemptionsQueryResult | undefined) ?? null;
-    const rewardRedemptions = typedRewardRedemptions?.reward_redemptions ?? [];
 
     // Group behaviors by folder
     const positiveBehaviorsByFolder = useMemo(() => {

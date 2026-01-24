@@ -21,6 +21,8 @@ export interface AuthContextValue {
         type: string;
         firstName: string | null;
         lastName: string | null;
+        displayNameForStudents: string | null;
+        displayNameForParents: string | null;
         plan: string;
     };
     isLoading: boolean;
@@ -143,6 +145,8 @@ export default function AuthProvider({
             type: userData?.type || "guest",
             firstName: userData?.firstName || null,
             lastName: userData?.lastName || null,
+            displayNameForStudents: userData?.displayNameForStudents || null,
+            displayNameForParents: userData?.displayNameForParents || null,
             plan: userData?.plan || "free",
         },
         isLoading,

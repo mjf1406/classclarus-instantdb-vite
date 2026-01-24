@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { Award, Flag, Gift, Trash2 } from "lucide-react";
+import { useStudentBehaviorLogs } from "@/hooks/use-student-behavior-logs";
+import { useStudentRewardRedemptions } from "@/hooks/use-student-reward-redemptions";
 import { db } from "@/lib/db/db";
 import {
     Credenza,
@@ -39,21 +41,6 @@ interface PointHistoryDialogProps {
     canManage: boolean;
     children: React.ReactNode;
 }
-
-type BehaviorLog = InstaQLEntity<
-    AppSchema,
-    "behavior_logs",
-    { behavior?: {}; student?: {}; createdBy?: {}; class?: {} }
->;
-
-type RewardRedemption = InstaQLEntity<
-    AppSchema,
-    "reward_redemptions",
-    { rewardItem?: {}; student?: {}; createdBy?: {}; class?: {} }
->;
-
-type BehaviorLogsQueryResult = { behavior_logs: BehaviorLog[] };
-type RewardRedemptionsQueryResult = { reward_redemptions: RewardRedemption[] };
 
 interface HistoryEntryProps {
     id: string;
@@ -149,52 +136,8 @@ export function PointHistoryDialog({
         description: string;
     } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const { data: behaviorLogsData } = db.useQuery(
-        classId && student.id
-            ? {
-                  behavior_logs: {
-                      $: {
-                          where: {
-                              "student.id": student.id,
-                              "class.id": classId,
-                          },
-                          order: { createdAt: "desc" },
-                      },
-                      behavior: {},
-                      student: {},
-                      createdBy: {},
-                      class: {},
-                  },
-              }
-            : null
-    );
-
-    const { data: rewardRedemptionsData } = db.useQuery(
-        classId && student.id
-            ? {
-                  reward_redemptions: {
-                      $: {
-                          where: {
-                              "student.id": student.id,
-                              "class.id": classId,
-                          },
-                          order: { createdAt: "desc" },
-                      },
-                      rewardItem: {},
-                      student: {},
-                      createdBy: {},
-                      class: {},
-                  },
-              }
-            : null
-    );
-
-    const typedBehaviorLogs = (behaviorLogsData as BehaviorLogsQueryResult | undefined) ?? null;
-    const behaviorLogs = typedBehaviorLogs?.behavior_logs ?? [];
-
-    const typedRewardRedemptions =
-        (rewardRedemptionsData as RewardRedemptionsQueryResult | undefined) ?? null;
-    const rewardRedemptions = typedRewardRedemptions?.reward_redemptions ?? [];
+    const { behaviorLogs } = useStudentBehaviorLogs(classId, student.id);
+    const { rewardRedemptions } = useStudentRewardRedemptions(classId, student.id);
 
     const awardedEntries = useMemo(() => {
         return behaviorLogs

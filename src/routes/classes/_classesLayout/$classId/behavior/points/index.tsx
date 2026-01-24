@@ -10,6 +10,8 @@ import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassRole } from "@/hooks/use-class-role";
 import { useClassRoster } from "@/hooks/use-class-roster";
 import { db } from "@/lib/db/db";
+import { useClassById, type ClassByRole } from "@/hooks/use-class-hooks";
+import { useClassBehaviorLogs } from "@/hooks/use-class-behavior-logs";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { StudentPointsCard } from "./-components/student-points-card";
@@ -34,10 +36,10 @@ type ClassForPoints = InstaQLEntity<
         classTeachers: {};
         classAssistantTeachers: {};
         classGuardians: {};
-        classStudents: { studentGroups: {}; studentTeams: {} };
-        groups: { groupTeams: {} };
-        behaviorLogs: { behavior: {}; student: {} };
-        rewardRedemptions: { rewardItem: {}; student: {} };
+        classStudents?: { studentGroups?: {}; studentTeams?: {} };
+        groups?: { groupTeams?: {} };
+        behaviorLogs?: { behavior: {}; student: {} };
+        rewardRedemptions?: { rewardItem: {}; student: {} };
     }
 >;
 
@@ -47,7 +49,8 @@ function RouteComponent() {
     const params = useParams({ strict: false });
     const classId = params.classId;
 
-    const pointsQuery =
+    const { class: classEntity } = useClassById(classId);
+    const { data, isLoading: dataLoading } = db.useQuery(
         classId && classId.trim() !== ""
             ? {
                   classes: {
@@ -63,16 +66,13 @@ function RouteComponent() {
                           studentTeams: {},
                       },
                       groups: { groupTeams: {} },
-                      behaviorLogs: { behavior: {}, student: {} },
-                      rewardRedemptions: { rewardItem: {}, student: {} },
                   },
               }
-            : null;
-
-    const { data, isLoading: dataLoading } = db.useQuery(pointsQuery);
+            : null
+    );
     const typedData = (data as PointsQueryResult | undefined) ?? null;
-    const classEntity = typedData?.classes?.[0];
-    const roleInfo = useClassRole(classEntity);
+    const classEntityWithRelations = typedData?.classes?.[0] || classEntity;
+    const roleInfo = useClassRole(classEntityWithRelations as ClassByRole | undefined);
 
     // Show skeleton while data is loading, before RestrictedRoute blocks the render
     if (dataLoading) {
@@ -82,11 +82,11 @@ function RouteComponent() {
     return (
         <RestrictedRoute
             role={roleInfo.role}
-            isLoading={!classEntity && pointsQuery !== null}
+            isLoading={!classEntity && classId !== null}
             backUrl={classId ? `/classes/${classId}` : "/classes"}
         >
             <PointsPageContent
-                classEntity={classEntity}
+                classEntity={classEntityWithRelations}
                 classId={classId ?? ""}
                 canManage={
                     roleInfo.isOwner ||
@@ -113,6 +113,7 @@ function PointsPageContent({
     const [selectedGroupId, setSelectedGroupId] = useState<string>(ALL_VALUE);
     const [selectedTeamId, setSelectedTeamId] = useState<string>(ALL_VALUE);
     const { getRosterForStudent } = useClassRoster(classId);
+    const { behaviorLogs, rewardRedemptions } = useClassBehaviorLogs(classId);
 
     const groups = classEntity?.groups ?? [];
     const selectedGroup = groups.find((g) => g.id === selectedGroupId);
@@ -125,8 +126,8 @@ function PointsPageContent({
 
     const pointsMap = useMemo(() => {
         const map = new Map<string, number>();
-        const logs = classEntity?.behaviorLogs ?? [];
-        const redemptions = classEntity?.rewardRedemptions ?? [];
+        const logs = behaviorLogs ?? [];
+        const redemptions = rewardRedemptions ?? [];
         const students = classEntity?.classStudents ?? [];
 
         for (const s of students) {
@@ -148,16 +149,16 @@ function PointsPageContent({
         }
         return map;
     }, [
-        classEntity?.behaviorLogs,
-        classEntity?.rewardRedemptions,
+        behaviorLogs,
+        rewardRedemptions,
         classEntity?.classStudents,
     ]);
 
     const getStudentAggregates = (studentId: string) => {
-        const logs = (classEntity?.behaviorLogs ?? []).filter(
+        const logs = (behaviorLogs ?? []).filter(
             (l) => l.student?.id === studentId
         );
-        const redemptions = (classEntity?.rewardRedemptions ?? []).filter(
+        const redemptions = (rewardRedemptions ?? []).filter(
             (r) => r.student?.id === studentId
         );
 
@@ -216,7 +217,7 @@ function PointsPageContent({
         v == null ? 0 : typeof v === "number" ? v : new Date(v).getTime();
 
     const getLastActionForStudent = (studentId: string): LastAction => {
-        const logs = (classEntity?.behaviorLogs ?? [])
+        const logs = (behaviorLogs ?? [])
             .filter((l) => l.student?.id === studentId)
             .map((l) => ({
                 type: "behavior" as const,
@@ -224,7 +225,7 @@ function PointsPageContent({
                 createdAt: l.createdAt,
                 description: `Behavior: ${l.behavior?.name ?? "Unknown"} (${(l.behavior?.points ?? 0) >= 0 ? "+" : ""}${l.behavior?.points ?? 0})`,
             }));
-        const redemptions = (classEntity?.rewardRedemptions ?? [])
+        const redemptions = (rewardRedemptions ?? [])
             .filter((r) => r.student?.id === studentId)
             .map((r) => ({
                 type: "redemption" as const,
@@ -241,7 +242,7 @@ function PointsPageContent({
     };
 
     const getLastBehaviorForStudent = (studentId: string): LastBehavior => {
-        const logs = (classEntity?.behaviorLogs ?? [])
+        const logs = (behaviorLogs ?? [])
             .filter((l) => l.student?.id === studentId)
             .sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
         const first = logs[0];

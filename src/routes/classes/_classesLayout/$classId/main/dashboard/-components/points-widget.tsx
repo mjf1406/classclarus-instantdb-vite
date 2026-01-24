@@ -3,7 +3,9 @@
 import { useMemo } from "react";
 import { format } from "date-fns";
 import { Trophy, Award, Flag, Gift } from "lucide-react";
-import { db } from "@/lib/db/db";
+import { useStudentPoints } from "@/hooks/use-student-points";
+import { useStudentBehaviorLogs } from "@/hooks/use-student-behavior-logs";
+import { useStudentRewardRedemptions } from "@/hooks/use-student-reward-redemptions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,16 +14,6 @@ import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId"
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
-type BehaviorLog = InstaQLEntity<AppSchema, "behavior_logs", { behavior?: {}; student?: {}; createdBy?: {} }>;
-type RewardRedemption = InstaQLEntity<AppSchema, "reward_redemptions", { rewardItem?: {}; student?: {}; createdBy?: {} }>;
-
-type BehaviorLogsQueryResult = {
-    behavior_logs: BehaviorLog[];
-};
-
-type RewardRedemptionsQueryResult = {
-    reward_redemptions: RewardRedemption[];
-};
 
 interface PointsWidgetProps {
     classId: string;
@@ -82,89 +74,11 @@ function HistoryEntry({ date, name, points, quantity, createdBy, icon }: History
 }
 
 export function PointsWidget({ classId, studentId }: PointsWidgetProps) {
-    // Query behavior logs for the student with ordering and createdBy
-    const { data: behaviorLogsData } = db.useQuery(
-        classId && studentId
-            ? {
-                  behavior_logs: {
-                      $: {
-                          where: {
-                              and: [
-                                  { "class.id": classId },
-                                  { "student.id": studentId },
-                              ],
-                          },
-                          order: { createdAt: "desc" },
-                      },
-                      behavior: {},
-                      student: {},
-                      createdBy: {},
-                  },
-              }
-            : null
-    );
+    const { totalPoints, awardedPoints, removedPoints, redeemedPoints } =
+        useStudentPoints(classId, studentId);
 
-    // Query reward redemptions for the student with ordering and createdBy
-    const { data: rewardRedemptionsData } = db.useQuery(
-        classId && studentId
-            ? {
-                  reward_redemptions: {
-                      $: {
-                          where: {
-                              and: [
-                                  { "class.id": classId },
-                                  { "student.id": studentId },
-                              ],
-                          },
-                          order: { createdAt: "desc" },
-                      },
-                      rewardItem: {},
-                      student: {},
-                      createdBy: {},
-                  },
-              }
-            : null
-    );
-
-    const typedBehaviorLogs = (behaviorLogsData as BehaviorLogsQueryResult | undefined) ?? null;
-    const behaviorLogs = typedBehaviorLogs?.behavior_logs ?? [];
-
-    const typedRewardRedemptions = (rewardRedemptionsData as RewardRedemptionsQueryResult | undefined) ?? null;
-    const rewardRedemptions = typedRewardRedemptions?.reward_redemptions ?? [];
-
-    // Calculate points aggregates
-    const { totalPoints, awardedPoints, removedPoints, redeemedPoints } = useMemo(() => {
-        let awarded = 0;
-        let removed = 0;
-        let redeemed = 0;
-
-        // Calculate from behavior logs
-        for (const log of behaviorLogs) {
-            const points = log.behavior?.points ?? 0;
-            const qty = (log.quantity ?? 1) as number;
-            if (points >= 0) {
-                awarded += points * qty;
-            } else {
-                removed += Math.abs(points) * qty;
-            }
-        }
-
-        // Calculate from reward redemptions
-        for (const redemption of rewardRedemptions) {
-            const cost = redemption.rewardItem?.cost ?? 0;
-            const qty = (redemption.quantity ?? 1) as number;
-            redeemed += cost * qty;
-        }
-
-        const total = awarded - removed - redeemed;
-
-        return {
-            totalPoints: total,
-            awardedPoints: awarded,
-            removedPoints: removed,
-            redeemedPoints: redeemed,
-        };
-    }, [behaviorLogs, rewardRedemptions]);
+    const { behaviorLogs } = useStudentBehaviorLogs(classId, studentId);
+    const { rewardRedemptions } = useStudentRewardRedemptions(classId, studentId);
 
     // Create history entries
     const awardedEntries = useMemo(() => {

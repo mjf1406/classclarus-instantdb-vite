@@ -90,7 +90,7 @@ export function useUploadedFile(): UseUploadedFileResult {
                 return null;
             }
         },
-        []
+        [user?.id]
     );
 
     return {

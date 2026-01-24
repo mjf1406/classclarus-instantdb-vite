@@ -5,7 +5,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Award, Plus, FolderPlus, ChevronDown, Folder, Search, LayoutGrid, List, MoreVertical } from "lucide-react";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
-import { db } from "@/lib/db/db";
+import { useClassBehaviors } from "@/hooks/use-class-behaviors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,29 +28,12 @@ import { FontAwesomeIconFromId } from "@/components/icons/FontAwesomeIconFromId"
 import { CreateFolderDialog } from "../-components/folders/create-folder-dialog";
 import { EditFolderDialog } from "../-components/folders/edit-folder-dialog";
 import { DeleteFolderDialog } from "../-components/folders/delete-folder-dialog";
-import type { InstaQLEntity } from "@instantdb/react";
-import type { AppSchema } from "@/instant.schema";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/behavior/behaviors/"
 )({
     component: RouteComponent,
 });
-
-type Behavior = InstaQLEntity<
-    AppSchema,
-    "behaviors",
-    { class: {}; folder?: {} }
->;
-
-type FolderWithRelations = InstaQLEntity<
-    AppSchema,
-    "folders",
-    { class: {}; behaviors: {}; rewardItems: {} }
->;
-
-type BehaviorsQueryResult = { behaviors: Behavior[] };
-type FoldersQueryResult = { folders: FolderWithRelations[] };
 
 function matchItem(
     item: { name?: string; description?: string },
@@ -88,31 +71,7 @@ function RouteComponent() {
     const { class: classEntity } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
-    const { data, isLoading: dataLoading } = db.useQuery(
-        classId
-            ? {
-                  behaviors: {
-                      $: { where: { "class.id": classId } },
-                      class: {},
-                      folder: {},
-                  },
-                  folders: {
-                      $: { where: { "class.id": classId } },
-                      behaviors: {},
-                      rewardItems: {},
-                      class: {},
-                  },
-              }
-            : null
-    );
-
-    const typedBehaviors = (data as BehaviorsQueryResult | undefined) ?? null;
-    const behaviors = typedBehaviors?.behaviors ?? [];
-
-    const typedFolders = (data as FoldersQueryResult | undefined) ?? null;
-    const folders = (typedFolders?.folders ?? []).sort((a, b) =>
-        (a.name || "").localeCompare(b.name || "")
-    );
+    const { behaviors, folders, isLoading: dataLoading } = useClassBehaviors(classId);
 
     const uncategorizedBehaviors = behaviors.filter((b) => !b.folder);
 
