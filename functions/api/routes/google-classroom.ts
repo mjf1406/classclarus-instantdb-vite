@@ -639,12 +639,12 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 });
             });
 
-            // If students are being added, ensure they have guardian codes and add their guardians to the class
+            // If students are being added, ensure roster entries exist with guardian codes and add their guardians to the class
             const guardianTransactions: Array<
                 ReturnType<typeof dbAdmin.tx.classes[string]["link"]>
             > = [];
             if (role === "student") {
-                // Ensure each student has a guardian code
+                // Ensure each student has a roster entry with guardian code
                 const codeGenerationPromises = studentsAsUsers
                     .map((student: any) => {
                         const user = existingUsers.find(
@@ -657,13 +657,17 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                     .filter((userId): userId is string => userId !== undefined)
                     .map(async (userId) => {
                         try {
-                            const { ensureStudentHasGuardianCode } = await import(
+                            const { ensureRosterHasGuardianCode } = await import(
                                 "../../../src/lib/guardian-utils"
                             );
-                            await ensureStudentHasGuardianCode(dbAdmin as any, userId);
+                            await ensureRosterHasGuardianCode(
+                                dbAdmin as any,
+                                targetClassId,
+                                userId
+                            );
                         } catch (error) {
                             console.error(
-                                `[Google Classroom] Error ensuring guardian code for student ${userId}:`,
+                                `[Google Classroom] Error ensuring roster guardian code for student ${userId} in class ${targetClassId}:`,
                                 error
                             );
                             // Don't fail the import if code generation fails

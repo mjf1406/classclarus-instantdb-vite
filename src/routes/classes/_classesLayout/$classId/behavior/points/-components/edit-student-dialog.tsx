@@ -24,6 +24,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { GenderSelect, GENDER_NONE } from "./gender-select";
+import { ensureRosterHasGuardianCode } from "@/lib/guardian-utils";
 
 export type ExistingRoster = {
     id: string;
@@ -109,18 +110,30 @@ export function EditStudentDialog({
 
         try {
             if (existingRoster) {
-                db.transact(
+                await db.transact(
                     db.tx.class_roster[existingRoster.id].update(rosterPayload)
                 );
             } else {
                 const rosterId = id();
-                db.transact(
+                await db.transact(
                     db.tx.class_roster[rosterId]
                         .create(rosterPayload)
                         .link({ class: classId })
                         .link({ student: student.id })
                 );
             }
+            
+            // Ensure roster has guardian code after create/update
+            try {
+                await ensureRosterHasGuardianCode(db, classId, student.id);
+            } catch (error) {
+                console.error(
+                    `[Edit Student Dialog] Error ensuring roster guardian code:`,
+                    error
+                );
+                // Don't fail the update if code generation fails
+            }
+            
             setOpen(false);
         } catch (err) {
             setError(

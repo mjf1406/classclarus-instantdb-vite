@@ -32,8 +32,6 @@ const _schema = i.schema({
             polarSubscriptionId: i.string().optional(),
             // Google Classroom integration
             googleRefreshToken: i.string().optional(),
-            // Student guardian code for parent join
-            studentGuardianCode: i.string().unique().indexed().optional(),
         }),
         organizations: i.entity({
             name: i.string().indexed(),
@@ -141,6 +139,8 @@ const _schema = i.schema({
             firstName: i.string().optional(),
             lastName: i.string().optional(),
             gender: i.string().optional(),
+            // Guardian code for parent join (unique per student-class)
+            guardianCode: i.string().unique().indexed().optional(),
         }),
         expectations: i.entity({
             name: i.string().indexed(),

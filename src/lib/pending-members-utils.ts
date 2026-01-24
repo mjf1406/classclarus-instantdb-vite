@@ -5,7 +5,7 @@ import type { AppSchema } from "@/instant.schema";
 import type { InstaQLEntity } from "@instantdb/react";
 import {
     getGuardianLinkTransactions,
-    ensureStudentHasGuardianCode,
+    ensureRosterHasGuardianCode,
 } from "@/lib/guardian-utils";
 
 type PendingMember = InstaQLEntity<AppSchema, "pendingMembers", { class: {} }>;
@@ -83,22 +83,26 @@ export async function autoJoinPendingClasses(
             );
         }
 
-        // If user is joining as student, ensure they have a guardian code and add their guardians to those classes
+        // If user is joining as student, ensure roster entries exist with guardian codes and add their guardians to those classes
         const studentClassIds = Array.from(classRoleMap.values())
             .filter(({ role }) => role === "student")
             .map(({ classId }) => classId);
 
         if (studentClassIds.length > 0) {
-            // Ensure student has a guardian code
-            try {
-                await ensureStudentHasGuardianCode(db, userId);
-            } catch (error) {
-                console.error(
-                    `[Pending Members] Error ensuring guardian code for student ${userId}:`,
-                    error
-                );
-                // Don't fail the auto-join if code generation fails
-            }
+            // Ensure roster entries exist with guardian codes for each class
+            const rosterCodePromises = studentClassIds.map(async (classId) => {
+                try {
+                    await ensureRosterHasGuardianCode(db, classId, userId);
+                } catch (error) {
+                    console.error(
+                        `[Pending Members] Error ensuring roster guardian code for student ${userId} in class ${classId}:`,
+                        error
+                    );
+                    // Don't fail the auto-join if code generation fails
+                }
+            });
+
+            await Promise.all(rosterCodePromises);
 
             // Query guardians for each class where user is joining as student
             const guardianPromises = studentClassIds.map((classId) =>

@@ -403,8 +403,6 @@ const rules = {
             lastLogon: USER_CAN_VIEW_PRIVATE_INFO,
             polarCustomerId: USER_CAN_VIEW_PRIVATE_INFO,
             polarSubscriptionId: USER_CAN_VIEW_PRIVATE_INFO,
-            // Student guardian code: visible and updatable by class owners, admins, and teachers
-            studentGuardianCode: "isAuthenticated && isAllowedEmail && (isMyself || isMyChild || auth.id in data.ref('studentClasses.classAdmins.id') || auth.id in data.ref('studentClasses.classTeachers.id') || auth.id in data.ref('studentClasses.classAssistantTeachers.id') || auth.id in data.ref('studentClasses.owner.id'))",
         },
         bind: bindObjectToArray(allBinds),
     },
@@ -513,6 +511,10 @@ const rules = {
             view: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher || isClassRosterStudent || isGuardianOfClassRosterStudent)",
             update: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
             delete: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
+        },
+        fields: {
+            // Guardian code: visible and updatable by class owners, admins, and teachers
+            guardianCode: "isAuthenticated && isAllowedEmail && (isClassRosterClassOwner || isClassRosterClassAdmin || isClassRosterClassTeacher || isClassRosterClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,

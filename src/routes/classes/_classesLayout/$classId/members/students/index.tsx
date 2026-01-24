@@ -64,7 +64,8 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { GenderSelect, GENDER_NONE, GENDER_OPTIONS } from "@/routes/classes/_classesLayout/$classId/behavior/points/-components/gender-select";
 import {
-    generateStudentGuardianCode,
+    ensureRosterHasGuardianCode,
+    generateRosterGuardianCode,
 } from "@/lib/guardian-utils";
 import { Copy, RefreshCw } from "lucide-react";
 
@@ -93,6 +94,7 @@ type RosterForDisplay = {
     lastName?: string;
     gender?: string;
     number?: number;
+    guardianCode?: string;
 } | null;
 
 function ManageGuardiansDialog({
@@ -301,10 +303,10 @@ function StudentCard({
         .slice(0, 2);
 
     const handleCopyCode = async () => {
-        if (!student.studentGuardianCode) return;
+        if (!roster?.guardianCode) return;
         try {
-            await navigator.clipboard.writeText(student.studentGuardianCode);
-            alert(`Copied code: ${student.studentGuardianCode}`);
+            await navigator.clipboard.writeText(roster.guardianCode);
+            alert(`Copied code: ${roster.guardianCode}`);
         } catch (error) {
             console.error("Failed to copy code:", error);
         }
@@ -320,25 +322,25 @@ function StudentCard({
             const maxAttempts = 10;
 
             do {
-                newCode = generateStudentGuardianCode();
+                newCode = generateRosterGuardianCode();
                 attempts++;
 
-                // Check if code already exists
+                // Check if code already exists in any roster entry
                 const { data } = await db.queryOnce({
-                    $users: {
+                    class_roster: {
                         $: {
                             where: {
-                                studentGuardianCode: newCode,
+                                guardianCode: newCode,
                             },
                         },
                     },
                 });
 
-                const existingUser = (data as { $users?: Array<{ id: string }> } | undefined)
-                    ?.$users?.[0];
+                const existingRoster = (data as { class_roster?: Array<{ id: string }> } | undefined)
+                    ?.class_roster?.[0];
 
-                if (!existingUser || existingUser.id === student.id) {
-                    // Code is unique or belongs to this student, break out of loop
+                if (!existingRoster || existingRoster.id === roster?.id) {
+                    // Code is unique or belongs to this roster, break out of loop
                     break;
                 }
 
@@ -348,12 +350,26 @@ function StudentCard({
                 }
             } while (attempts < maxAttempts);
 
-            // Update student with new code
-            await db.transact([
-                db.tx.$users[student.id].update({
-                    studentGuardianCode: newCode,
-                }),
-            ]);
+            // Ensure roster exists, then update with new code
+            if (roster) {
+                await db.transact([
+                    db.tx.class_roster[roster.id].update({
+                        guardianCode: newCode,
+                    }),
+                ]);
+            } else {
+                // Roster doesn't exist, create it with the new code
+                const { id: generateId } = await import("@instantdb/react");
+                const rosterId = generateId();
+                await db.transact([
+                    db.tx.class_roster[rosterId]
+                        .create({
+                            guardianCode: newCode,
+                        })
+                        .link({ class: classId })
+                        .link({ student: student.id }),
+                ]);
+            }
 
             alert(`New guardian code generated: ${newCode}`);
         } catch (error) {
@@ -393,11 +409,11 @@ function StudentCard({
                                 <div>
                                     Roster: #{roster?.number ?? "—"} · {roster?.firstName || "—"} {roster?.lastName || "—"} · {roster?.gender ?? "—"}
                                 </div>
-                                {canManage && student.studentGuardianCode && (
+                                {canManage && roster?.guardianCode && (
                                     <div className="flex items-center gap-2">
                                         <span>Guardian Code:</span>
                                         <code className="px-2 py-0.5 bg-muted rounded text-xs font-mono">
-                                            {student.studentGuardianCode}
+                                            {roster.guardianCode}
                                         </code>
                                         <Button
                                             variant="ghost"
@@ -601,12 +617,22 @@ function StudentsTable({
 
         try {
             if (roster) {
-                db.transact(db.tx.class_roster[roster.id].update({ [field]: parsed }));
+                db.transact(db.tx.class_roster[roster.id].update({ [field]: parsed })).then(() => {
+                    // Ensure roster has guardian code after update
+                    ensureRosterHasGuardianCode(db, classId, studentId).catch((error) => {
+                        console.error("[Students Table] Error ensuring roster guardian code:", error);
+                    });
+                });
             } else {
                 const payload: Record<string, unknown> = { [field]: parsed };
                 db.transact(
                     db.tx.class_roster[id()].create(payload).link({ class: classId }).link({ student: studentId })
-                );
+                ).then(() => {
+                    // Ensure roster has guardian code after create
+                    ensureRosterHasGuardianCode(db, classId, studentId).catch((error) => {
+                        console.error("[Students Table] Error ensuring roster guardian code:", error);
+                    });
+                });
             }
             setEditingCell(null);
         } catch {
@@ -755,10 +781,10 @@ function StudentsTable({
                                 </TableCell>
                                 {canManage && (
                                     <TableCell className="text-muted-foreground">
-                                        {student.studentGuardianCode ? (
+                                        {roster?.guardianCode ? (
                                             <div className="flex items-center gap-2">
                                                 <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                                                    {student.studentGuardianCode}
+                                                    {roster.guardianCode}
                                                 </code>
                                                 <Button
                                                     variant="ghost"
@@ -766,8 +792,8 @@ function StudentsTable({
                                                     className="h-6 w-6"
                                                     onClick={async () => {
                                                         try {
-                                                            await navigator.clipboard.writeText(student.studentGuardianCode!);
-                                                            alert(`Copied code: ${student.studentGuardianCode}`);
+                                                            await navigator.clipboard.writeText(roster.guardianCode!);
+                                                            alert(`Copied code: ${roster.guardianCode}`);
                                                         } catch (error) {
                                                             console.error("Failed to copy:", error);
                                                         }

@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2, AlertTriangle } from "lucide-react";
-import { SelectClassDialog } from "./select-class-dialog";
 
 export function JoinClassForm() {
     const [code, setCode] = useState("");
@@ -25,11 +24,6 @@ export function JoinClassForm() {
     const [error, setError] = useState<string | null>(null);
     const [isRateLimited, setIsRateLimited] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [showClassSelection, setShowClassSelection] = useState(false);
-    const [classSelectionData, setClassSelectionData] = useState<{
-        studentName: string;
-        classes: Array<{ id: string; name: string; organizationName: string | null }>;
-    } | null>(null);
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const lastSubmittedCodeRef = useRef<string>("");
@@ -101,32 +95,20 @@ export function JoinClassForm() {
                     return;
                 }
 
-                // Check if class selection is required
-                if (data.requiresClassSelection && data.classes) {
-                    setIsSubmitting(false);
-                    setClassSelectionData({
-                        studentName: data.studentName || "Student",
-                        classes: data.classes,
-                    });
-                    setShowClassSelection(true);
-                    return;
-                }
-
                 // Success - show success state and delay navigation
                 setIsSubmitting(false);
                 setIsSuccess(true);
 
                 // Delay navigation by 500ms to allow InstantDB to sync
-                const classId = data.entityId || (data.classIds && data.classIds[0]);
-                if (classId) {
+                if (data.entityId) {
                     redirectTimeoutRef.current = setTimeout(() => {
                         navigate({
                             to: "/classes/$classId",
-                            params: { classId },
+                            params: { classId: data.entityId },
                         });
                     }, 500);
                 } else {
-                    // If multiple classes joined, navigate to classes list
+                    // Fallback - navigate to classes list
                     redirectTimeoutRef.current = setTimeout(() => {
                         navigate({ to: "/classes" });
                     }, 500);
@@ -143,71 +125,6 @@ export function JoinClassForm() {
             }
         },
         [code, user?.id, user?.refresh_token, isSubmitting, navigate]
-    );
-
-    const handleClassSelection = useCallback(
-        async (selectedClassIds: string[]) => {
-            if (!user?.id || !user?.refresh_token || selectedClassIds.length === 0) {
-                return;
-            }
-
-            setIsSubmitting(true);
-            setError(null);
-
-            try {
-                const codeUpper = code.toUpperCase();
-                const response = await fetch("/api/join/class", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        token: user.refresh_token,
-                    },
-                    body: JSON.stringify({
-                        code: codeUpper,
-                        selectedClassIds,
-                    }),
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    setError(
-                        data.message || "Failed to join classes. Please try again."
-                    );
-                    setIsSubmitting(false);
-                    return;
-                }
-
-                // Success
-                setIsSubmitting(false);
-                setShowClassSelection(false);
-                setIsSuccess(true);
-
-                // Navigate to first class or classes list
-                const classId = data.entityId || (data.classIds && data.classIds[0]);
-                if (classId) {
-                    redirectTimeoutRef.current = setTimeout(() => {
-                        navigate({
-                            to: "/classes/$classId",
-                            params: { classId },
-                        });
-                    }, 500);
-                } else {
-                    redirectTimeoutRef.current = setTimeout(() => {
-                        navigate({ to: "/classes" });
-                    }, 500);
-                }
-            } catch (err) {
-                console.error("[Join Class Form] Error joining classes:", err);
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to join classes. Please try again."
-                );
-                setIsSubmitting(false);
-            }
-        },
-        [code, user?.id, user?.refresh_token, navigate]
     );
 
     // Pattern for allowed characters: ABCDEFGHJKLMNPQRSTUVWXYZ23456789
@@ -347,16 +264,6 @@ export function JoinClassForm() {
                     </form>
                 </CardContent>
             </Card>
-            {classSelectionData && (
-                <SelectClassDialog
-                    open={showClassSelection}
-                    onOpenChange={setShowClassSelection}
-                    studentName={classSelectionData.studentName}
-                    classes={classSelectionData.classes}
-                    onSelect={handleClassSelection}
-                    isSubmitting={isSubmitting}
-                />
-            )}
         </div>
     );
 }

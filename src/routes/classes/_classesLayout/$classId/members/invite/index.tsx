@@ -4,6 +4,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { UserPlus } from "lucide-react";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
+import { useClassRoster } from "@/hooks/use-class-roster";
 import { Card, CardContent } from "@/components/ui/card";
 import { InviteCodesTabs } from "./-components/invite-codes-tabs";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
@@ -11,6 +12,7 @@ import { GoogleClassroomImportDialog } from "./-components/google-classroom-impo
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GraduationCap } from "lucide-react";
+import { displayNameForStudent } from "@/lib/roster-utils";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/invite/"
@@ -24,10 +26,8 @@ function RouteComponent() {
     const { class: classEntity, isLoading: classLoading } =
         useClassById(classId);
     const roleInfo = useClassRole(classEntity);
+    const { rosterByStudentId } = useClassRoster(classId);
     const [importDialogOpen, setImportDialogOpen] = useState(false);
-
-    // Get codes directly from class entity (already loaded via useClassById)
-    const classEntityWithCodes = classEntity;
 
     const isLoading = classLoading;
     const hasPermission =
@@ -38,13 +38,31 @@ function RouteComponent() {
         // This callback can be used for additional actions if needed
     };
 
-    const codes = classEntityWithCodes
+    // Get class-level codes
+    const codes = classEntity
         ? {
-              student: classEntityWithCodes.studentCode || null,
-              teacher: classEntityWithCodes.teacherCode || null,
-              guardian: classEntityWithCodes.guardianCode || null,
+              student: classEntity.studentCode || null,
+              teacher: classEntity.teacherCode || null,
+              guardian: classEntity.guardianCode || null,
           }
         : { student: null, teacher: null, guardian: null };
+
+    // Get student guardian codes from roster
+    const studentGuardianCodes = classEntity?.classStudents
+        ? classEntity.classStudents
+              .map((student) => {
+                  const roster = rosterByStudentId.get(student.id);
+                  if (roster?.guardianCode) {
+                      return {
+                          studentId: student.id,
+                          studentName: displayNameForStudent(student, roster),
+                          code: roster.guardianCode,
+                      };
+                  }
+                  return null;
+              })
+              .filter((item): item is NonNullable<typeof item> => item !== null)
+        : [];
 
     return (
         <RestrictedRoute
@@ -119,6 +137,7 @@ function RouteComponent() {
 
                     <InviteCodesTabs
                         codes={codes}
+                        studentGuardianCodes={studentGuardianCodes}
                         isLoading={isLoading}
                         onCopySuccess={handleCopySuccess}
                     />

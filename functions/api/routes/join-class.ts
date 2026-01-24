@@ -7,7 +7,7 @@ import type { InstaQLEntity } from "@instantdb/admin";
 import type { HonoContext } from "../types";
 import {
     getGuardianLinkTransactions,
-    ensureStudentHasGuardianCode,
+    ensureRosterHasGuardianCode,
 } from "../../../src/lib/guardian-utils";
 
 export function createJoinClassRoute(app: Hono<HonoContext>) {
@@ -63,64 +63,46 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
 
             const classResult = await dbAdmin.query(classQuery);
             let classEntity = classResult.classes?.[0];
-            let isStudentGuardianCode = false;
+            let isRosterGuardianCode = false;
+            let rosterEntity: InstaQLEntity<AppSchema, "class_roster"> | null = null;
             let studentEntity: InstaQLEntity<AppSchema, "$users"> | null = null;
 
-            // If no class found, check if it's a student guardian code
+            // If no class found, check if it's a roster guardian code
             if (!classEntity) {
-                const studentQuery = {
-                    $users: {
+                const rosterQuery = {
+                    class_roster: {
                         $: {
                             where: {
-                                studentGuardianCode: code,
+                                guardianCode: code,
                             },
                         },
-                        studentClasses: {
+                        class: {
                             organization: {},
                         },
+                        student: {},
                     },
                 };
 
-                const studentResult = await dbAdmin.query(studentQuery);
-                studentEntity = studentResult.$users?.[0] || null;
+                const rosterResult = await dbAdmin.query(rosterQuery);
+                rosterEntity = rosterResult.class_roster?.[0] || null;
 
-                if (studentEntity) {
-                    isStudentGuardianCode = true;
-                    const studentClasses = studentEntity.studentClasses || [];
+                if (rosterEntity) {
+                    isRosterGuardianCode = true;
+                    classEntity = rosterEntity.class as InstaQLEntity<AppSchema, "classes"> | null;
+                    studentEntity = rosterEntity.student as InstaQLEntity<AppSchema, "$users"> | null;
 
-                    // If student has no classes, return error
-                    if (studentClasses.length === 0) {
+                    if (!classEntity || !studentEntity) {
                         return c.json(
                             {
-                                error: "Student not in any classes",
+                                error: "Invalid roster code",
                                 message:
-                                    "This student is not enrolled in any classes.",
+                                    "Roster entry is missing class or student information.",
                             },
                             404
                         );
                     }
-
-                    // If student is in exactly one class, use that
-                    if (studentClasses.length === 1) {
-                        classEntity = studentClasses[0];
-                    } else {
-                        // Student is in multiple classes - return list for selection
-                        return c.json({
-                            success: false,
-                            requiresClassSelection: true,
-                            message:
-                                "This student is enrolled in multiple classes. Please select which class(es) to join.",
-                            studentId: studentEntity.id,
-                            studentName: `${studentEntity.firstName || ""} ${studentEntity.lastName || ""}`.trim() || "Student",
-                            classes: studentClasses.map((cls) => ({
-                                id: cls.id,
-                                name: cls.name,
-                                organizationName: cls.organization?.name || null,
-                            })),
-                        });
-                    }
                 } else {
-                    // Code not found as class code or student guardian code
+                    // Code not found as class code or roster guardian code
                     return c.json(
                         {
                             error: "Code not found",
@@ -136,8 +118,8 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             let role: "student" | "teacher" | "guardian";
             let linkLabel: "classStudents" | "classTeachers" | "classGuardians";
 
-            if (isStudentGuardianCode) {
-                // Parent joining via student guardian code
+            if (isRosterGuardianCode) {
+                // Parent joining via roster guardian code
                 role = "guardian";
                 linkLabel = "classGuardians";
             } else if (classEntity.studentCode === code) {
@@ -221,21 +203,11 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 );
             }
 
-            // Handle case where parent is joining via student guardian code with selected classes
-            let classIdsToJoin: string[] = [classEntity.id];
-            if (isStudentGuardianCode && body.selectedClassIds) {
-                // Parent selected specific classes from the list
-                const selectedIds = Array.isArray(body.selectedClassIds)
-                    ? body.selectedClassIds
-                    : [body.selectedClassIds];
-                classIdsToJoin = selectedIds;
-            }
-
-            // Build transactions: add user to class(es) with appropriate role
+            // Build transactions: add user to class with appropriate role
             const transactions = [];
 
-            // Link parent as guardian to the student (if joining via student code)
-            if (isStudentGuardianCode && studentEntity) {
+            // Link parent as guardian to the student (if joining via roster guardian code)
+            if (isRosterGuardianCode && studentEntity) {
                 // Check if parent is already linked as guardian to this student
                 const guardianCheckQuery = {
                     $users: {
@@ -262,38 +234,33 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 }
             }
 
-            // Link user to each selected class
-            for (const classId of classIdsToJoin) {
-                transactions.push(
-                    dbAdmin.tx.classes[classId].link({
-                        [linkLabel]: userId,
-                    })
-                );
-            }
+            // Link user to the class
+            transactions.push(
+                dbAdmin.tx.classes[classEntity.id].link({
+                    [linkLabel]: userId,
+                })
+            );
 
-            // If student is joining, ensure they have a guardian code and add their guardians to the class
+            // If student is joining, ensure roster entry exists with guardian code and add their guardians to the class
             if (role === "student") {
-                // Ensure student has a guardian code
+                // Ensure roster entry exists with guardian code
                 try {
-                    await ensureStudentHasGuardianCode(dbAdmin, userId);
+                    await ensureRosterHasGuardianCode(dbAdmin, classEntity.id, userId);
                 } catch (error) {
                     console.error(
-                        `[Join Class] Error ensuring guardian code for student ${userId}:`,
+                        `[Join Class] Error ensuring roster guardian code for student ${userId} in class ${classEntity.id}:`,
                         error
                     );
                     // Don't fail the join if code generation fails
                 }
 
                 // Add their guardians to the class
-                for (const classId of classIdsToJoin) {
-                    const guardianTransactions =
-                        await getGuardianLinkTransactions(
-                            dbAdmin,
-                            userId,
-                            classId
-                        );
-                    transactions.push(...guardianTransactions);
-                }
+                const guardianTransactions = await getGuardianLinkTransactions(
+                    dbAdmin,
+                    userId,
+                    classEntity.id
+                );
+                transactions.push(...guardianTransactions);
             }
 
             // Execute all transactions in a single operation (all-or-nothing)
@@ -301,10 +268,9 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
 
             return c.json({
                 success: true,
-                message: `Successfully joined class${classIdsToJoin.length > 1 ? "es" : ""} as ${role}`,
+                message: `Successfully joined class as ${role}`,
                 entityType: "class",
-                entityId: classIdsToJoin.length === 1 ? classIdsToJoin[0] : null,
-                classIds: classIdsToJoin,
+                entityId: classEntity.id,
                 role,
             });
         } catch (error) {

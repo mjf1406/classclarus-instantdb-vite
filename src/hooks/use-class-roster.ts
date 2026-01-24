@@ -11,6 +11,7 @@ export type RosterEntry = {
     lastName?: string;
     gender?: string;
     number?: number;
+    guardianCode?: string;
 };
 
 type ClassRosterEntity = InstaQLEntity<
@@ -58,6 +59,7 @@ export function useClassRoster(classId: string | undefined) {
                     lastName: r.lastName,
                     gender: r.gender,
                     number: r.number,
+                    guardianCode: r.guardianCode,
                 });
             }
         }
@@ -71,6 +73,7 @@ export function useClassRoster(classId: string | undefined) {
             lastName: r.lastName,
             gender: r.gender,
             number: r.number,
+            guardianCode: r.guardianCode,
         }));
     }, [rosterList]);
 

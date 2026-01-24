@@ -18,6 +18,16 @@ import {
 import { CopyJoinUrlButton } from "./copy-join-url-button";
 import { CopyCodeButton } from "./copy-code-button";
 import { OpenCodeInWindowButton } from "./open-code-in-window-button";
+import { Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 interface InviteCodesTabsProps {
     codes: {
@@ -25,12 +35,18 @@ interface InviteCodesTabsProps {
         teacher: string | null;
         guardian: string | null;
     };
+    studentGuardianCodes?: Array<{
+        studentId: string;
+        studentName: string;
+        code: string;
+    }>;
     isLoading?: boolean;
     onCopySuccess?: (type: "student" | "teacher" | "guardian") => void;
 }
 
 export function InviteCodesTabs({
     codes,
+    studentGuardianCodes = [],
     isLoading = false,
     onCopySuccess,
 }: InviteCodesTabsProps) {
@@ -158,13 +174,95 @@ export function InviteCodesTabs({
             </TabsContent>
 
             <TabsContent value="guardian" className="mt-4">
-                <CodeCard
-                    type="guardian"
-                    code={codes.guardian}
-                    icon={GuardianIcon}
-                    title="Guardian"
-                    description="Share this code with guardians to join the class"
-                />
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <GuardianIcon className="size-5 text-primary" />
+                            <CardTitle>Guardian Codes</CardTitle>
+                        </div>
+                        <CardDescription>
+                            Each student has a unique code for their parents to join as guardians. Share the appropriate code with each student's parents.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {studentGuardianCodes.length > 0 ? (
+                            <div className="space-y-4">
+                                <div className="rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Student</TableHead>
+                                                <TableHead>Guardian Code</TableHead>
+                                                <TableHead className="w-[100px]">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {studentGuardianCodes.map((item) => (
+                                                <TableRow key={item.studentId}>
+                                                    <TableCell className="font-medium">
+                                                        {item.studentName}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <code className="px-2 py-1 bg-muted rounded text-sm font-mono">
+                                                            {item.code}
+                                                        </code>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await navigator.clipboard.writeText(item.code);
+                                                                    alert(`Copied code: ${item.code}`);
+                                                                } catch (error) {
+                                                                    console.error("Failed to copy:", error);
+                                                                }
+                                                            }}
+                                                            title="Copy code"
+                                                        >
+                                                            <Copy className="size-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                                {codes.guardian && (
+                                    <div className="pt-4 border-t">
+                                        <p className="text-sm text-muted-foreground mb-2">
+                                            General Guardian Code (for all guardians):
+                                        </p>
+                                        <CodeCard
+                                            type="guardian"
+                                            code={codes.guardian}
+                                            icon={GuardianIcon}
+                                            title="General Guardian"
+                                            description="Share this code with any guardian to join the class"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <p className="text-sm text-muted-foreground">
+                                    No students have guardian codes yet. Guardian codes are automatically generated when students join the class.
+                                </p>
+                                {codes.guardian && (
+                                    <CodeCard
+                                        type="guardian"
+                                        code={codes.guardian}
+                                        icon={GuardianIcon}
+                                        title="General Guardian"
+                                        description="Share this code with guardians to join the class"
+                                    />
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </TabsContent>
         </Tabs>
     );

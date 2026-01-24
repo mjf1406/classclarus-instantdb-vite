@@ -72,73 +72,77 @@ export async function getGuardianLinkTransactions(
 }
 
 /**
- * Generates a unique student guardian code.
+ * Generates a unique roster guardian code.
  * Uses the same format as class join codes (6 characters).
  *
  * @returns A 6-character uppercase code
  */
-export function generateStudentGuardianCode(): string {
+export function generateRosterGuardianCode(): string {
     return generateJoinCode();
 }
 
 /**
- * Ensures a student has a guardian code. If they don't have one, generates and assigns it.
+ * Ensures a roster entry exists for student+class with a guardian code.
+ * If roster doesn't exist, creates it. If it exists but has no code, generates one.
  * Works with both client-side (React) and server-side (Admin) InstantDB instances.
  *
  * @param db - Database instance (client or admin)
- * @param studentId - ID of the student who needs a guardian code
- * @returns The student's guardian code (existing or newly generated)
+ * @param classId - ID of the class
+ * @param studentId - ID of the student
+ * @returns The guardian code (existing or newly generated)
  */
-export async function ensureStudentHasGuardianCode(
+export async function ensureRosterHasGuardianCode(
     db: any,
+    classId: string,
     studentId: string
 ): Promise<string> {
-    if (!studentId) {
-        throw new Error("Student ID is required");
+    if (!classId || !studentId) {
+        throw new Error("Class ID and Student ID are required");
     }
 
     try {
-        // Query student to check if they have a code
-        const query = {
-            $users: {
+        // Query for existing roster entry linking student to class
+        const rosterQuery = {
+            class_roster: {
                 $: {
                     where: {
-                        id: studentId,
+                        and: [
+                            { "class.id": classId },
+                            { "student.id": studentId },
+                        ],
                     },
                 },
+                class: {},
+                student: {},
             },
         };
 
         // Client DB uses queryOnce, admin DB uses query
-        const result = await (db.queryOnce ? db.queryOnce(query) : db.query(query));
+        const result = await (db.queryOnce ? db.queryOnce(rosterQuery) : db.query(rosterQuery));
         const queryResult = (result as any).data ?? result;
-        const student = queryResult?.$users?.[0];
+        const rosterEntries = queryResult?.class_roster || [];
+        const existingRoster = rosterEntries[0];
 
-        if (!student) {
-            throw new Error(`Student with ID ${studentId} not found`);
+        // If roster exists and has code, return it
+        if (existingRoster?.guardianCode) {
+            return existingRoster.guardianCode;
         }
 
-        // If student already has a code, return it
-        if (student.studentGuardianCode) {
-            return student.studentGuardianCode;
-        }
-
-        // Generate a new code
+        // Generate a new unique code
         let newCode: string;
         let attempts = 0;
         const maxAttempts = 10;
 
-        // Try to generate a unique code (with retry logic in case of collisions)
         do {
-            newCode = generateStudentGuardianCode();
+            newCode = generateRosterGuardianCode();
             attempts++;
 
-            // Check if code already exists
+            // Check if code already exists in any roster entry
             const codeCheckQuery = {
-                $users: {
+                class_roster: {
                     $: {
                         where: {
-                            studentGuardianCode: newCode,
+                            guardianCode: newCode,
                         },
                     },
                 },
@@ -147,29 +151,46 @@ export async function ensureStudentHasGuardianCode(
             // Client DB uses queryOnce, admin DB uses query
             const codeCheckResult = await (db.queryOnce ? db.queryOnce(codeCheckQuery) : db.query(codeCheckQuery));
             const codeCheckData = (codeCheckResult as any).data ?? codeCheckResult;
-            const existingUser = codeCheckData?.$users?.[0];
+            const existingRosterWithCode = codeCheckData?.class_roster?.[0];
 
-            if (!existingUser) {
+            if (!existingRosterWithCode) {
                 // Code is unique, break out of loop
                 break;
             }
 
             if (attempts >= maxAttempts) {
                 throw new Error(
-                    "Failed to generate unique student guardian code after multiple attempts"
+                    "Failed to generate unique roster guardian code after multiple attempts"
                 );
             }
         } while (attempts < maxAttempts);
 
-        // Update student with new code
-        await db.tx.$users[studentId].update({
-            studentGuardianCode: newCode,
-        });
+        // If roster exists but no code, update it
+        if (existingRoster) {
+            await db.tx.class_roster[existingRoster.id].update({
+                guardianCode: newCode,
+            });
+        } else {
+            // Roster doesn't exist, create it with the code
+            // Determine which SDK we're using based on db interface
+            // Client DB has queryOnce, admin DB only has query
+            const isClientDb = typeof (db as any).queryOnce === "function";
+            const idModule = isClientDb
+                ? await import("@instantdb/react")
+                : await import("@instantdb/admin");
+            const rosterId = idModule.id();
+            await db.tx.class_roster[rosterId]
+                .create({
+                    guardianCode: newCode,
+                })
+                .link({ class: classId })
+                .link({ student: studentId });
+        }
 
         return newCode;
     } catch (error) {
         console.error(
-            `[Guardian Utils] Error ensuring student guardian code for ${studentId}:`,
+            `[Guardian Utils] Error ensuring roster guardian code for student ${studentId} in class ${classId}:`,
             error
         );
         throw error;

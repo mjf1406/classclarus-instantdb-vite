@@ -7,7 +7,7 @@ import type { AppSchema } from "@/instant.schema";
 import { useAuthContext } from "@/components/auth/auth-provider";
 import {
     getGuardianLinkTransactions,
-    ensureStudentHasGuardianCode,
+    ensureRosterHasGuardianCode,
 } from "@/lib/guardian-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -369,12 +369,12 @@ export function RoleManager({
                             classStudents: user.id,
                         })
                     );
-                    // Ensure student has a guardian code
+                    // Ensure roster entry exists with guardian code
                     try {
-                        await ensureStudentHasGuardianCode(db, user.id);
+                        await ensureRosterHasGuardianCode(db, contextId, user.id);
                     } catch (error) {
                         console.error(
-                            `[Role Manager] Error ensuring guardian code for student ${user.id}:`,
+                            `[Role Manager] Error ensuring roster guardian code for student ${user.id} in class ${contextId}:`,
                             error
                         );
                         // Don't fail the role assignment if code generation fails
