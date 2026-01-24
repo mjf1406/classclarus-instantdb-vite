@@ -167,9 +167,11 @@ export async function ensureRosterHasGuardianCode(
 
         // If roster exists but no code, update it
         if (existingRoster) {
-            await db.tx.class_roster[existingRoster.id].update({
-                guardianCode: newCode,
-            });
+            await db.transact(
+                db.tx.class_roster[existingRoster.id].update({
+                    guardianCode: newCode,
+                })
+            );
         } else {
             // Roster doesn't exist, create it with the code
             // Determine which SDK we're using based on db interface
@@ -179,12 +181,14 @@ export async function ensureRosterHasGuardianCode(
                 ? await import("@instantdb/react")
                 : await import("@instantdb/admin");
             const rosterId = idModule.id();
-            await db.tx.class_roster[rosterId]
-                .create({
-                    guardianCode: newCode,
-                })
-                .link({ class: classId })
-                .link({ student: studentId });
+            await db.transact(
+                db.tx.class_roster[rosterId]
+                    .create({
+                        guardianCode: newCode,
+                    })
+                    .link({ class: classId })
+                    .link({ student: studentId })
+            );
         }
 
         return newCode;
