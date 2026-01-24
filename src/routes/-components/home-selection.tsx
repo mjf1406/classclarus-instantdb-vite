@@ -99,7 +99,7 @@ export function HomeSelection() {
                         className="w-full justify-start gap-3 h-auto py-4"
                         asChild
                     >
-                        <Link to="/join/class">
+                        <Link to="/join/class" search={{ code: undefined }}>
                             <LogIn className="size-5" />
                             <span className="text-base font-medium">
                                 Join Class

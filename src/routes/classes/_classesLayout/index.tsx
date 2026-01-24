@@ -108,7 +108,7 @@ function RouteComponent() {
                             variant="outline"
                             asChild
                         >
-                            <Link to="/join/class">
+                            <Link to="/join/class" search={{ code: undefined }}>
                                 <LogIn />
                                 <span className="sr-only">Join Class</span>
                                 <span className="hidden md:block">
@@ -170,7 +170,7 @@ function RouteComponent() {
                                     asChild
                                     className="w-full"
                                 >
-                                    <Link to="/join/class">
+                                    <Link to="/join/class" search={{ code: undefined }}>
                                         <LogIn />
                                         <span>Join Class</span>
                                     </Link>

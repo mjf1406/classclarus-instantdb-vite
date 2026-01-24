@@ -127,7 +127,7 @@ function RouteComponent() {
                                 asChild
                                 className="w-full"
                             >
-                                <Link to="/join/class">
+                                <Link to="/join/class" search={{ code: undefined }}>
                                     <LogIn />
                                     <span>Join Class</span>
                                 </Link>

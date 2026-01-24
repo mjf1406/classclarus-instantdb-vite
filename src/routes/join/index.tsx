@@ -37,7 +37,7 @@ function RouteComponent() {
                         </Link>
                     </Button>
                     <Button size="lg" variant="outline" className="w-full" asChild>
-                        <Link to="/join/class">
+                        <Link to="/join/class" search={{ code: undefined }}>
                             <LogIn className="size-5 mr-2" />
                             Join Class
                         </Link>
