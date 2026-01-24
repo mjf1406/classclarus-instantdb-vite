@@ -3,6 +3,7 @@
 import { db } from "@/lib/db/db";
 import type { AppSchema } from "@/instant.schema";
 import type { InstaQLEntity } from "@instantdb/react";
+import { getGuardianLinkTransactions } from "@/lib/guardian-utils";
 
 type PendingMember = InstaQLEntity<AppSchema, "pendingMembers", { class: {} }>;
 
@@ -77,6 +78,25 @@ export async function autoJoinPendingClasses(
                     [linkLabel]: userId,
                 })
             );
+        }
+
+        // If user is joining as student, also add their guardians to those classes
+        const studentClassIds = Array.from(classRoleMap.values())
+            .filter(({ role }) => role === "student")
+            .map(({ classId }) => classId);
+
+        if (studentClassIds.length > 0) {
+            // Query guardians for each class where user is joining as student
+            const guardianPromises = studentClassIds.map((classId) =>
+                getGuardianLinkTransactions(db, userId, classId)
+            );
+
+            // Wait for all guardian queries to complete
+            const guardianTransactionArrays = await Promise.all(
+                guardianPromises
+            );
+            // Flatten the arrays into a single array
+            transactions.push(...guardianTransactionArrays.flat());
         }
 
         // Delete pending member records

@@ -5,6 +5,7 @@ import { id } from "@instantdb/admin";
 import { initDbAdmin } from "../../../src/lib/db/db-admin";
 import type { HonoContext } from "../types";
 import type { Env } from "../types";
+import { getGuardianLinkTransactions } from "../../../src/lib/guardian-utils";
 
 // Google OAuth 2.0 configuration
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -638,10 +639,45 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 });
             });
 
-            // Execute all transactions
+            // If students are being added, also add their guardians to the class
+            const guardianTransactions: Array<
+                ReturnType<typeof dbAdmin.tx.classes[string]["link"]>
+            > = [];
+            if (role === "student") {
+                // Query guardians for each student being added
+                const guardianPromises = studentsAsUsers
+                    .map((student: any) => {
+                        const user = existingUsers.find(
+                            (u: any) =>
+                                (u.email || "").toLowerCase().trim() ===
+                                student.email.toLowerCase().trim()
+                        );
+                        return user?.id;
+                    })
+                    .filter((userId): userId is string => userId !== undefined)
+                    .map((userId) =>
+                        getGuardianLinkTransactions(
+                            dbAdmin as any,
+                            userId,
+                            targetClassId
+                        )
+                    );
+
+                // Wait for all guardian queries to complete
+                const guardianTransactionArrays = await Promise.all(
+                    guardianPromises
+                );
+                // Flatten the arrays into a single array
+                guardianTransactions.push(
+                    ...guardianTransactionArrays.flat()
+                );
+            }
+
+            // Execute all transactions in a single operation (all-or-nothing)
             const allTransactions = [
                 ...addUserTransactions,
                 ...pendingMemberTransactions,
+                ...guardianTransactions,
             ];
             if (allTransactions.length > 0) {
                 await dbAdmin.transact(allTransactions);

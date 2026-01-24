@@ -5,6 +5,7 @@ import { initDbAdmin } from "../../../src/lib/db/db-admin";
 import type { AppSchema } from "../../../src/instant.schema";
 import type { InstaQLEntity } from "@instantdb/admin";
 import type { HonoContext } from "../types";
+import { getGuardianLinkTransactions } from "../../../src/lib/guardian-utils";
 
 export function createJoinClassRoute(app: Hono<HonoContext>) {
     // Use full path including /api prefix to match Cloudflare Pages routing
@@ -156,12 +157,26 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 );
             }
 
-            // Add user to class with appropriate role
-            await dbAdmin.transact([
+            // Build transactions: add user to class with appropriate role
+            const transactions = [
                 dbAdmin.tx.classes[classEntity.id].link({
                     [linkLabel]: userId,
                 }),
-            ]);
+            ];
+
+            // If student is joining, also add their guardians to the class
+            if (role === "student") {
+                const guardianTransactions =
+                    await getGuardianLinkTransactions(
+                        dbAdmin,
+                        userId,
+                        classEntity.id
+                    );
+                transactions.push(...guardianTransactions);
+            }
+
+            // Execute all transactions in a single operation (all-or-nothing)
+            await dbAdmin.transact(transactions);
 
             return c.json({
                 success: true,

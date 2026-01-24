@@ -5,6 +5,7 @@ import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { useAuthContext } from "@/components/auth/auth-provider";
+import { getGuardianLinkTransactions } from "@/lib/guardian-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -406,8 +407,19 @@ export function RoleManager({
                 }
             }
 
+            // If student role is being added, also add their guardians to the class
+            if (contextType === "class" && rolesToAdd.has("student")) {
+                const guardianTransactions =
+                    await getGuardianLinkTransactions(
+                        db,
+                        user.id,
+                        contextId
+                    );
+                transactions.push(...guardianTransactions);
+            }
+
             if (transactions.length > 0) {
-                db.transact(transactions as Parameters<typeof db.transact>[0]);
+                await db.transact(transactions as Parameters<typeof db.transact>[0]);
             }
 
             handleOpenChange(false);
