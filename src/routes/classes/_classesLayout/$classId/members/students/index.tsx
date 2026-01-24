@@ -63,6 +63,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { GenderSelect, GENDER_NONE, GENDER_OPTIONS } from "@/routes/classes/_classesLayout/$classId/behavior/points/-components/gender-select";
+import {
+    generateStudentGuardianCode,
+} from "@/lib/guardian-utils";
+import { Copy, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/members/students/"
@@ -274,6 +278,7 @@ function StudentCard({
 }) {
     const [manageGuardiansOpen, setManageGuardiansOpen] = useState(false);
     const [roleManagerOpen, setRoleManagerOpen] = useState(false);
+    const [isRegeneratingCode, setIsRegeneratingCode] = useState(false);
 
     // Query guardians for this student
     const { data: userData } = db.useQuery({
@@ -294,6 +299,70 @@ function StudentCard({
         .join("")
         .toUpperCase()
         .slice(0, 2);
+
+    const handleCopyCode = async () => {
+        if (!student.studentGuardianCode) return;
+        try {
+            await navigator.clipboard.writeText(student.studentGuardianCode);
+            alert(`Copied code: ${student.studentGuardianCode}`);
+        } catch (error) {
+            console.error("Failed to copy code:", error);
+        }
+    };
+
+    const handleRegenerateCode = async () => {
+        if (!canManage) return;
+        setIsRegeneratingCode(true);
+        try {
+            // Generate a new unique code
+            let newCode: string;
+            let attempts = 0;
+            const maxAttempts = 10;
+
+            do {
+                newCode = generateStudentGuardianCode();
+                attempts++;
+
+                // Check if code already exists
+                const { data } = await db.queryOnce({
+                    $users: {
+                        $: {
+                            where: {
+                                studentGuardianCode: newCode,
+                            },
+                        },
+                    },
+                });
+
+                const existingUser = (data as { $users?: Array<{ id: string }> } | undefined)
+                    ?.$users?.[0];
+
+                if (!existingUser || existingUser.id === student.id) {
+                    // Code is unique or belongs to this student, break out of loop
+                    break;
+                }
+
+                if (attempts >= maxAttempts) {
+                    alert("Failed to generate unique code. Please try again.");
+                    return;
+                }
+            } while (attempts < maxAttempts);
+
+            // Update student with new code
+            await db.transact([
+                db.tx.$users[student.id].update({
+                    studentGuardianCode: newCode,
+                }),
+            ]);
+
+            alert(`New guardian code generated: ${newCode}`);
+        } catch (error) {
+            console.error("Error regenerating code:", error);
+            alert("Failed to regenerate code. Please try again.");
+        } finally {
+            setIsRegeneratingCode(false);
+        }
+    };
 
     return (
         <Card>
@@ -324,6 +393,23 @@ function StudentCard({
                                 <div>
                                     Roster: #{roster?.number ?? "—"} · {roster?.firstName || "—"} {roster?.lastName || "—"} · {roster?.gender ?? "—"}
                                 </div>
+                                {canManage && student.studentGuardianCode && (
+                                    <div className="flex items-center gap-2">
+                                        <span>Guardian Code:</span>
+                                        <code className="px-2 py-0.5 bg-muted rounded text-xs font-mono">
+                                            {student.studentGuardianCode}
+                                        </code>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-5 w-5"
+                                            onClick={handleCopyCode}
+                                            title="Copy code"
+                                        >
+                                            <Copy className="size-3" />
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         {canManage && (
@@ -364,6 +450,21 @@ function StudentCard({
                                         <Users className="size-4" />
                                         Manage Guardians
                                     </DropdownMenuItem>
+                                    {canManage && (
+                                        <DropdownMenuItem
+                                            onSelect={(e) => {
+                                                e.preventDefault();
+                                                handleRegenerateCode();
+                                            }}
+                                            className="flex items-center gap-2"
+                                            disabled={isRegeneratingCode}
+                                        >
+                                            <RefreshCw className={`size-4 ${isRegeneratingCode ? "animate-spin" : ""}`} />
+                                            {isRegeneratingCode
+                                                ? "Regenerating..."
+                                                : "Regenerate Guardian Code"}
+                                        </DropdownMenuItem>
+                                    )}
                                     <KickUserDialog
                                         user={student}
                                         contextType="class"
@@ -579,6 +680,7 @@ function StudentsTable({
                         <TableHead>Gender (class)</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Guardians</TableHead>
+                        {canManage && <TableHead>Guardian Code</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -651,6 +753,35 @@ function StudentsTable({
                                         {guardianNamesStr}
                                     </span>
                                 </TableCell>
+                                {canManage && (
+                                    <TableCell className="text-muted-foreground">
+                                        {student.studentGuardianCode ? (
+                                            <div className="flex items-center gap-2">
+                                                <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+                                                    {student.studentGuardianCode}
+                                                </code>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6"
+                                                    onClick={async () => {
+                                                        try {
+                                                            await navigator.clipboard.writeText(student.studentGuardianCode!);
+                                                            alert(`Copied code: ${student.studentGuardianCode}`);
+                                                        } catch (error) {
+                                                            console.error("Failed to copy:", error);
+                                                        }
+                                                    }}
+                                                    title="Copy code"
+                                                >
+                                                    <Copy className="size-3" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            "—"
+                                        )}
+                                    </TableCell>
+                                )}
                             </TableRow>
                         );
                     })}

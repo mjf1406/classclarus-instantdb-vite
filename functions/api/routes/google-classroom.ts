@@ -639,11 +639,39 @@ export function createGoogleClassroomRoute(app: Hono<HonoContext>) {
                 });
             });
 
-            // If students are being added, also add their guardians to the class
+            // If students are being added, ensure they have guardian codes and add their guardians to the class
             const guardianTransactions: Array<
                 ReturnType<typeof dbAdmin.tx.classes[string]["link"]>
             > = [];
             if (role === "student") {
+                // Ensure each student has a guardian code
+                const codeGenerationPromises = studentsAsUsers
+                    .map((student: any) => {
+                        const user = existingUsers.find(
+                            (u: any) =>
+                                (u.email || "").toLowerCase().trim() ===
+                                student.email.toLowerCase().trim()
+                        );
+                        return user?.id;
+                    })
+                    .filter((userId): userId is string => userId !== undefined)
+                    .map(async (userId) => {
+                        try {
+                            const { ensureStudentHasGuardianCode } = await import(
+                                "../../../src/lib/guardian-utils"
+                            );
+                            await ensureStudentHasGuardianCode(dbAdmin as any, userId);
+                        } catch (error) {
+                            console.error(
+                                `[Google Classroom] Error ensuring guardian code for student ${userId}:`,
+                                error
+                            );
+                            // Don't fail the import if code generation fails
+                        }
+                    });
+
+                await Promise.all(codeGenerationPromises);
+
                 // Query guardians for each student being added
                 const guardianPromises = studentsAsUsers
                     .map((student: any) => {

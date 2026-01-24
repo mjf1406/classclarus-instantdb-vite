@@ -3,7 +3,10 @@
 import { db } from "@/lib/db/db";
 import type { AppSchema } from "@/instant.schema";
 import type { InstaQLEntity } from "@instantdb/react";
-import { getGuardianLinkTransactions } from "@/lib/guardian-utils";
+import {
+    getGuardianLinkTransactions,
+    ensureStudentHasGuardianCode,
+} from "@/lib/guardian-utils";
 
 type PendingMember = InstaQLEntity<AppSchema, "pendingMembers", { class: {} }>;
 
@@ -80,12 +83,23 @@ export async function autoJoinPendingClasses(
             );
         }
 
-        // If user is joining as student, also add their guardians to those classes
+        // If user is joining as student, ensure they have a guardian code and add their guardians to those classes
         const studentClassIds = Array.from(classRoleMap.values())
             .filter(({ role }) => role === "student")
             .map(({ classId }) => classId);
 
         if (studentClassIds.length > 0) {
+            // Ensure student has a guardian code
+            try {
+                await ensureStudentHasGuardianCode(db, userId);
+            } catch (error) {
+                console.error(
+                    `[Pending Members] Error ensuring guardian code for student ${userId}:`,
+                    error
+                );
+                // Don't fail the auto-join if code generation fails
+            }
+
             // Query guardians for each class where user is joining as student
             const guardianPromises = studentClassIds.map((classId) =>
                 getGuardianLinkTransactions(db, userId, classId)

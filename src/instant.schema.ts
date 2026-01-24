@@ -32,6 +32,8 @@ const _schema = i.schema({
             polarSubscriptionId: i.string().optional(),
             // Google Classroom integration
             googleRefreshToken: i.string().optional(),
+            // Student guardian code for parent join
+            studentGuardianCode: i.string().unique().indexed().optional(),
         }),
         organizations: i.entity({
             name: i.string().indexed(),

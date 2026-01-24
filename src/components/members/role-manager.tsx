@@ -5,7 +5,10 @@ import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { useAuthContext } from "@/components/auth/auth-provider";
-import { getGuardianLinkTransactions } from "@/lib/guardian-utils";
+import {
+    getGuardianLinkTransactions,
+    ensureStudentHasGuardianCode,
+} from "@/lib/guardian-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -366,6 +369,16 @@ export function RoleManager({
                             classStudents: user.id,
                         })
                     );
+                    // Ensure student has a guardian code
+                    try {
+                        await ensureStudentHasGuardianCode(db, user.id);
+                    } catch (error) {
+                        console.error(
+                            `[Role Manager] Error ensuring guardian code for student ${user.id}:`,
+                            error
+                        );
+                        // Don't fail the role assignment if code generation fails
+                    }
                 }
                 if (rolesToAdd.has("guardian")) {
                     transactions.push(
