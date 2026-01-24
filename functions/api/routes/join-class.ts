@@ -241,19 +241,8 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
                 })
             );
 
-            // If student is joining, ensure roster entry exists with guardian code and add their guardians to the class
+            // If student is joining, add their guardians to the class
             if (role === "student") {
-                // Ensure roster entry exists with guardian code
-                try {
-                    await ensureRosterHasGuardianCode(dbAdmin, classEntity.id, userId);
-                } catch (error) {
-                    console.error(
-                        `[Join Class] Error ensuring roster guardian code for student ${userId} in class ${classEntity.id}:`,
-                        error
-                    );
-                    // Don't fail the join if code generation fails
-                }
-
                 // Add their guardians to the class
                 const guardianTransactions = await getGuardianLinkTransactions(
                     dbAdmin,
@@ -264,7 +253,21 @@ export function createJoinClassRoute(app: Hono<HonoContext>) {
             }
 
             // Execute all transactions in a single operation (all-or-nothing)
+            // This links the student to the class first
             await dbAdmin.transact(transactions);
+
+            // THEN create roster entry with guardian code (after student is linked)
+            if (role === "student") {
+                try {
+                    await ensureRosterHasGuardianCode(dbAdmin, classEntity.id, userId);
+                } catch (error) {
+                    console.error(
+                        `[Join Class] Error ensuring roster guardian code for student ${userId} in class ${classEntity.id}:`,
+                        error
+                    );
+                    // Don't fail the join if code generation fails, but log it
+                }
+            }
 
             return c.json({
                 success: true,
