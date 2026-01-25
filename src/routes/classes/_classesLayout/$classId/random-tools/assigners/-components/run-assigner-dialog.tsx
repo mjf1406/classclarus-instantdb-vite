@@ -16,7 +16,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Users, Users2 } from "lucide-react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
-import type { SelectedItem, Group } from "@/routes/classes/_classesLayout/$classId/class-management/groups-and-teams/-components/groups-teams-pdf-document";
+import type {
+    SelectedItem,
+    Group,
+} from "@/routes/classes/_classesLayout/$classId/class-management/groups-and-teams/-components/groups-teams-pdf-document";
 
 type AssignerEntity =
     | InstaQLEntity<AppSchema, "random_assigners", { class: {} }>
@@ -30,7 +33,7 @@ interface RunAssignerDialogProps {
     onRunAssigner: (
         assignerId: string,
         selectedItems: SelectedItem[],
-        shouldExport: boolean
+        shouldExport: boolean,
     ) => void | Promise<void>;
 }
 
@@ -47,6 +50,7 @@ export function RunAssignerDialog({
 }: RunAssignerDialogProps) {
     const [open, setOpen] = useState(false);
     const [isRunning, setIsRunning] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [selection, setSelection] = useState<SelectionState>({
         groups: new Set(),
         teams: new Set(),
@@ -67,7 +71,7 @@ export function RunAssignerDialog({
         setSelection((prev) => {
             const newGroups = new Set(prev.groups);
             const newTeams = new Set(prev.teams);
-            
+
             if (newGroups.has(groupId)) {
                 newGroups.delete(groupId);
             } else {
@@ -80,7 +84,7 @@ export function RunAssignerDialog({
                     }
                 }
             }
-            
+
             return { groups: newGroups, teams: newTeams };
         });
     };
@@ -89,7 +93,7 @@ export function RunAssignerDialog({
         setSelection((prev) => {
             const newTeams = new Set(prev.teams);
             const newGroups = new Set(prev.groups);
-            
+
             if (newTeams.has(teamId)) {
                 newTeams.delete(teamId);
             } else {
@@ -97,7 +101,7 @@ export function RunAssignerDialog({
                 // When selecting a team, deselect its parent group if selected
                 newGroups.delete(groupId);
             }
-            
+
             return { groups: newGroups, teams: newTeams };
         });
     };
@@ -133,7 +137,7 @@ export function RunAssignerDialog({
             const parentGroup = teamToGroupMap.get(teamId);
             if (parentGroup && !selection.groups.has(parentGroup.id)) {
                 const team = parentGroup.groupTeams?.find(
-                    (t) => t.id === teamId
+                    (t) => t.id === teamId,
                 );
                 if (team) {
                     items.push({
@@ -152,13 +156,16 @@ export function RunAssignerDialog({
         if (!hasSelection) return;
 
         setIsRunning(true);
+        setError(null); // Clear previous error
 
         try {
             const selectedItems = buildSelectedItems();
             await onRunAssigner(assigner.id, selectedItems, shouldExport);
             setOpen(false);
-        } catch (error) {
-            console.error("Failed to run assigner:", error);
+        } catch (err) {
+            // Display error to user instead of just logging
+            const message = err instanceof Error ? err.message : "Failed to run assigner";
+            setError(message);
         } finally {
             setIsRunning(false);
         }
@@ -167,13 +174,17 @@ export function RunAssignerDialog({
     const handleOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
         if (!newOpen) {
-            // Reset selection when closing
+            // Reset selection and error when closing
             setSelection({ groups: new Set(), teams: new Set() });
+            setError(null);
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
+        <Dialog
+            open={open}
+            onOpenChange={handleOpenChange}
+        >
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="max-w-md">
                 <DialogHeader>
@@ -208,7 +219,7 @@ export function RunAssignerDialog({
                         </div>
                     </div>
 
-                    <ScrollArea className="h-[300px] rounded-md border p-3">
+                    <ScrollArea className="h-75 rounded-md border p-3">
                         <div className="space-y-4">
                             {groups.length === 0 ? (
                                 <p className="text-sm text-muted-foreground text-center py-8">
@@ -216,13 +227,15 @@ export function RunAssignerDialog({
                                 </p>
                             ) : (
                                 groups.map((group) => {
-                                    const isGroupSelected = selection.groups.has(
-                                        group.id
-                                    );
+                                    const isGroupSelected =
+                                        selection.groups.has(group.id);
                                     const teams = group.groupTeams || [];
 
                                     return (
-                                        <div key={group.id} className="space-y-2">
+                                        <div
+                                            key={group.id}
+                                            className="space-y-2"
+                                        >
                                             {/* Group checkbox */}
                                             <div className="flex items-center gap-2">
                                                 <Checkbox
@@ -239,7 +252,10 @@ export function RunAssignerDialog({
                                                     <Users className="size-4 text-primary" />
                                                     {group.name}
                                                     <span className="text-muted-foreground font-normal">
-                                                        ({group.groupStudents?.length || 0} students)
+                                                        (
+                                                        {group.groupStudents
+                                                            ?.length || 0}{" "}
+                                                        students)
                                                     </span>
                                                 </label>
                                             </div>
@@ -250,7 +266,7 @@ export function RunAssignerDialog({
                                                     {teams.map((team) => {
                                                         const isTeamSelected =
                                                             selection.teams.has(
-                                                                team.id
+                                                                team.id,
                                                             );
                                                         const isTeamDisabled =
                                                             isGroupSelected;
@@ -272,7 +288,7 @@ export function RunAssignerDialog({
                                                                     onCheckedChange={() =>
                                                                         toggleTeam(
                                                                             team.id,
-                                                                            group.id
+                                                                            group.id,
                                                                         )
                                                                     }
                                                                 />
@@ -287,7 +303,12 @@ export function RunAssignerDialog({
                                                                     <Users2 className="size-3.5 text-primary/70" />
                                                                     {team.name}
                                                                     <span className="text-muted-foreground text-xs">
-                                                                        ({team.teamStudents?.length || 0})
+                                                                        (
+                                                                        {team
+                                                                            .teamStudents
+                                                                            ?.length ||
+                                                                            0}
+                                                                        )
                                                                     </span>
                                                                 </label>
                                                             </div>
@@ -302,6 +323,12 @@ export function RunAssignerDialog({
                         </div>
                     </ScrollArea>
                 </div>
+
+                {error && (
+                    <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                        {error}
+                    </div>
+                )}
 
                 <DialogFooter className="flex-col! gap-2">
                     <div className="flex gap-2 w-full">
@@ -338,17 +365,16 @@ export function RunAssignerDialog({
                         </Button>
                     </div>
                     <div>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setOpen(false)}
-                        disabled={isRunning}
-                        className="w-full"
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                            disabled={isRunning}
+                            className="w-full"
                         >
-                        Cancel
-                    </Button>
-                        </div>
+                            Cancel
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

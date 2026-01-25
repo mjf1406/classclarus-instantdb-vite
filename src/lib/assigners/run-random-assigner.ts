@@ -1,6 +1,8 @@
 /** @format */
 
 import { FisherYatesShuffle } from "./random-assigner";
+import { id } from "@instantdb/react";
+import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import type { SelectedItem } from "@/routes/classes/_classesLayout/$classId/class-management/groups-and-teams/-components/groups-teams-pdf-document";
@@ -165,6 +167,66 @@ export function runRandomAssigner(input: RunAssignerInput): AssignmentResult[] {
             results.push(...teamResults);
         }
     }
+
+    return results;
+}
+
+interface ProcessAndSaveRandomInput {
+    assigner: InstaQLEntity<AppSchema, "random_assigners", { class: {} }>;
+    selectedItems: SelectedItem[];
+    rosterByStudentId: Map<
+        string,
+        {
+            id: string;
+            firstName: string | null | undefined;
+            lastName: string | null | undefined;
+            number: number | null | undefined;
+        }
+    >;
+    classId: string;
+    assignerId: string;
+}
+
+// Internal function to save random assigner run
+function saveRandomAssignerRun(
+    results: AssignmentResult[],
+    assignerId: string,
+    classId: string
+): void {
+    if (results.length === 0) {
+        return;
+    }
+
+    const runId = id();
+    const runDate = new Date();
+    const resultsJson = JSON.stringify(results);
+
+    db.transact([
+        db.tx.random_assigner_runs[runId]
+            .create({
+                runDate,
+                results: resultsJson,
+            })
+            .link({ randomAssigner: assignerId })
+            .link({ class: classId }),
+    ]);
+}
+
+// Main exported function that processes and saves
+export async function processAndSaveRandomAssigner(
+    input: ProcessAndSaveRandomInput
+): Promise<AssignmentResult[]> {
+    const { assigner, selectedItems, rosterByStudentId, classId, assignerId } = input;
+
+    // Process: run the assigner
+    const results = runRandomAssigner({
+        assigner,
+        selectedItems,
+        rosterByStudentId,
+    });
+
+    // Save: persist results to database
+    saveRandomAssignerRun(results, assignerId, classId);
 
     return results;
 }

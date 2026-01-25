@@ -186,6 +186,8 @@ const _schema = i.schema({
         rotating_assigner_runs: i.entity({
             runDate: i.date().indexed(),
             results: i.string(), // JSON placeholder for future implementation
+            totalRuns: i.number().optional(),
+            
         }),
         equitable_assigner_runs: i.entity({
             runDate: i.date().indexed(),
@@ -799,6 +801,30 @@ const _schema = i.schema({
                 has: "one",
                 label: "class",
                 onDelete: "cascade",
+            },
+        },
+        rotatingAssignerRunGroup: {
+            forward: {
+                on: "rotating_assigner_runs",
+                has: "one",
+                label: "group",
+            },
+            reverse: {
+                on: "groups",
+                has: "many",
+                label: "rotatingAssignerRuns",
+            },
+        },
+        rotatingAssignerRunTeam: {
+            forward: {
+                on: "rotating_assigner_runs",
+                has: "one",
+                label: "team",
+            },
+            reverse: {
+                on: "teams",
+                has: "many",
+                label: "rotatingAssignerRuns",
             },
         },
         equitableAssignerRuns: {

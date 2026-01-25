@@ -16,9 +16,8 @@ import { DeleteAssignerDialog } from "./delete-assigner-dialog";
 import { ViewAllHistoryDialog } from "./view-all-history-dialog";
 import { useClassRoster } from "@/hooks/use-class-roster";
 import { useClassById } from "@/hooks/use-class-hooks";
-import { runRandomAssigner } from "@/lib/assigners/run-random-assigner";
-import { runRotatingAssigner } from "@/lib/assigners/run-rotating-assigner";
-import { id } from "@instantdb/react";
+import { processAndSaveRandomAssigner } from "@/lib/assigners/run-random-assigner";
+import { processAndSaveRotatingAssigner } from "@/lib/assigners/run-rotating-assigner";
 import { pdf } from "@react-pdf/renderer";
 import type { AssignerType } from "./assigner-form";
 import type { InstaQLEntity } from "@instantdb/react";
@@ -183,7 +182,7 @@ export function AssignersList({
         let results: AssignmentResult[] = [];
 
         if (assignerType === "random") {
-            // Convert roster map to the format expected by runRandomAssigner
+            // Convert roster map to the format expected by processAndSaveRandomAssigner
             const rosterMap = new Map<
                 string,
                 {
@@ -203,14 +202,16 @@ export function AssignersList({
                 });
             }
 
-            // Run the assigner
-            results = runRandomAssigner({
+            // Process and save
+            results = await processAndSaveRandomAssigner({
                 assigner,
                 selectedItems,
                 rosterByStudentId: rosterMap,
+                classId,
+                assignerId,
             });
         } else if (assignerType === "rotating") {
-            // Convert roster map to the format expected by runRotatingAssigner (includes gender)
+            // Convert roster map to the format expected by processAndSaveRotatingAssigner (includes gender)
             const rosterMap = new Map<
                 string,
                 {
@@ -239,45 +240,14 @@ export function AssignersList({
                 { class: {}; runs: {} }
             >;
 
-            // Build run count per group/team by parsing previous run results
-            // This ensures rotation is tracked per group/team, not globally
-            const runCountByGroupTeamId = new Map<string, number>();
-            
-            if (rotatingAssigner.runs && Array.isArray(rotatingAssigner.runs)) {
-                for (const run of rotatingAssigner.runs) {
-                    // Parse results from this run to find which groups/teams were included
-                    try {
-                        const runResults: AssignmentResult[] = run.results 
-                            ? JSON.parse(run.results) 
-                            : [];
-                        
-                        // Get unique group/team IDs from this run's results
-                        const groupTeamIdsInRun = new Set<string>();
-                        for (const result of runResults) {
-                            if (result.groupOrTeamId) {
-                                groupTeamIdsInRun.add(result.groupOrTeamId);
-                            }
-                        }
-                        
-                        // Increment count for each group/team that was in this run
-                        for (const groupTeamId of groupTeamIdsInRun) {
-                            const currentCount = runCountByGroupTeamId.get(groupTeamId) ?? 0;
-                            runCountByGroupTeamId.set(groupTeamId, currentCount + 1);
-                        }
-                    } catch (error) {
-                        console.error("Failed to parse run results:", error);
-                    }
-                }
-            }
-
-            // Run the assigner
-            const assignerResult = runRotatingAssigner({
+            // Process and save
+            results = await processAndSaveRotatingAssigner({
                 assigner: rotatingAssigner,
                 selectedItems,
                 rosterByStudentId: rosterMap,
-                runCountByGroupTeamId,
+                classId,
+                assignerId,
             });
-            results = assignerResult.results;
         } else {
             // TODO: Implement equitable logic
             console.log(`${assignerType} assigner run - not yet implemented`);
@@ -290,46 +260,10 @@ export function AssignersList({
             return;
         }
 
-        // Save to appropriate history table based on assignerType
-        const runId = id();
-        const runDate = new Date();
-        const resultsJson = JSON.stringify(results);
-
-        if (assignerType === "random") {
-            db.transact([
-                db.tx.random_assigner_runs[runId]
-                    .create({
-                        runDate,
-                        results: resultsJson,
-                    })
-                    .link({ randomAssigner: assignerId })
-                    .link({ class: classId }),
-            ]);
-        } else if (assignerType === "rotating") {
-            db.transact([
-                db.tx.rotating_assigner_runs[runId]
-                    .create({
-                        runDate,
-                        results: resultsJson,
-                    })
-                    .link({ rotatingAssigner: assignerId })
-                    .link({ class: classId }),
-            ]);
-        } else {
-            db.transact([
-                db.tx.equitable_assigner_runs[runId]
-                    .create({
-                        runDate,
-                        results: resultsJson,
-                    })
-                    .link({ equitableAssigner: assignerId })
-                    .link({ class: classId }),
-            ]);
-        }
-
         // Export PDF if requested
         if (shouldExport) {
             try {
+                const runDate = new Date();
                 const generatedDate = runDate.toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",

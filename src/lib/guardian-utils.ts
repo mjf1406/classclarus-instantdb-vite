@@ -82,6 +82,48 @@ export function generateRosterGuardianCode(): string {
 }
 
 /**
+ * Gets the next available sequential class number for a class.
+ * Queries all roster entries for the class and returns max + 1, or 1 if none exist.
+ * Works with both client-side (React) and server-side (Admin) InstantDB instances.
+ *
+ * @param db - Database instance (client or admin)
+ * @param classId - ID of the class
+ * @returns The next available class number (starting at 1)
+ */
+async function getNextClassNumber(db: any, classId: string): Promise<number> {
+    try {
+        const query = {
+            class_roster: {
+                $: {
+                    where: {
+                        "class.id": classId,
+                    },
+                },
+            },
+        };
+
+        // Client DB uses queryOnce, admin DB uses query
+        const result = await (db.queryOnce ? db.queryOnce(query) : db.query(query));
+        const queryResult = (result as any).data ?? result;
+        const entries = queryResult?.class_roster || [];
+
+        // Find the maximum number value (ignoring null/undefined)
+        const maxNumber = entries.reduce((max: number, entry: any) => {
+            return entry.number != null && entry.number > max ? entry.number : max;
+        }, 0);
+
+        return maxNumber + 1;
+    } catch (error) {
+        console.error(
+            `[Guardian Utils] Error getting next class number for class ${classId}:`,
+            error
+        );
+        // If query fails, default to 1
+        return 1;
+    }
+}
+
+/**
  * Ensures a roster entry exists for student+class with a guardian code.
  * If roster doesn't exist, creates it. If it exists but has no code, generates one.
  * Works with both client-side (React) and server-side (Admin) InstantDB instances.
@@ -167,13 +209,24 @@ export async function ensureRosterHasGuardianCode(
 
         // If roster exists but no code, update it
         if (existingRoster) {
+            // If roster exists but has no number, assign the next available number
+            const updateData: { guardianCode: string; number?: number } = {
+                guardianCode: newCode,
+            };
+            
+            if (existingRoster.number == null) {
+                const nextNumber = await getNextClassNumber(db, classId);
+                updateData.number = nextNumber;
+            }
+            
             await db.transact(
-                db.tx.class_roster[existingRoster.id].update({
-                    guardianCode: newCode,
-                })
+                db.tx.class_roster[existingRoster.id].update(updateData)
             );
         } else {
-            // Roster doesn't exist, create it with the code
+            // Roster doesn't exist, create it with the code and number
+            // Get the next available class number
+            const nextNumber = await getNextClassNumber(db, classId);
+            
             // Determine which SDK we're using based on db interface
             // Client DB has queryOnce, admin DB only has query
             const isClientDb = typeof (db as any).queryOnce === "function";
@@ -185,6 +238,7 @@ export async function ensureRosterHasGuardianCode(
                 db.tx.class_roster[rosterId]
                     .create({
                         guardianCode: newCode,
+                        number: nextNumber,
                     })
                     .link({ class: classId })
                     .link({ student: studentId })
