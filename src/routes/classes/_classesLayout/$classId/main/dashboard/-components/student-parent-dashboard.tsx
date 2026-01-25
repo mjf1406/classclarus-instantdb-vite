@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PointsWidget } from "./points-widget";
 import { ExpectationsWidget } from "./expectations-widget";
+import { RandomAssignersWidget } from "./random-assigners-widget";
+import { RotatingAssignersWidget } from "./rotating-assigners-widget";
 
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
@@ -136,6 +138,29 @@ export function StudentParentDashboard({
     const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
     const showPointsWidget = existingSettings?.showPointsWidget ?? false;
     const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
+    const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
+    const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
+
+    // Parse selected assigner IDs - return empty array if empty, null if not set
+    const selectedRandomAssignerIds = useMemo(() => {
+        if (!existingSettings?.selectedRandomAssignerIds) return null;
+        try {
+            const parsed = JSON.parse(existingSettings.selectedRandomAssignerIds);
+            return Array.isArray(parsed) ? parsed : null;
+        } catch {
+            return null;
+        }
+    }, [existingSettings?.selectedRandomAssignerIds]);
+
+    const selectedRotatingAssignerIds = useMemo(() => {
+        if (!existingSettings?.selectedRotatingAssignerIds) return null;
+        try {
+            const parsed = JSON.parse(existingSettings.selectedRotatingAssignerIds);
+            return Array.isArray(parsed) ? parsed : null;
+        } catch {
+            return null;
+        }
+    }, [existingSettings?.selectedRotatingAssignerIds]);
 
     // Apply personalization styles
     const dashboardStyle: React.CSSProperties = {};
@@ -218,6 +243,20 @@ export function StudentParentDashboard({
                 )}
                 {showExpectationsWidget && studentIdForWidget && classId && (
                     <ExpectationsWidget classId={classId} studentId={studentIdForWidget} />
+                )}
+                {showRandomAssignersWidget && studentIdForWidget && classId && (
+                    <RandomAssignersWidget
+                        classId={classId}
+                        studentId={studentIdForWidget}
+                        selectedAssignerIds={selectedRandomAssignerIds || undefined}
+                    />
+                )}
+                {showRotatingAssignersWidget && studentIdForWidget && classId && (
+                    <RotatingAssignersWidget
+                        classId={classId}
+                        studentId={studentIdForWidget}
+                        selectedAssignerIds={selectedRotatingAssignerIds || undefined}
+                    />
                 )}
             </div>
         </div>

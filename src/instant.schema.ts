@@ -77,6 +77,10 @@ const _schema = i.schema({
             groupsTeamsDisplay: i.string().indexed(),
             showPointsWidget: i.boolean().optional(),
             showExpectationsWidget: i.boolean().optional(),
+            showRandomAssignersWidget: i.boolean().optional(),
+            selectedRandomAssignerIds: i.string().optional(), // JSON array of assigner IDs, empty/null = all
+            showRotatingAssignersWidget: i.boolean().optional(),
+            selectedRotatingAssignerIds: i.string().optional(), // JSON array of assigner IDs, empty/null = all
             created: i.date(),
             updated: i.date(),
         }),

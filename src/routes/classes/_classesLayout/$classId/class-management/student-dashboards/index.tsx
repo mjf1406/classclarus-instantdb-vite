@@ -20,8 +20,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { PointsWidget } from "../../main/dashboard/-components/points-widget";
 import { ExpectationsWidget } from "../../main/dashboard/-components/expectations-widget";
+import { RandomAssignersWidget } from "../../main/dashboard/-components/random-assigners-widget";
+import { RotatingAssignersWidget } from "../../main/dashboard/-components/rotating-assigners-widget";
+import { useMemo } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -127,6 +131,17 @@ type DashboardSettingsQueryResult = {
     classDashboardSettings: ClassDashboardSettings[];
 };
 
+type RandomAssigner = InstaQLEntity<AppSchema, "random_assigners", { class: {} }>;
+type RotatingAssigner = InstaQLEntity<AppSchema, "rotating_assigners", { class: {} }>;
+
+type RandomAssignersQueryResult = {
+    random_assigners: RandomAssigner[];
+};
+
+type RotatingAssignersQueryResult = {
+    rotating_assigners: RotatingAssigner[];
+};
+
 function SettingsPanel() {
     const params = useParams({ strict: false });
     const classId = params.classId;
@@ -145,10 +160,86 @@ function SettingsPanel() {
             : null
     );
 
+    // Query assigners for selection
+    const { data: randomAssignersData } = db.useQuery(
+        classId
+            ? {
+                  random_assigners: {
+                      $: {
+                          where: { "class.id": classId },
+                      },
+                      class: {},
+                  },
+              }
+            : null
+    );
+
+    const { data: rotatingAssignersData } = db.useQuery(
+        classId
+            ? {
+                  rotating_assigners: {
+                      $: {
+                          where: { "class.id": classId },
+                      },
+                      class: {},
+                  },
+              }
+            : null
+    );
+
     const typedSettingsData = (settingsData as DashboardSettingsQueryResult | undefined) ?? null;
     const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
     const showPointsWidget = existingSettings?.showPointsWidget ?? false;
     const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
+    const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
+    const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
+
+    const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
+    const randomAssigners = typedRandomAssignersData?.random_assigners || [];
+
+    const typedRotatingAssignersData = (rotatingAssignersData as RotatingAssignersQueryResult | undefined) ?? null;
+    const rotatingAssigners = typedRotatingAssignersData?.rotating_assigners || [];
+
+    // Parse selected assigner IDs - default to all if widget is enabled and no selection exists
+    const selectedRandomAssignerIds = useMemo(() => {
+        if (!existingSettings?.selectedRandomAssignerIds) {
+            // If widget is enabled but no selection, default to all assigners
+            if (showRandomAssignersWidget && randomAssigners.length > 0) {
+                return randomAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+        try {
+            const parsed = JSON.parse(existingSettings.selectedRandomAssignerIds);
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+        } catch {
+            // If parsing fails and widget is enabled, default to all
+            if (showRandomAssignersWidget && randomAssigners.length > 0) {
+                return randomAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+    }, [existingSettings?.selectedRandomAssignerIds, showRandomAssignersWidget, randomAssigners]);
+
+    const selectedRotatingAssignerIds = useMemo(() => {
+        if (!existingSettings?.selectedRotatingAssignerIds) {
+            // If widget is enabled but no selection, default to all assigners
+            if (showRotatingAssignersWidget && rotatingAssigners.length > 0) {
+                return rotatingAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+        try {
+            const parsed = JSON.parse(existingSettings.selectedRotatingAssignerIds);
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+        } catch {
+            // If parsing fails and widget is enabled, default to all
+            if (showRotatingAssignersWidget && rotatingAssigners.length > 0) {
+                return rotatingAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+    }, [existingSettings?.selectedRotatingAssignerIds, showRotatingAssignersWidget, rotatingAssigners]);
 
     const handleTogglePointsWidget = (enabled: boolean) => {
         if (!classId) return;
@@ -208,6 +299,120 @@ function SettingsPanel() {
         }
     };
 
+    const handleToggleRandomAssignersWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            // If enabling, set all assigners as selected if none are currently selected
+            let selectedIds = existingSettings.selectedRandomAssignerIds;
+            if (enabled && (!selectedIds || selectedIds.trim() === "")) {
+                const allIds = randomAssigners.map((a) => a.id);
+                selectedIds = allIds.length > 0 ? JSON.stringify(allIds) : undefined;
+            } else if (!enabled) {
+                selectedIds = undefined;
+            }
+
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showRandomAssignersWidget: enabled,
+                    selectedRandomAssignerIds: selectedIds,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings - default to all assigners selected
+            const allIds = randomAssigners.map((a) => a.id);
+            const selectedIds = allIds.length > 0 ? JSON.stringify(allIds) : undefined;
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showRandomAssignersWidget: enabled,
+                        selectedRandomAssignerIds: selectedIds,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleToggleRotatingAssignersWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            // If enabling, set all assigners as selected if none are currently selected
+            let selectedIds = existingSettings.selectedRotatingAssignerIds;
+            if (enabled && (!selectedIds || selectedIds.trim() === "")) {
+                const allIds = rotatingAssigners.map((a) => a.id);
+                selectedIds = allIds.length > 0 ? JSON.stringify(allIds) : undefined;
+            } else if (!enabled) {
+                selectedIds = undefined;
+            }
+
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showRotatingAssignersWidget: enabled,
+                    selectedRotatingAssignerIds: selectedIds,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings - default to all assigners selected
+            const allIds = rotatingAssigners.map((a) => a.id);
+            const selectedIds = allIds.length > 0 ? JSON.stringify(allIds) : undefined;
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showRotatingAssignersWidget: enabled,
+                        selectedRotatingAssignerIds: selectedIds,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleUpdateSelectedRandomAssigners = (assignerIds: string[]) => {
+        if (!classId || !existingSettings) return;
+
+        const now = new Date();
+        // Always save, even if empty (empty means show nothing)
+        const idsJson = JSON.stringify(assignerIds);
+
+        db.transact([
+            db.tx.classDashboardSettings[existingSettings.id].update({
+                selectedRandomAssignerIds: idsJson,
+                updated: now,
+            }),
+        ]);
+    };
+
+    const handleUpdateSelectedRotatingAssigners = (assignerIds: string[]) => {
+        if (!classId || !existingSettings) return;
+
+        const now = new Date();
+        // Always save, even if empty (empty means show nothing)
+        const idsJson = JSON.stringify(assignerIds);
+
+        db.transact([
+            db.tx.classDashboardSettings[existingSettings.id].update({
+                selectedRotatingAssignerIds: idsJson,
+                updated: now,
+            }),
+        ]);
+    };
+
     return (
         <div className="space-y-4">
             <Card>
@@ -256,6 +461,168 @@ function SettingsPanel() {
                             </p>
                         </div>
                     </div>
+                    <Separator />
+                    <div className="space-y-3">
+                        <div className="flex items-start space-x-3 space-y-0">
+                            <Checkbox
+                                id="random-assigners-widget-toggle"
+                                checked={showRandomAssignersWidget}
+                                onCheckedChange={handleToggleRandomAssignersWidget}
+                                className="mt-1"
+                            />
+                            <div className="space-y-1 leading-none flex-1">
+                                <Label
+                                    htmlFor="random-assigners-widget-toggle"
+                                    className="text-base font-medium cursor-pointer"
+                                >
+                                    Random Assigners Widget
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Show random assigner history on student dashboards
+                                </p>
+                            </div>
+                        </div>
+                        {showRandomAssignersWidget && randomAssigners.length > 0 && (
+                            <div className="ml-8 space-y-2 pl-4 border-l-2">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-sm font-medium">
+                                        Select Assigners
+                                    </Label>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                const allIds = randomAssigners.map((a) => a.id);
+                                                handleUpdateSelectedRandomAssigners(allIds);
+                                            }}
+                                        >
+                                            Check All
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                handleUpdateSelectedRandomAssigners([]);
+                                            }}
+                                        >
+                                            Uncheck All
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    {randomAssigners.map((assigner) => {
+                                        const isSelected = selectedRandomAssignerIds?.includes(assigner.id) ?? false;
+                                        return (
+                                            <div key={assigner.id} className="flex items-start space-x-2">
+                                                <Checkbox
+                                                    id={`random-assigner-${assigner.id}`}
+                                                    checked={isSelected}
+                                                    onCheckedChange={(checked) => {
+                                                        const currentIds = selectedRandomAssignerIds || [];
+                                                        const newIds = checked
+                                                            ? [...currentIds, assigner.id]
+                                                            : currentIds.filter((id) => id !== assigner.id);
+                                                        handleUpdateSelectedRandomAssigners(newIds);
+                                                    }}
+                                                    className="mt-1"
+                                                />
+                                                <Label
+                                                    htmlFor={`random-assigner-${assigner.id}`}
+                                                    className="text-sm cursor-pointer"
+                                                >
+                                                    {assigner.name}
+                                                </Label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <Separator />
+                    <div className="space-y-3">
+                        <div className="flex items-start space-x-3 space-y-0">
+                            <Checkbox
+                                id="rotating-assigners-widget-toggle"
+                                checked={showRotatingAssignersWidget}
+                                onCheckedChange={handleToggleRotatingAssignersWidget}
+                                className="mt-1"
+                            />
+                            <div className="space-y-1 leading-none flex-1">
+                                <Label
+                                    htmlFor="rotating-assigners-widget-toggle"
+                                    className="text-base font-medium cursor-pointer"
+                                >
+                                    Rotating Assigners Widget
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Show rotating assigner history on student dashboards
+                                </p>
+                            </div>
+                        </div>
+                        {showRotatingAssignersWidget && rotatingAssigners.length > 0 && (
+                            <div className="ml-8 space-y-2 pl-4 border-l-2">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-sm font-medium">
+                                        Select Assigners
+                                    </Label>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                const allIds = rotatingAssigners.map((a) => a.id);
+                                                handleUpdateSelectedRotatingAssigners(allIds);
+                                            }}
+                                        >
+                                            Check All
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                handleUpdateSelectedRotatingAssigners([]);
+                                            }}
+                                        >
+                                            Uncheck All
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    {rotatingAssigners.map((assigner) => {
+                                        const isSelected = selectedRotatingAssignerIds?.includes(assigner.id) ?? false;
+                                        return (
+                                            <div key={assigner.id} className="flex items-start space-x-2">
+                                                <Checkbox
+                                                    id={`rotating-assigner-${assigner.id}`}
+                                                    checked={isSelected}
+                                                    onCheckedChange={(checked) => {
+                                                        const currentIds = selectedRotatingAssignerIds || [];
+                                                        const newIds = checked
+                                                            ? [...currentIds, assigner.id]
+                                                            : currentIds.filter((id) => id !== assigner.id);
+                                                        handleUpdateSelectedRotatingAssigners(newIds);
+                                                    }}
+                                                    className="mt-1"
+                                                />
+                                                <Label
+                                                    htmlFor={`rotating-assigner-${assigner.id}`}
+                                                    className="text-sm cursor-pointer"
+                                                >
+                                                    {assigner.name}
+                                                </Label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -293,10 +660,86 @@ function PreviewPanel({
             : null
     );
 
+    // Query assigners for default selection
+    const { data: randomAssignersData } = db.useQuery(
+        classId
+            ? {
+                  random_assigners: {
+                      $: {
+                          where: { "class.id": classId },
+                      },
+                      class: {},
+                  },
+              }
+            : null
+    );
+
+    const { data: rotatingAssignersData } = db.useQuery(
+        classId
+            ? {
+                  rotating_assigners: {
+                      $: {
+                          where: { "class.id": classId },
+                      },
+                      class: {},
+                  },
+              }
+            : null
+    );
+
     const typedSettingsData = (settingsData as DashboardSettingsQueryResult | undefined) ?? null;
     const existingSettings = typedSettingsData?.classDashboardSettings?.[0];
     const showPointsWidget = existingSettings?.showPointsWidget ?? false;
     const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
+    const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
+    const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
+
+    const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
+    const randomAssigners = typedRandomAssignersData?.random_assigners || [];
+
+    const typedRotatingAssignersData = (rotatingAssignersData as RotatingAssignersQueryResult | undefined) ?? null;
+    const rotatingAssigners = typedRotatingAssignersData?.rotating_assigners || [];
+
+    // Parse selected assigner IDs - default to all if widget is enabled and no selection exists
+    const selectedRandomAssignerIds = useMemo(() => {
+        if (!existingSettings?.selectedRandomAssignerIds) {
+            // If widget is enabled but no selection, default to all assigners
+            if (showRandomAssignersWidget && randomAssigners.length > 0) {
+                return randomAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+        try {
+            const parsed = JSON.parse(existingSettings.selectedRandomAssignerIds);
+            return Array.isArray(parsed) ? parsed : null;
+        } catch {
+            // If parsing fails and widget is enabled, default to all
+            if (showRandomAssignersWidget && randomAssigners.length > 0) {
+                return randomAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+    }, [existingSettings?.selectedRandomAssignerIds, showRandomAssignersWidget, randomAssigners]);
+
+    const selectedRotatingAssignerIds = useMemo(() => {
+        if (!existingSettings?.selectedRotatingAssignerIds) {
+            // If widget is enabled but no selection, default to all assigners
+            if (showRotatingAssignersWidget && rotatingAssigners.length > 0) {
+                return rotatingAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+        try {
+            const parsed = JSON.parse(existingSettings.selectedRotatingAssignerIds);
+            return Array.isArray(parsed) ? parsed : null;
+        } catch {
+            // If parsing fails and widget is enabled, default to all
+            if (showRotatingAssignersWidget && rotatingAssigners.length > 0) {
+                return rotatingAssigners.map((a) => a.id);
+            }
+            return null;
+        }
+    }, [existingSettings?.selectedRotatingAssignerIds, showRotatingAssignersWidget, rotatingAssigners]);
 
     return (
         <Card>
@@ -371,6 +814,20 @@ function PreviewPanel({
                                                 : "Expectations widget is disabled. Enable it in Settings to preview."}
                                         </p>
                                     )}
+                                    {showRandomAssignersWidget && classId ? (
+                                        <RandomAssignersWidget
+                                            classId={classId}
+                                            studentId={selectedStudentId}
+                                            selectedAssignerIds={selectedRandomAssignerIds ?? undefined}
+                                        />
+                                    ) : null}
+                                    {showRotatingAssignersWidget && classId ? (
+                                        <RotatingAssignersWidget
+                                            classId={classId}
+                                            studentId={selectedStudentId}
+                                            selectedAssignerIds={selectedRotatingAssignerIds ?? undefined}
+                                        />
+                                    ) : null}
                                 </div>
                             </div>
                         </div>
