@@ -203,6 +203,7 @@ export function GroupCard({ group, classId, canManage, highlightedStudentIds = [
                                             key={team.id}
                                             team={team}
                                             group={group}
+                                            classId={classId}
                                             canManage={canManage}
                                             highlightedStudentIds={highlightedStudentIds}
                                         />

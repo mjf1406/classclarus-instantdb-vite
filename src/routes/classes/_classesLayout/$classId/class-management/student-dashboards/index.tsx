@@ -25,6 +25,7 @@ import { PointsWidget } from "../../main/dashboard/-components/points-widget";
 import { ExpectationsWidget } from "../../main/dashboard/-components/expectations-widget";
 import { RandomAssignersWidget } from "../../main/dashboard/-components/random-assigners-widget";
 import { RotatingAssignersWidget } from "../../main/dashboard/-components/rotating-assigners-widget";
+import { GroupsTeamsWidget } from "../../main/dashboard/-components/groups-teams-widget";
 import { useMemo } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -193,6 +194,7 @@ function SettingsPanel() {
     const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
     const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
     const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
+    const showGroupsTeamsWidget = existingSettings?.showGroupsTeamsWidget ?? false;
 
     const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
     const randomAssigners = typedRandomAssignersData?.random_assigners || [];
@@ -383,6 +385,35 @@ function SettingsPanel() {
         }
     };
 
+    const handleToggleGroupsTeamsWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showGroupsTeamsWidget: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showGroupsTeamsWidget: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
     const handleUpdateSelectedRandomAssigners = (assignerIds: string[]) => {
         if (!classId || !existingSettings) return;
 
@@ -458,6 +489,25 @@ function SettingsPanel() {
                             </Label>
                             <p className="text-sm text-muted-foreground">
                                 Show expectations widget on student dashboards
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-start space-x-3 space-y-0">
+                        <Checkbox
+                            id="groups-teams-widget-toggle"
+                            checked={showGroupsTeamsWidget}
+                            onCheckedChange={handleToggleGroupsTeamsWidget}
+                            className="mt-1"
+                        />
+                        <div className="space-y-1 leading-none">
+                            <Label
+                                htmlFor="groups-teams-widget-toggle"
+                                className="text-base font-medium cursor-pointer"
+                            >
+                                Groups & Teams Widget
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Show groups and teams widget on student dashboards
                             </p>
                         </div>
                     </div>
@@ -693,6 +743,7 @@ function PreviewPanel({
     const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
     const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
     const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
+    const showGroupsTeamsWidget = existingSettings?.showGroupsTeamsWidget ?? false;
 
     const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
     const randomAssigners = typedRandomAssignersData?.random_assigners || [];
@@ -826,6 +877,12 @@ function PreviewPanel({
                                             classId={classId}
                                             studentId={selectedStudentId}
                                             selectedAssignerIds={selectedRotatingAssignerIds ?? undefined}
+                                        />
+                                    ) : null}
+                                    {showGroupsTeamsWidget && classId ? (
+                                        <GroupsTeamsWidget
+                                            classId={classId}
+                                            studentId={selectedStudentId}
                                         />
                                     ) : null}
                                 </div>

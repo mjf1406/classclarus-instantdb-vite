@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState, useEffect, useMemo } from "react";
+import { id } from "@instantdb/react";
 import { db } from "@/lib/db/db";
 import {
     Dialog,
@@ -159,14 +160,26 @@ export function EditGroupDialog({
                     description: description.trim() || undefined,
                     updated: now,
                 }),
-                // Unlink removed students
-                ...studentsToRemove.map((studentId) =>
-                    db.tx.groups[group.id].unlink({ groupStudents: studentId })
-                ),
-                // Link added students
-                ...studentsToAdd.map((studentId) =>
-                    db.tx.groups[group.id].link({ groupStudents: studentId })
-                ),
+                // Unlink removed students and create removal history records
+                ...studentsToRemove.flatMap((studentId) => {
+                    const historyId = id();
+                    return [
+                        db.tx.groups[group.id].unlink({ groupStudents: studentId }),
+                        db.tx.group_membership_history[historyId]
+                            .create({ addedAt: now, action: "removed" })
+                            .link({ student: studentId, group: group.id, class: classId }),
+                    ];
+                }),
+                // Link added students and create history records
+                ...studentsToAdd.flatMap((studentId) => {
+                    const historyId = id();
+                    return [
+                        db.tx.groups[group.id].link({ groupStudents: studentId }),
+                        db.tx.group_membership_history[historyId]
+                            .create({ addedAt: now, action: "added" })
+                            .link({ student: studentId, group: group.id, class: classId }),
+                    ];
+                }),
             ];
 
             db.transact(transactions);

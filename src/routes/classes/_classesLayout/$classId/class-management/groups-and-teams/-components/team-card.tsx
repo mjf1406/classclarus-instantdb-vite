@@ -34,11 +34,12 @@ interface TeamCardProps {
         }
     >;
     group: Group;
+    classId: string;
     canManage: boolean;
     highlightedStudentIds?: string[];
 }
 
-export function TeamCard({ team, group, canManage, highlightedStudentIds = [] }: TeamCardProps) {
+export function TeamCard({ team, group, classId, canManage, highlightedStudentIds = [] }: TeamCardProps) {
     const students = team.teamStudents || [];
 
     const getStudentDisplayName = (student: InstaQLEntity<AppSchema, "$users">) => {
@@ -124,7 +125,7 @@ export function TeamCard({ team, group, canManage, highlightedStudentIds = [] }:
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <EditTeamDialog team={team} group={group} asDropdownItem>
+                                <EditTeamDialog team={team} group={group} classId={classId} asDropdownItem>
                                     Edit
                                 </EditTeamDialog>
                                 <DeleteTeamDialog team={team} asDropdownItem>

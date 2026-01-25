@@ -12,6 +12,7 @@ import { PointsWidget } from "./points-widget";
 import { ExpectationsWidget } from "./expectations-widget";
 import { RandomAssignersWidget } from "./random-assigners-widget";
 import { RotatingAssignersWidget } from "./rotating-assigners-widget";
+import { GroupsTeamsWidget } from "./groups-teams-widget";
 
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
@@ -140,6 +141,7 @@ export function StudentParentDashboard({
     const showExpectationsWidget = existingSettings?.showExpectationsWidget ?? false;
     const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
     const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
+    const showGroupsTeamsWidget = existingSettings?.showGroupsTeamsWidget ?? false;
 
     // Parse selected assigner IDs - return empty array if empty, null if not set
     const selectedRandomAssignerIds = useMemo(() => {
@@ -257,6 +259,9 @@ export function StudentParentDashboard({
                         studentId={studentIdForWidget}
                         selectedAssignerIds={selectedRotatingAssignerIds || undefined}
                     />
+                )}
+                {showGroupsTeamsWidget && studentIdForWidget && classId && (
+                    <GroupsTeamsWidget classId={classId} studentId={studentIdForWidget} />
                 )}
             </div>
         </div>

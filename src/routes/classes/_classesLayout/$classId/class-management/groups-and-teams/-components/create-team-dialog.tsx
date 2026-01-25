@@ -147,10 +147,16 @@ export function CreateTeamDialog({
             const transactions = [
                 createTx,
                 db.tx.teams[teamId].link({ group: selectedGroupId }),
-                // Link selected students
-                ...Array.from(selectedStudentIds).map((studentId) =>
-                    db.tx.teams[teamId].link({ teamStudents: studentId })
-                ),
+                // Link selected students and create history records
+                ...Array.from(selectedStudentIds).flatMap((studentId) => {
+                    const historyId = id();
+                    return [
+                        db.tx.teams[teamId].link({ teamStudents: studentId }),
+                        db.tx.team_membership_history[historyId]
+                            .create({ addedAt: now, action: "added" })
+                            .link({ student: studentId, team: teamId, class: classId }),
+                    ];
+                }),
             ];
 
             db.transact(transactions);

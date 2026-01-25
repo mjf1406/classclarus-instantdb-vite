@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState, useEffect, useMemo } from "react";
+import { id } from "@instantdb/react";
 import { db } from "@/lib/db/db";
 import {
     Dialog,
@@ -45,6 +46,7 @@ interface EditTeamDialogProps {
         }
     >;
     group: Group;
+    classId: string;
     asDropdownItem?: boolean;
 }
 
@@ -52,6 +54,7 @@ export function EditTeamDialog({
     children,
     team,
     group,
+    classId,
     asDropdownItem = false,
 }: EditTeamDialogProps) {
     const [open, setOpen] = useState(false);
@@ -129,14 +132,26 @@ export function EditTeamDialog({
                     description: description.trim() || undefined,
                     updated: now,
                 }),
-                // Unlink removed students
-                ...studentsToRemove.map((studentId) =>
-                    db.tx.teams[team.id].unlink({ teamStudents: studentId })
-                ),
-                // Link added students
-                ...studentsToAdd.map((studentId) =>
-                    db.tx.teams[team.id].link({ teamStudents: studentId })
-                ),
+                // Unlink removed students and create removal history records
+                ...studentsToRemove.flatMap((studentId) => {
+                    const historyId = id();
+                    return [
+                        db.tx.teams[team.id].unlink({ teamStudents: studentId }),
+                        db.tx.team_membership_history[historyId]
+                            .create({ addedAt: now, action: "removed" })
+                            .link({ student: studentId, team: team.id, class: classId }),
+                    ];
+                }),
+                // Link added students and create history records
+                ...studentsToAdd.flatMap((studentId) => {
+                    const historyId = id();
+                    return [
+                        db.tx.teams[team.id].link({ teamStudents: studentId }),
+                        db.tx.team_membership_history[historyId]
+                            .create({ addedAt: now, action: "added" })
+                            .link({ student: studentId, team: team.id, class: classId }),
+                    ];
+                }),
             ];
 
             db.transact(transactions);

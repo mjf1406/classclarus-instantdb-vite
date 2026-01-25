@@ -129,10 +129,16 @@ export function CreateGroupDialog({
             const transactions = [
                 createTx,
                 db.tx.groups[groupId].link({ class: classId }),
-                // Link selected students
-                ...Array.from(selectedStudentIds).map((studentId) =>
-                    db.tx.groups[groupId].link({ groupStudents: studentId })
-                ),
+                // Link selected students and create history records
+                ...Array.from(selectedStudentIds).flatMap((studentId) => {
+                    const historyId = id();
+                    return [
+                        db.tx.groups[groupId].link({ groupStudents: studentId }),
+                        db.tx.group_membership_history[historyId]
+                            .create({ addedAt: now, action: "added" })
+                            .link({ student: studentId, group: groupId, class: classId }),
+                    ];
+                }),
             ];
 
             db.transact(transactions);

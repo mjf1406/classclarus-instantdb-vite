@@ -81,6 +81,7 @@ const _schema = i.schema({
             selectedRandomAssignerIds: i.string().optional(), // JSON array of assigner IDs, empty/null = all
             showRotatingAssignersWidget: i.boolean().optional(),
             selectedRotatingAssignerIds: i.string().optional(), // JSON array of assigner IDs, empty/null = all
+            showGroupsTeamsWidget: i.boolean().optional(),
             created: i.date(),
             updated: i.date(),
         }),
@@ -196,6 +197,14 @@ const _schema = i.schema({
         equitable_assigner_runs: i.entity({
             runDate: i.date().indexed(),
             results: i.string(), // JSON placeholder for future implementation
+        }),
+        group_membership_history: i.entity({
+            addedAt: i.date().indexed(),
+            action: i.string().indexed(), // "added" | "removed"
+        }),
+        team_membership_history: i.entity({
+            addedAt: i.date().indexed(),
+            action: i.string().indexed(), // "added" | "removed"
         }),
         terms_acceptances: i.entity({
             acceptedAt: i.date().indexed(),
@@ -869,6 +878,82 @@ const _schema = i.schema({
                 has: "many",
                 label: "termsAcceptances",
             }, // Each user can have many terms acceptances
+        },
+        groupMembershipHistoryStudent: {
+            forward: {
+                on: "group_membership_history",
+                has: "one",
+                label: "student",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "groupMembershipHistory",
+            },
+        },
+        groupMembershipHistoryGroup: {
+            forward: {
+                on: "group_membership_history",
+                has: "one",
+                label: "group",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "groups",
+                has: "many",
+                label: "membershipHistory",
+            },
+        },
+        groupMembershipHistoryClass: {
+            forward: {
+                on: "group_membership_history",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "classes",
+                has: "many",
+                label: "groupMembershipHistory",
+            },
+        },
+        teamMembershipHistoryStudent: {
+            forward: {
+                on: "team_membership_history",
+                has: "one",
+                label: "student",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "teamMembershipHistory",
+            },
+        },
+        teamMembershipHistoryTeam: {
+            forward: {
+                on: "team_membership_history",
+                has: "one",
+                label: "team",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "teams",
+                has: "many",
+                label: "membershipHistory",
+            },
+        },
+        teamMembershipHistoryClass: {
+            forward: {
+                on: "team_membership_history",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "classes",
+                has: "many",
+                label: "teamMembershipHistory",
+            },
         },
     },
     rooms: {},
