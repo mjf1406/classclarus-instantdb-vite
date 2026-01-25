@@ -301,13 +301,8 @@ export function runRotatingAssigner({
         girls.sort(sortByNumber);
         others.sort(sortByNumber);
         preferNotToSay.sort(sortByNumber);
-        
-        console.log("Boys: ", boys);
-        console.log("Girls: ", girls);
-        console.log("Others: ", others);
-        console.log("Prefer Not To Say: ", preferNotToSay);
 
-        // Check if at least 2 genders have the same count and that count is > 0
+        // Collect all genders that have students (no matching requirement)
         const genderGroups = [
             { name: "male", students: boys },
             { name: "female", students: girls },
@@ -315,34 +310,12 @@ export function runRotatingAssigner({
             { name: "prefer-not-to-say", students: preferNotToSay },
         ];
         
-        // Count occurrences of each count value
-        const countMap = new Map<number, string[]>();
+        // Simply collect all genders that have students
+        const matchingGenders: string[] = [];
         for (const group of genderGroups) {
-            const count = group.students.length;
-            if (count > 0) {
-                if (!countMap.has(count)) {
-                    countMap.set(count, []);
-                }
-                countMap.get(count)!.push(group.name);
+            if (group.students.length > 0) {
+                matchingGenders.push(group.name);
             }
-        }
-        
-        // Find if any count has at least 2 genders
-        let matchingCount = 0;
-        let matchingGenders: string[] = [];
-        for (const [count, genders] of countMap.entries()) {
-            if (genders.length >= 2) {
-                matchingCount = count;
-                matchingGenders = genders;
-                break;
-            }
-        }
-        
-        if (matchingCount === 0) {
-            return { 
-                results: [], 
-                error: new Error(`Gender balance not maintained: need at least 2 genders with the same count (male: ${boys.length}, female: ${girls.length}, other: ${others.length}, prefer-not-to-say: ${preferNotToSay.length}). You must ensure at least 2 genders have equal counts within selected group/team or uncheck "Balance gender".`) 
-            } as RunRotatingAssignerOutput;
         }
         
         // Process each matching gender group separately
