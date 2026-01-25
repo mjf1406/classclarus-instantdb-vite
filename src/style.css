@@ -63,6 +63,7 @@
 body {
     margin: 0;
     @apply font-sans bg-background text-foreground;
+    scrollbar-gutter: stable;
 }
 
 /*---break--- */
