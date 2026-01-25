@@ -163,6 +163,10 @@ const _schema = i.schema({
             created: i.date(),
             updated: i.date(),
         }),
+        random_assigner_runs: i.entity({
+            runDate: i.date().indexed(),
+            results: i.string(), // JSON: Array<{ item: string, studentId: string, studentNumber: number | null, studentName: string, groupOrTeamId: string, groupOrTeamName: string, isTeam: boolean }>
+        }),
         rotating_assigners: i.entity({
             name: i.string().indexed(),
             items: i.string(), // JSON array of strings
@@ -176,6 +180,14 @@ const _schema = i.schema({
             balanceGender: i.boolean().optional(),
             created: i.date(),
             updated: i.date(),
+        }),
+        rotating_assigner_runs: i.entity({
+            runDate: i.date().indexed(),
+            results: i.string(), // JSON placeholder for future implementation
+        }),
+        equitable_assigner_runs: i.entity({
+            runDate: i.date().indexed(),
+            results: i.string(), // JSON placeholder for future implementation
         }),
         terms_acceptances: i.entity({
             acceptedAt: i.date().indexed(),
@@ -709,6 +721,32 @@ const _schema = i.schema({
                 onDelete: "cascade",
             },
         },
+        randomAssignerRuns: {
+            forward: {
+                on: "random_assigner_runs",
+                has: "one",
+                label: "randomAssigner",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "random_assigners",
+                has: "many",
+                label: "runs",
+            },
+        },
+        classRandomAssignerRuns: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "randomAssignerRuns",
+            },
+            reverse: {
+                on: "random_assigner_runs",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
         classRotatingAssigners: {
             forward: {
                 on: "classes",
@@ -730,6 +768,58 @@ const _schema = i.schema({
             },
             reverse: {
                 on: "equitable_assigners",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        rotatingAssignerRuns: {
+            forward: {
+                on: "rotating_assigner_runs",
+                has: "one",
+                label: "rotatingAssigner",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "rotating_assigners",
+                has: "many",
+                label: "runs",
+            },
+        },
+        classRotatingAssignerRuns: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "rotatingAssignerRuns",
+            },
+            reverse: {
+                on: "rotating_assigner_runs",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        equitableAssignerRuns: {
+            forward: {
+                on: "equitable_assigner_runs",
+                has: "one",
+                label: "equitableAssigner",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "equitable_assigners",
+                has: "many",
+                label: "runs",
+            },
+        },
+        classEquitableAssignerRuns: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "equitableAssignerRuns",
+            },
+            reverse: {
+                on: "equitable_assigner_runs",
                 has: "one",
                 label: "class",
                 onDelete: "cascade",

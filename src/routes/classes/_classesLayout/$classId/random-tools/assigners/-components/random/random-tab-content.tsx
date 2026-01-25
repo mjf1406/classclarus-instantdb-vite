@@ -1,6 +1,6 @@
 /** @format */
 
-import { RandomAssignersList } from "./random-assigners-list";
+import { AssignersList } from "../assigners-list";
 import { RandomCaseStudy } from "./random-case-study";
 
 interface RandomTabContentProps {
@@ -26,7 +26,7 @@ export function RandomTabContent({
                 <div className="max-w-2xl mx-auto">
                     <RandomCaseStudy />
                 </div>
-                <RandomAssignersList classId={classId} canManage={canManage} />
+                <AssignersList assignerType="random" classId={classId} canManage={canManage} />
             </div>
         </div>
     );

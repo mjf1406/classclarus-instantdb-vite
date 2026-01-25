@@ -2,18 +2,21 @@
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 export function RotatingCaseStudy() {
+    const [open, setOpen] = useState(false);
+    
     return (
-        <Collapsible defaultOpen={false}>
+        <Collapsible className="group/collapsible" open={open} onOpenChange={setOpen}>
             <Card className="w-full">
                 <CollapsibleTrigger className="w-full">
                     <CardContent className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-3">
                             <span className="font-medium">Case Study</span>
                         </div>
-                        <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                        <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </CardContent>
                 </CollapsibleTrigger>
                 <CollapsibleContent>

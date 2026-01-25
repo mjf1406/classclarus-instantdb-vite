@@ -1,6 +1,6 @@
 /** @format */
 
-import { EquitableAssignersList } from "./equitable-assigners-list";
+import { AssignersList } from "../assigners-list";
 import { EquitableCaseStudy } from "./equitable-case-study";
 
 interface EquitableTabContentProps {
@@ -24,7 +24,7 @@ export function EquitableTabContent({
                 <div className="max-w-2xl mx-auto">
                     <EquitableCaseStudy />
                 </div>
-                <EquitableAssignersList classId={classId} canManage={canManage} />
+                <AssignersList assignerType="equitable" classId={classId} canManage={canManage} />
             </div>
         </div>
     );

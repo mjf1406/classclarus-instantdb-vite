@@ -1,6 +1,6 @@
 /** @format */
 
-import { RotatingAssignersList } from "./rotating-assigners-list";
+import { AssignersList } from "../assigners-list";
 import { RotatingCaseStudy } from "./rotating-case-study";
 
 interface RotatingTabContentProps {
@@ -24,7 +24,7 @@ export function RotatingTabContent({
                 <div className="max-w-2xl mx-auto">
                     <RotatingCaseStudy />
                 </div>
-                <RotatingAssignersList classId={classId} canManage={canManage} />
+                <AssignersList assignerType="rotating" classId={classId} canManage={canManage} />
             </div>
         </div>
     );
