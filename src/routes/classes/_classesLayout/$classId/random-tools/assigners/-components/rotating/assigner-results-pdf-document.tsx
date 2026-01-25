@@ -9,6 +9,7 @@ import {
     Image,
 } from "@react-pdf/renderer";
 import type { AssignmentResult } from "@/lib/assigners/run-random-assigner";
+import { naturalSort } from "@/lib/natural-sort";
 import pdfLogo from "@/routes/classes/_classesLayout/$classId/class-management/groups-and-teams/assets/pdf-logo.png";
 
 // Define styles for the PDF
@@ -117,13 +118,25 @@ interface AssignerResultsPDFDocumentProps {
     className: string;
     generatedDate: string;
     results: AssignmentResult[];
+    balanceGender?: boolean;
+    rosterByStudentId?: Map<
+        string,
+        {
+            id: string;
+            firstName?: string;
+            lastName?: string;
+            gender?: string;
+            number?: number;
+        }
+    >;
+    allItems?: string[]; // Optional: all items from assigner (to show items with no assignments)
 }
 
 // Group results by group/team
 function organizeResultsByGroupTeam(
     results: AssignmentResult[]
-): Map<string, Map<string, AssignmentResult>> {
-    const organized = new Map<string, Map<string, AssignmentResult>>();
+): Map<string, Map<string, AssignmentResult[]>> {
+    const organized = new Map<string, Map<string, AssignmentResult[]>>();
 
     for (const result of results) {
         const key = `${result.groupOrTeamId}-${result.isTeam ? "team" : "group"}`;
@@ -131,19 +144,97 @@ function organizeResultsByGroupTeam(
             organized.set(key, new Map());
         }
         const groupMap = organized.get(key)!;
-        groupMap.set(result.item, result);
+        if (!groupMap.has(result.item)) {
+            groupMap.set(result.item, []);
+        }
+        groupMap.get(result.item)!.push(result);
     }
 
     return organized;
 }
 
-// Get all unique items from results
-function getAllItems(results: AssignmentResult[]): string[] {
+// Helper to determine if a gender string represents a boy/male
+function isBoy(gender: string | null | undefined): boolean {
+    if (!gender) return false;
+    const g = gender.toLowerCase();
+    return g === "m" || g === "male" || g === "boy";
+}
+
+// Helper to determine if a gender string represents a girl/female
+function isGirl(gender: string | null | undefined): boolean {
+    if (!gender) return false;
+    const g = gender.toLowerCase();
+    return g === "f" || g === "female" || g === "girl";
+}
+
+// Get student gender from roster
+function getStudentGender(
+    studentId: string,
+    rosterByStudentId?: Map<
+        string,
+        {
+            id: string;
+            firstName?: string;
+            lastName?: string;
+            gender?: string;
+            number?: number;
+        }
+    >
+): string | null | undefined {
+    if (!rosterByStudentId) return null;
+    return rosterByStudentId.get(studentId)?.gender;
+}
+
+// Get all unique items from results, or use provided allItems if available
+function getAllItems(results: AssignmentResult[], allItems?: string[]): string[] {
+    if (allItems && allItems.length > 0) {
+        // Use provided items list to ensure all items appear, even without assignments
+        return naturalSort(allItems);
+    }
+    // Fallback: extract from results
     const itemsSet = new Set<string>();
     for (const result of results) {
         itemsSet.add(result.item);
     }
-    return Array.from(itemsSet).sort();
+    return naturalSort(Array.from(itemsSet));
+}
+
+// Get items with gender rows when balanceGender is true
+// Returns array of { item: string, genderLabel: string | null } where genderLabel is "Boy" or "Girl" or null
+function getItemsWithGenderRows(
+    results: AssignmentResult[],
+    balanceGender: boolean,
+    rosterByStudentId?: Map<
+        string,
+        {
+            id: string;
+            firstName?: string;
+            lastName?: string;
+            gender?: string;
+            number?: number;
+        }
+    >,
+    allItems?: string[]
+): Array<{ item: string; genderLabel: string | null }> {
+    const items = getAllItems(results, allItems);
+    
+    if (!balanceGender || !rosterByStudentId) {
+        // Return one row per item without gender label
+        return items.map(item => ({ item, genderLabel: null }));
+    }
+    
+    // When balanceGender is true, create two rows per item (Boy and Girl)
+    // Always show both rows for each item, even if there are no assignments
+    const itemsWithGenders: Array<{ item: string; genderLabel: string | null }> = [];
+    
+    for (const item of items) {
+        // Always add both Boy and Girl rows for each item when balanceGender is true
+        // This ensures all items appear even if they have no assignments
+        itemsWithGenders.push({ item, genderLabel: "Boy" });
+        itemsWithGenders.push({ item, genderLabel: "Girl" });
+    }
+    
+    return itemsWithGenders;
 }
 
 // Get all unique groups/teams from results
@@ -180,10 +271,13 @@ export function AssignerResultsPDFDocument({
     className,
     generatedDate,
     results,
+    balanceGender = false,
+    rosterByStudentId,
+    allItems: providedAllItems,
 }: AssignerResultsPDFDocumentProps) {
-    const allItems = getAllItems(results);
     const allGroupsTeams = getAllGroupsTeams(results);
     const organizedResults = organizeResultsByGroupTeam(results);
+    const itemsWithGenderRows = getItemsWithGenderRows(results, balanceGender, rosterByStudentId, providedAllItems);
 
     // Check if this is a team-only run (all results are teams, no groups)
     const isTeamOnlyRun = allGroupsTeams.length > 0 && allGroupsTeams.every(gt => gt.isTeam);
@@ -244,45 +338,90 @@ export function AssignerResultsPDFDocument({
                     </View>
 
                     {/* Data Rows */}
-                    {allItems.map((item) => (
-                        <View key={item} style={styles.tableRow}>
-                            <View style={[styles.tableCell, styles.tableCellItem]}>
-                                <Text>{item}</Text>
-                            </View>
-                            {allGroupsTeams.map((groupTeam) => {
-                                const assignment =
-                                    organizedResults
-                                        .get(groupTeam.key)
-                                        ?.get(item) || null;
+                    {itemsWithGenderRows.map(({ item, genderLabel }, rowIndex) => {
+                        // When balanceGender is true, filter assignments by gender
+                        const getFilteredAssignments = (
+                            assignments: AssignmentResult[]
+                        ): AssignmentResult[] => {
+                            if (!balanceGender || !genderLabel || !rosterByStudentId) {
+                                return assignments;
+                            }
+                            
+                            // Filter by gender
+                            return assignments.filter(assignment => {
+                                const gender = getStudentGender(assignment.studentId, rosterByStudentId);
+                                if (genderLabel === "Boy") {
+                                    return isBoy(gender);
+                                } else if (genderLabel === "Girl") {
+                                    return isGirl(gender);
+                                }
+                                return false;
+                            });
+                        };
 
-                                return (
-                                    <View
-                                        key={groupTeam.key}
-                                        style={[
-                                            styles.tableCell,
-                                            styles.tableCellGroup,
-                                            { width: groupColumnWidth },
-                                        ]}
-                                    >
-                                        {assignment ? (
-                                            <View style={styles.cellContent}>
-                                                {assignment.studentNumber !== null && (
-                                                    <Text style={styles.studentNumber}>
-                                                        {assignment.studentNumber} -
-                                                    </Text>
-                                                )}
-                                                <Text style={styles.studentName}>
-                                                    {assignment.studentName}
-                                                </Text>
-                                            </View>
-                                        ) : (
-                                            <Text style={styles.emptyCell}>-</Text>
-                                        )}
-                                    </View>
-                                );
-                            })}
-                        </View>
-                    ))}
+                        return (
+                            <View key={`${item}-${genderLabel || rowIndex}`} style={styles.tableRow}>
+                                <View style={[styles.tableCell, styles.tableCellItem]}>
+                                    <Text>
+                                        {item}
+                                        {genderLabel && ` (${genderLabel})`}
+                                    </Text>
+                                </View>
+                                {allGroupsTeams.map((groupTeam) => {
+                                    const allAssignments =
+                                        organizedResults
+                                            .get(groupTeam.key)
+                                            ?.get(item) || [];
+                                    
+                                    const assignments = getFilteredAssignments(allAssignments);
+
+                                    return (
+                                        <View
+                                            key={groupTeam.key}
+                                            style={[
+                                                styles.tableCell,
+                                                styles.tableCellGroup,
+                                                { width: groupColumnWidth },
+                                            ]}
+                                        >
+                                            {assignments.length > 0 ? (
+                                                // When balanceGender is true, show only one student per row
+                                                balanceGender ? (
+                                                    <View style={styles.cellContent}>
+                                                        {assignments[0]?.studentNumber !== null && (
+                                                            <Text style={styles.studentNumber}>
+                                                                {assignments[0].studentNumber} -
+                                                            </Text>
+                                                        )}
+                                                        <Text style={styles.studentName}>
+                                                            {assignments[0]?.studentName}
+                                                        </Text>
+                                                    </View>
+                                                ) : (
+                                                    <View style={{ flexDirection: "column", gap: 2 }}>
+                                                        {assignments.map((assignment, idx) => (
+                                                            <View key={idx} style={styles.cellContent}>
+                                                                {assignment.studentNumber !== null && (
+                                                                    <Text style={styles.studentNumber}>
+                                                                        {assignment.studentNumber} -
+                                                                    </Text>
+                                                                )}
+                                                                <Text style={styles.studentName}>
+                                                                    {assignment.studentName}
+                                                                </Text>
+                                                            </View>
+                                                        ))}
+                                                    </View>
+                                                )
+                                            ) : (
+                                                <Text style={styles.emptyCell}>-</Text>
+                                            )}
+                                        </View>
+                                    );
+                                })}
+                            </View>
+                        );
+                    })}
                 </View>
 
                 <Text style={styles.footer}>

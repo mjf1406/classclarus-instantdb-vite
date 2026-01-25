@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState } from "react";
+import { naturalSort } from "@/lib/natural-sort";
 import {
     Dialog,
     DialogContent,
@@ -44,15 +45,21 @@ interface ViewHistoryDialogProps {
     results: AssignmentResult[];
     assignerName: string;
     className: string;
+    allItems?: string[]; // Optional: all items from assigner (to show items with no assignments)
 }
 
-// Get all unique items from results
-function getAllItems(results: AssignmentResult[]): string[] {
+// Get all unique items from results, or use provided allItems if available
+function getAllItems(results: AssignmentResult[], allItems?: string[]): string[] {
+    if (allItems && allItems.length > 0) {
+        // Use provided items list to ensure all items appear, even without assignments
+        return naturalSort(allItems);
+    }
+    // Fallback: extract from results
     const itemsSet = new Set<string>();
     for (const result of results) {
         itemsSet.add(result.item);
     }
-    return Array.from(itemsSet).sort();
+    return naturalSort(Array.from(itemsSet));
 }
 
 // Get all unique groups/teams from results
@@ -87,8 +94,8 @@ function getAllGroupsTeams(results: AssignmentResult[]): Array<{
 // Organize results by group/team and item
 function organizeResults(
     results: AssignmentResult[]
-): Map<string, Map<string, AssignmentResult>> {
-    const organized = new Map<string, Map<string, AssignmentResult>>();
+): Map<string, Map<string, AssignmentResult[]>> {
+    const organized = new Map<string, Map<string, AssignmentResult[]>>();
 
     for (const result of results) {
         const key = `${result.groupOrTeamId}-${result.isTeam ? "team" : "group"}`;
@@ -96,7 +103,10 @@ function organizeResults(
             organized.set(key, new Map());
         }
         const groupMap = organized.get(key)!;
-        groupMap.set(result.item, result);
+        if (!groupMap.has(result.item)) {
+            groupMap.set(result.item, []);
+        }
+        groupMap.get(result.item)!.push(result);
     }
 
     return organized;
@@ -123,11 +133,12 @@ export function ViewHistoryDialog({
     results,
     assignerName,
     className,
+    allItems: providedAllItems,
 }: ViewHistoryDialogProps) {
     const [open, setOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
 
-    const allItems = getAllItems(results);
+    const allItems = getAllItems(results, providedAllItems);
     const allGroupsTeams = getAllGroupsTeams(results);
     const organizedResults = organizeResults(results);
     const PDFComponent = getPDFComponent(assignerType);
@@ -155,6 +166,7 @@ export function ViewHistoryDialog({
                     className={className}
                     generatedDate={generatedDate}
                     results={results}
+                    allItems={providedAllItems}
                 />
             );
 
@@ -222,25 +234,29 @@ export function ViewHistoryDialog({
                                             {item}
                                         </TableCell>
                                         {allGroupsTeams.map((groupTeam) => {
-                                            const assignment =
+                                            const assignments =
                                                 organizedResults
                                                     .get(groupTeam.key)
-                                                    ?.get(item) || null;
+                                                    ?.get(item) || [];
 
                                             return (
                                                 <TableCell key={groupTeam.key}>
-                                                    {assignment ? (
-                                                        <div className="flex items-center gap-2">
-                                                            {assignment.studentNumber !==
-                                                                null && (
-                                                                <span className="font-semibold text-muted-foreground">
-                                                                    {assignment.studentNumber}
-                                                                    {" - "}
-                                                                </span>
-                                                            )}
-                                                            <span>
-                                                                {assignment.studentName}
-                                                            </span>
+                                                    {assignments.length > 0 ? (
+                                                        <div className="flex flex-col gap-1">
+                                                            {assignments.map((assignment, idx) => (
+                                                                <div key={idx} className="flex items-center gap-2">
+                                                                    {assignment.studentNumber !==
+                                                                        null && (
+                                                                        <span className="font-semibold text-muted-foreground">
+                                                                            {assignment.studentNumber}
+                                                                            {" - "}
+                                                                        </span>
+                                                                    )}
+                                                                    <span>
+                                                                        {assignment.studentName}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     ) : (
                                                         <span className="text-muted-foreground italic">

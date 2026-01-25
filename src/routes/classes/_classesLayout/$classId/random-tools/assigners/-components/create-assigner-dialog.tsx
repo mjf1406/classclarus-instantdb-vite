@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssignerForm, type AssignerType } from "./assigner-form";
+import { naturalSort } from "@/lib/natural-sort";
 
 interface CreateAssignerDialogProps {
     children: React.ReactNode;
@@ -56,6 +57,7 @@ export function CreateAssignerDialog({
     const [name, setName] = useState("");
     const [itemsText, setItemsText] = useState("");
     const [balanceGender, setBalanceGender] = useState(false);
+    const [direction, setDirection] = useState<"front-to-back" | "back-to-front">("front-to-back");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -93,8 +95,8 @@ export function CreateAssignerDialog({
             const assignerId = id();
             const now = new Date();
 
-            // Store items as JSON string
-            const itemsJson = JSON.stringify(validItems);
+            // Store items as JSON string (sorted in natural order)
+            const itemsJson = JSON.stringify(naturalSort(validItems));
 
             // Create entity based on type
             if (assignerType === "random") {
@@ -113,6 +115,7 @@ export function CreateAssignerDialog({
                     name: name.trim(),
                     items: itemsJson,
                     balanceGender,
+                    direction,
                     created: now,
                     updated: now,
                 });
@@ -138,6 +141,7 @@ export function CreateAssignerDialog({
             setName("");
             setItemsText("");
             setBalanceGender(false);
+            setDirection("front-to-back");
             setOpen(false);
         } catch (err) {
             setError(
@@ -156,6 +160,7 @@ export function CreateAssignerDialog({
             setName("");
             setItemsText("");
             setBalanceGender(false);
+            setDirection("front-to-back");
             setError(null);
         }
     };
@@ -180,9 +185,11 @@ export function CreateAssignerDialog({
                                     name={name}
                                     itemsText={itemsText}
                                     balanceGender={balanceGender}
+                                    direction={direction}
                                     onNameChange={setName}
                                     onItemsTextChange={setItemsText}
                                     onBalanceGenderChange={setBalanceGender}
+                                    onDirectionChange={setDirection}
                                     disabled={isSubmitting}
                                     error={error}
                                 />

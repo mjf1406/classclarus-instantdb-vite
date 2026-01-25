@@ -2,6 +2,7 @@
 
 import { AssignersList } from "../assigners-list";
 import { RandomCaseStudy } from "./random-case-study";
+import { RandomMethodology } from "./random-methodology";
 
 interface RandomTabContentProps {
     classId: string;
@@ -23,8 +24,9 @@ export function RandomTabContent({
                         Chromebooks, tablets, or other shared equipment.
                     </p>
                 </div>
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-2xl mx-auto space-y-4">
                     <RandomCaseStudy />
+                    <RandomMethodology />
                 </div>
                 <AssignersList assignerType="random" classId={classId} canManage={canManage} />
             </div>

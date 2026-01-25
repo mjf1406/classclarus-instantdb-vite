@@ -23,16 +23,19 @@ function getEnvVars(env?: Record<string, unknown>) {
 
     const adminToken =
         (env?.VITE_INSTANT_APP_ADMIN_TOKEN as string) ||
+        (env?.INSTANT_APP_ADMIN_TOKEN as string) ||
         (env?.INSTANT_ADMIN_TOKEN as string) ||
         (typeof import.meta !== "undefined" &&
             import.meta.env?.VITE_INSTANT_APP_ADMIN_TOKEN) ||
         (typeof process !== "undefined" &&
             process.env?.VITE_INSTANT_APP_ADMIN_TOKEN) ||
+        (typeof process !== "undefined" &&
+            process.env?.INSTANT_APP_ADMIN_TOKEN) ||
         (typeof process !== "undefined" && process.env?.INSTANT_ADMIN_TOKEN);
 
     if (!appId || !adminToken) {
         throw new Error(
-            "Missing InstantDB configuration. Please set VITE_INSTANT_APP_ID and VITE_INSTANT_APP_ADMIN_TOKEN (or INSTANT_APP_ID and INSTANT_ADMIN_TOKEN for server)"
+            "Missing InstantDB configuration. Please set VITE_INSTANT_APP_ID and VITE_INSTANT_APP_ADMIN_TOKEN (or INSTANT_APP_ID and INSTANT_APP_ADMIN_TOKEN/INSTANT_ADMIN_TOKEN for server)"
         );
     }
 

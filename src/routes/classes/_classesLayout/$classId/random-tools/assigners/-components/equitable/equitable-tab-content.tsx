@@ -2,6 +2,7 @@
 
 import { AssignersList } from "../assigners-list";
 import { EquitableCaseStudy } from "./equitable-case-study";
+import { EquitableMethodology } from "./equitable-methodology";
 
 interface EquitableTabContentProps {
     classId: string;
@@ -21,8 +22,9 @@ export function EquitableTabContent({
                         Balances experience across students to produce fair assignments. Prioritizes least‑experienced students first, then assigns what they've done the least, with optional separate balancing for boys and girls. Use this when groups or teams change frequently.
                     </p>
                 </div>
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-2xl mx-auto space-y-4">
                     <EquitableCaseStudy />
+                    <EquitableMethodology />
                 </div>
                 <AssignersList assignerType="equitable" classId={classId} canManage={canManage} />
             </div>

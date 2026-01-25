@@ -1,6 +1,6 @@
 /** @format */
 
-import { Plus, MoreVertical, Package } from "lucide-react";
+import { Plus, MoreVertical, Package, History } from "lucide-react";
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import { CreateAssignerDialog } from "./create-assigner-dialog";
 import { EditAssignerDialog } from "./edit-assigner-dialog";
 import { DeleteAssignerDialog } from "./delete-assigner-dialog";
 import { RunAssignerDialog } from "../run-assigner-dialog";
-import { AssignerHistoryTable } from "./assigner-history-table";
+import { ViewAllHistoryDialog } from "../view-all-history-dialog";
 import { useClassRoster } from "@/hooks/use-class-roster";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { runRandomAssigner } from "@/lib/assigners/run-random-assigner";
@@ -242,13 +242,7 @@ export function RandomAssignersList({
                     {assigners.map((assigner) => {
                         const itemCount = getItemCount(assigner);
                         return (
-                            <div key={assigner.id} className="space-y-4">
-                                <AssignerHistoryTable
-                                    assignerId={assigner.id}
-                                    assignerName={assigner.name}
-                                    className={classEntity?.name || "Class"}
-                                />
-                                <Card>
+                            <Card key={assigner.id}>
                                 <CardHeader>
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
@@ -303,17 +297,29 @@ export function RandomAssignersList({
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Package className="size-4" />
-                                        <span>
-                                            {itemCount === 1
-                                                ? "1 item"
-                                                : `${itemCount} items`}
-                                        </span>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <Package className="size-4" />
+                                            <span>
+                                                {itemCount === 1
+                                                    ? "1 item"
+                                                    : `${itemCount} items`}
+                                            </span>
+                                        </div>
+                                        <ViewAllHistoryDialog
+                                            assignerType="random"
+                                            assignerId={assigner.id}
+                                            assignerName={assigner.name}
+                                            className={classEntity?.name || "Class"}
+                                        >
+                                            <Button variant="ghost" size="sm">
+                                                <History className="size-4 mr-2" />
+                                                View History
+                                            </Button>
+                                        </ViewAllHistoryDialog>
                                     </div>
                                 </CardContent>
                             </Card>
-                            </div>
                         );
                     })}
                 </div>

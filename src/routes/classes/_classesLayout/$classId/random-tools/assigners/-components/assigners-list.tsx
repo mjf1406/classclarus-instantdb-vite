@@ -1,6 +1,6 @@
 /** @format */
 
-import { Plus, MoreVertical, Package } from "lucide-react";
+import { Plus, MoreVertical, Package, History } from "lucide-react";
 import { db } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,10 +13,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CreateAssignerDialog } from "./create-assigner-dialog";
 import { EditAssignerDialog } from "./edit-assigner-dialog";
 import { DeleteAssignerDialog } from "./delete-assigner-dialog";
-import { AssignerHistoryTable } from "./assigner-history-table";
+import { ViewAllHistoryDialog } from "./view-all-history-dialog";
 import { useClassRoster } from "@/hooks/use-class-roster";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { runRandomAssigner } from "@/lib/assigners/run-random-assigner";
+import { runRotatingAssigner } from "@/lib/assigners/run-rotating-assigner";
 import { id } from "@instantdb/react";
 import { pdf } from "@react-pdf/renderer";
 import type { AssignerType } from "./assigner-form";
@@ -115,6 +116,7 @@ export function AssignersList({
                     rotating_assigners: {
                         $: { where: { "class.id": classId } },
                         class: {},
+                        runs: {},
                     },
                 }
               : classId && assignerType === "equitable"
@@ -207,14 +209,83 @@ export function AssignersList({
                 selectedItems,
                 rosterByStudentId: rosterMap,
             });
+        } else if (assignerType === "rotating") {
+            // Convert roster map to the format expected by runRotatingAssigner (includes gender)
+            const rosterMap = new Map<
+                string,
+                {
+                    id: string;
+                    firstName: string | null | undefined;
+                    lastName: string | null | undefined;
+                    number: number | null | undefined;
+                    gender: string | null | undefined;
+                }
+            >();
+
+            for (const [studentId, rosterEntry] of rosterByStudentId.entries()) {
+                rosterMap.set(studentId, {
+                    id: rosterEntry.id,
+                    firstName: rosterEntry.firstName,
+                    lastName: rosterEntry.lastName,
+                    number: rosterEntry.number ?? null,
+                    gender: rosterEntry.gender ?? null,
+                });
+            }
+
+            // Cast assigner to rotating_assigners type with runs
+            const rotatingAssigner = assigner as InstaQLEntity<
+                AppSchema,
+                "rotating_assigners",
+                { class: {}; runs: {} }
+            >;
+
+            // Build run count per group/team by parsing previous run results
+            // This ensures rotation is tracked per group/team, not globally
+            const runCountByGroupTeamId = new Map<string, number>();
+            
+            if (rotatingAssigner.runs && Array.isArray(rotatingAssigner.runs)) {
+                for (const run of rotatingAssigner.runs) {
+                    // Parse results from this run to find which groups/teams were included
+                    try {
+                        const runResults: AssignmentResult[] = run.results 
+                            ? JSON.parse(run.results) 
+                            : [];
+                        
+                        // Get unique group/team IDs from this run's results
+                        const groupTeamIdsInRun = new Set<string>();
+                        for (const result of runResults) {
+                            if (result.groupOrTeamId) {
+                                groupTeamIdsInRun.add(result.groupOrTeamId);
+                            }
+                        }
+                        
+                        // Increment count for each group/team that was in this run
+                        for (const groupTeamId of groupTeamIdsInRun) {
+                            const currentCount = runCountByGroupTeamId.get(groupTeamId) ?? 0;
+                            runCountByGroupTeamId.set(groupTeamId, currentCount + 1);
+                        }
+                    } catch (error) {
+                        console.error("Failed to parse run results:", error);
+                    }
+                }
+            }
+
+            // Run the assigner
+            const assignerResult = runRotatingAssigner({
+                assigner: rotatingAssigner,
+                selectedItems,
+                rosterByStudentId: rosterMap,
+                runCountByGroupTeamId,
+            });
+            results = assignerResult.results;
         } else {
-            // TODO: Implement rotating/equitable logic
+            // TODO: Implement equitable logic
             console.log(`${assignerType} assigner run - not yet implemented`);
             // Placeholder: empty results for now
             results = [];
         }
 
-        if (results.length === 0 && assignerType === "random") {
+        if (results.length === 0 && (assignerType === "random" || assignerType === "rotating")) {
             console.warn("No assignments generated");
             return;
         }
@@ -265,15 +336,45 @@ export function AssignersList({
                     day: "numeric",
                 });
 
+                // Parse all items from assigner to ensure all items appear in PDF
+                let allItems: string[] = [];
+                try {
+                    if (assigner.items && assigner.items.trim()) {
+                        const parsed = JSON.parse(assigner.items);
+                        allItems = Array.isArray(parsed) ? parsed : [];
+                    }
+                } catch (error) {
+                    console.error("Failed to parse assigner items for PDF:", error);
+                }
+
                 const PDFComponent = getPDFComponent(assignerType);
-                const doc = (
-                    <PDFComponent
-                        assignerName={assigner.name}
-                        className={classEntity?.name || "Class"}
-                        generatedDate={generatedDate}
-                        results={results}
-                    />
-                );
+                
+                // For rotating assigner, pass balanceGender and roster data
+                const pdfProps =
+                    assignerType === "rotating"
+                        ? {
+                              assignerName: assigner.name,
+                              className: classEntity?.name || "Class",
+                              generatedDate,
+                              results,
+                              balanceGender:
+                                  (assigner as InstaQLEntity<
+                                      AppSchema,
+                                      "rotating_assigners",
+                                      { class: {} }
+                                  >).balanceGender ?? false,
+                              rosterByStudentId: rosterByStudentId,
+                              allItems,
+                          }
+                        : {
+                              assignerName: assigner.name,
+                              className: classEntity?.name || "Class",
+                              generatedDate,
+                              results,
+                              allItems,
+                          };
+
+                const doc = <PDFComponent {...pdfProps} />;
 
                 const blob = await pdf(doc).toBlob();
                 const url = URL.createObjectURL(blob);
@@ -347,70 +448,64 @@ export function AssignersList({
                     {assigners.map((assigner) => {
                         const itemCount = getItemCount(assigner);
                         return (
-                            <div key={assigner.id} className="space-y-4">
-                                <AssignerHistoryTable
-                                    assignerType={assignerType}
-                                    assignerId={assigner.id}
-                                    assignerName={assigner.name}
-                                    className={classEntity?.name || "Class"}
-                                />
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                {canManage ? (
-                                                    <RunAssignerDialog
-                                                        assigner={assigner}
-                                                        groups={groups}
-                                                        onRunAssigner={handleRunAssigner}
+                            <Card key={assigner.id}>
+                                <CardHeader>
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            {canManage ? (
+                                                <RunAssignerDialog
+                                                    assigner={assigner}
+                                                    groups={groups}
+                                                    onRunAssigner={handleRunAssigner}
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="h-auto p-0 text-lg font-semibold justify-start"
                                                     >
-                                                        <Button
-                                                            variant="ghost"
-                                                            className="h-auto p-0 text-lg font-semibold justify-start"
-                                                        >
-                                                            {assigner.name}
-                                                        </Button>
-                                                    </RunAssignerDialog>
-                                                ) : (
-                                                    <CardTitle className="text-lg">
                                                         {assigner.name}
-                                                    </CardTitle>
-                                                )}
-                                            </div>
-                                            {canManage && (
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon-sm"
-                                                        >
-                                                            <MoreVertical className="size-4" />
-                                                            <span className="sr-only">
-                                                                More options
-                                                            </span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <EditAssignerDialog
-                                                            assignerType={assignerType}
-                                                            assigner={assigner}
-                                                            asDropdownItem
-                                                        >
-                                                            Edit
-                                                        </EditAssignerDialog>
-                                                        <DeleteAssignerDialog
-                                                            assignerType={assignerType}
-                                                            assigner={assigner}
-                                                            asDropdownItem
-                                                        >
-                                                            Delete
-                                                        </DeleteAssignerDialog>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                    </Button>
+                                                </RunAssignerDialog>
+                                            ) : (
+                                                <CardTitle className="text-lg">
+                                                    {assigner.name}
+                                                </CardTitle>
                                             )}
                                         </div>
-                                    </CardHeader>
-                                    <CardContent>
+                                        {canManage && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon-sm"
+                                                    >
+                                                        <MoreVertical className="size-4" />
+                                                        <span className="sr-only">
+                                                            More options
+                                                        </span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <EditAssignerDialog
+                                                        assignerType={assignerType}
+                                                        assigner={assigner}
+                                                        asDropdownItem
+                                                    >
+                                                        Edit
+                                                    </EditAssignerDialog>
+                                                    <DeleteAssignerDialog
+                                                        assignerType={assignerType}
+                                                        assigner={assigner}
+                                                        asDropdownItem
+                                                    >
+                                                        Delete
+                                                    </DeleteAssignerDialog>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                             <Package className="size-4" />
                                             <span>
@@ -419,9 +514,20 @@ export function AssignersList({
                                                     : `${itemCount} items`}
                                             </span>
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
+                                        <ViewAllHistoryDialog
+                                            assignerType={assignerType}
+                                            assignerId={assigner.id}
+                                            assignerName={assigner.name}
+                                            className={classEntity?.name || "Class"}
+                                        >
+                                            <Button variant="ghost" size="sm">
+                                                <History className="size-4 mr-2" />
+                                                View History
+                                            </Button>
+                                        </ViewAllHistoryDialog>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         );
                     })}
                 </div>

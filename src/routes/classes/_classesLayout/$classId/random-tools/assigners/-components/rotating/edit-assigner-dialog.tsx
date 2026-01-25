@@ -16,7 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AssignerForm } from "./assigner-form";
+import { AssignerForm } from "../assigner-form";
+import { naturalSort } from "@/lib/natural-sort";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -35,6 +36,7 @@ export function EditAssignerDialog({
     const [name, setName] = useState("");
     const [itemsText, setItemsText] = useState("");
     const [balanceGender, setBalanceGender] = useState(false);
+    const [direction, setDirection] = useState<"front-to-back" | "back-to-front">("front-to-back");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +53,12 @@ export function EditAssignerDialog({
         if (open && assigner) {
             setName(assigner.name || "");
             setBalanceGender(assigner.balanceGender ?? false);
+            // Backward compatibility: map old "left"/"right" to new values
+            if (assigner.direction === "back-to-front" || assigner.direction === "left") {
+                setDirection("back-to-front");
+            } else {
+                setDirection("front-to-back");
+            }
             // Parse JSON string to array and convert to text
             try {
                 const parsedItems =
@@ -89,14 +97,15 @@ export function EditAssignerDialog({
         try {
             const now = new Date();
 
-            // Store items as JSON string
-            const itemsJson = JSON.stringify(validItems);
+            // Store items as JSON string (sorted in natural order)
+            const itemsJson = JSON.stringify(naturalSort(validItems));
 
             db.transact([
                 db.tx.rotating_assigners[assigner.id].update({
                     name: name.trim(),
                     items: itemsJson,
                     balanceGender: balanceGender,
+                    direction: direction,
                     updated: now,
                 }),
             ]);
@@ -117,6 +126,7 @@ export function EditAssignerDialog({
             setName("");
             setItemsText("");
             setBalanceGender(false);
+            setDirection("front-to-back");
             setError(null);
         }
     };
@@ -133,12 +143,15 @@ export function EditAssignerDialog({
                 <ScrollArea className="h-full">
                     <div className="space-y-4 pr-4 pb-4">
                         <AssignerForm
+                            assignerType="rotating"
                             name={name}
                             itemsText={itemsText}
                             balanceGender={balanceGender}
+                            direction={direction}
                             onNameChange={setName}
                             onItemsTextChange={setItemsText}
                             onBalanceGenderChange={setBalanceGender}
+                            onDirectionChange={setDirection}
                             disabled={isSubmitting}
                             error={error}
                         />

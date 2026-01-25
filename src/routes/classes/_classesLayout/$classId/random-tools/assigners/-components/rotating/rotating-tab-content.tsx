@@ -2,6 +2,7 @@
 
 import { AssignersList } from "../assigners-list";
 import { RotatingCaseStudy } from "./rotating-case-study";
+import { RotatingMethodology } from "./rotating-methodology";
 
 interface RotatingTabContentProps {
     classId: string;
@@ -21,8 +22,9 @@ export function RotatingTabContent({
                         Create predictable, repeatable assignments by moving students through a fixed sequence. Rotate left (first to last) or right (last to first) to ensure consistent turn-taking.
                     </p>
                 </div>
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-2xl mx-auto space-y-4">
                     <RotatingCaseStudy />
+                    <RotatingMethodology />
                 </div>
                 <AssignersList assignerType="rotating" classId={classId} canManage={canManage} />
             </div>

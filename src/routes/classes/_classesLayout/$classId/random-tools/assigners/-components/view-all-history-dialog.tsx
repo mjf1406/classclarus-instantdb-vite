@@ -3,11 +3,14 @@
 import { useState } from "react";
 import { db } from "@/lib/db/db";
 import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Card, CardContent } from "@/components/ui/card";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Table,
     TableBody,
@@ -27,7 +30,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChevronRight, Eye, Download, Loader2, Trash2 } from "lucide-react";
+import { Eye, Download, Loader2, Trash2 } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import type { AssignerType } from "./assigner-form";
 import type { InstaQLEntity } from "@instantdb/react";
@@ -40,7 +43,8 @@ import { AssignerResultsPDFDocument as RandomAssignerResultsPDFDocument } from "
 import { AssignerResultsPDFDocument as RotatingAssignerResultsPDFDocument } from "./rotating/assigner-results-pdf-document";
 import { AssignerResultsPDFDocument as EquitableAssignerResultsPDFDocument } from "./equitable/assigner-results-pdf-document";
 
-interface AssignerHistoryTableProps {
+interface ViewAllHistoryDialogProps {
+    children: React.ReactNode;
     assignerType: AssignerType;
     assignerId: string;
     assignerName: string;
@@ -105,12 +109,13 @@ function getPDFComponent(assignerType: AssignerType) {
     }
 }
 
-export function AssignerHistoryTable({
+export function ViewAllHistoryDialog({
+    children,
     assignerType,
     assignerId,
     assignerName,
     className,
-}: AssignerHistoryTableProps) {
+}: ViewAllHistoryDialogProps) {
     const [open, setOpen] = useState(false);
     const [exportingRunId, setExportingRunId] = useState<string | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -326,128 +331,130 @@ export function AssignerHistoryTable({
         }
     };
 
-    if (isLoading) {
-        return null;
-    }
-
-    if (runs.length === 0) {
-        return null;
-    }
-
     return (
-        <Collapsible className="group/collapsible" open={open} onOpenChange={setOpen}>
-            <Card>
-                <CollapsibleTrigger className="w-full">
-                    <CardContent className="flex items-center justify-between py-4">
-                        <div className="flex items-center gap-3">
-                            <span className="font-medium">Run History</span>
-                            <span className="text-sm text-muted-foreground">
-                                ({runs.length} run{runs.length !== 1 ? "s" : ""})
-                            </span>
-                        </div>
-                        <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                    </CardContent>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                    <CardContent className="pt-0 pb-4">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date/Time</TableHead>
-                                    <TableHead>Groups</TableHead>
-                                    <TableHead>Teams</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {runs.map((run) => {
-                                    const results = parseResults(run.results);
-                                    const { groups, teams } = getGroupsTeamsSummary(results);
+        <>
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>{children}</DialogTrigger>
+                <DialogContent 
+                    className="flex flex-col p-6 gap-6 max-w-[95vw]! w-[95vw]! max-h-[90vh]! h-[90vh]! sm:max-w-[95vw]! md:max-w-[95vw]! lg:max-w-[95vw]!"
+                >
+                    <DialogHeader>
+                        <DialogTitle>History for {assignerName}</DialogTitle>
+                        <DialogDescription>
+                            View and manage all run history for this assigner
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="flex-1 pr-4 -mr-4">
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : runs.length === 0 ? (
+                            <div className="flex items-center justify-center py-8 text-muted-foreground">
+                                No run history available
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date/Time</TableHead>
+                                        <TableHead>Groups</TableHead>
+                                        <TableHead>Teams</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {runs.map((run) => {
+                                        const results = parseResults(run.results);
+                                        const { groups, teams } = getGroupsTeamsSummary(results);
 
-                                    return (
-                                        <TableRow key={run.id}>
-                                            <TableCell className="font-medium">
-                                                {formatDate(run.runDate)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {groups.length > 0 ? (
-                                                    <div className="flex flex-col gap-1">
-                                                        {groups.map((group, idx) => (
-                                                            <span key={idx}>{group}</span>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-muted-foreground italic">-</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {teams.length > 0 ? (
-                                                    <div className="flex flex-col gap-1">
-                                                        {teams.map((team, idx) => (
-                                                            <span key={idx}>{team}</span>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-muted-foreground italic">-</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <ViewHistoryDialog
-                                                        assignerType={assignerType}
-                                                        run={run}
-                                                        results={results}
-                                                        assignerName={assignerName}
-                                                        className={className}
-                                                        allItems={allItemsFromAssigner}
-                                                    >
+                                        return (
+                                            <TableRow key={run.id}>
+                                                <TableCell className="font-medium">
+                                                    {formatDate(run.runDate)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {groups.length > 0 ? (
+                                                        <div className="flex flex-col gap-1">
+                                                            {groups.map((group, idx) => (
+                                                                <span key={idx}>{group}</span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground italic">-</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {teams.length > 0 ? (
+                                                        <div className="flex flex-col gap-1">
+                                                            {teams.map((team, idx) => (
+                                                                <span key={idx}>{team}</span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground italic">-</span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <ViewHistoryDialog
+                                                            assignerType={assignerType}
+                                                            run={run}
+                                                            results={results}
+                                                            assignerName={assignerName}
+                                                            className={className}
+                                                            allItems={allItemsFromAssigner}
+                                                        >
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="size-8"
+                                                            >
+                                                                <Eye className="size-4" />
+                                                                <span className="sr-only">View</span>
+                                                            </Button>
+                                                        </ViewHistoryDialog>
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
                                                             className="size-8"
+                                                            onClick={() => handleExport(run, results)}
+                                                            disabled={exportingRunId === run.id}
                                                         >
-                                                            <Eye className="size-4" />
-                                                            <span className="sr-only">View</span>
+                                                            {exportingRunId === run.id ? (
+                                                                <Loader2 className="size-4 animate-spin" />
+                                                            ) : (
+                                                                <Download className="size-4" />
+                                                            )}
+                                                            <span className="sr-only">Export PDF</span>
                                                         </Button>
-                                                    </ViewHistoryDialog>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="size-8"
-                                                        onClick={() => handleExport(run, results)}
-                                                        disabled={exportingRunId === run.id}
-                                                    >
-                                                        {exportingRunId === run.id ? (
-                                                            <Loader2 className="size-4 animate-spin" />
-                                                        ) : (
-                                                            <Download className="size-4" />
-                                                        )}
-                                                        <span className="sr-only">Export PDF</span>
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="size-8"
-                                                        onClick={() => handleDeleteClick(run)}
-                                                        disabled={deletingRunId === run.id}
-                                                    >
-                                                        {deletingRunId === run.id ? (
-                                                            <Loader2 className="size-4 animate-spin" />
-                                                        ) : (
-                                                            <Trash2 className="size-4" />
-                                                        )}
-                                                        <span className="sr-only">Delete</span>
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </CollapsibleContent>
-            </Card>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8"
+                                                            onClick={() => handleDeleteClick(run)}
+                                                            disabled={deletingRunId === run.id}
+                                                        >
+                                                            {deletingRunId === run.id ? (
+                                                                <Loader2 className="size-4 animate-spin" />
+                                                            ) : (
+                                                                <Trash2 className="size-4" />
+                                                            )}
+                                                            <span className="sr-only">Delete</span>
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                            </div>
+                        )}
+                    </ScrollArea>
+                </DialogContent>
+            </Dialog>
 
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
@@ -473,6 +480,6 @@ export function AssignerHistoryTable({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </Collapsible>
+        </>
     );
 }

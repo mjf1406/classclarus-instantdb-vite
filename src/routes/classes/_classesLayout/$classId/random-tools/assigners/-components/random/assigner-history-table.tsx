@@ -65,6 +65,26 @@ export function AssignerHistoryTable({
     const [deletingRunId, setDeletingRunId] = useState<string | null>(null);
     const [runToDelete, setRunToDelete] = useState<RandomAssignerRun | null>(null);
 
+    // Query the assigner directly to get all items
+    const { data: assignerData } = db.useQuery({
+        random_assigners: {
+            $: { where: { id: assignerId } },
+        },
+    });
+
+    // Parse all items from assigner
+    let allItemsFromAssigner: string[] = [];
+    try {
+        const assigner = (assignerData as { random_assigners?: Array<{ items?: string }> } | undefined)
+            ?.random_assigners?.[0];
+        if (assigner?.items) {
+            const parsed = JSON.parse(assigner.items);
+            allItemsFromAssigner = Array.isArray(parsed) ? parsed : [];
+        }
+    } catch (error) {
+        console.error("Failed to parse assigner items:", error);
+    }
+
     // Query history runs for this assigner
     const { data, isLoading } = db.useQuery({
         random_assigner_runs: {
@@ -141,6 +161,7 @@ export function AssignerHistoryTable({
                     className={className}
                     generatedDate={generatedDate}
                     results={results}
+                    allItems={allItemsFromAssigner}
                 />
             );
 
@@ -260,6 +281,7 @@ export function AssignerHistoryTable({
                                                         results={results}
                                                         assignerName={assignerName}
                                                         className={className}
+                                                        allItems={allItemsFromAssigner}
                                                     >
                                                         <Button
                                                             variant="ghost"
@@ -270,6 +292,14 @@ export function AssignerHistoryTable({
                                                             <span className="sr-only">View</span>
                                                         </Button>
                                                     </ViewHistoryDialog>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-8"
+                                                        >
+                                                            <Eye className="size-4" />
+                                                            <span className="sr-only">View</span>
+                                                        </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"

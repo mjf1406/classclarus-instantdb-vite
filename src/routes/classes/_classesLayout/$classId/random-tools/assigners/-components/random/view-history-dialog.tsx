@@ -1,6 +1,7 @@
 /** @format */
 
 import { useState } from "react";
+import { naturalSort } from "@/lib/natural-sort";
 import {
     Dialog,
     DialogContent,
@@ -33,15 +34,21 @@ interface ViewHistoryDialogProps {
     results: AssignmentResult[];
     assignerName: string;
     className: string;
+    allItems?: string[]; // Optional: all items from assigner (to show items with no assignments)
 }
 
 // Get all unique items from results
-function getAllItems(results: AssignmentResult[]): string[] {
+function getAllItems(results: AssignmentResult[], allItems?: string[]): string[] {
+    if (allItems && allItems.length > 0) {
+        // Use provided items list to ensure all items appear, even without assignments
+        return naturalSort(allItems);
+    }
+    // Fallback: extract from results
     const itemsSet = new Set<string>();
     for (const result of results) {
         itemsSet.add(result.item);
     }
-    return Array.from(itemsSet).sort();
+    return naturalSort(Array.from(itemsSet));
 }
 
 // Get all unique groups/teams from results
@@ -97,11 +104,12 @@ export function ViewHistoryDialog({
     results,
     assignerName,
     className,
+    allItems: providedAllItems,
 }: ViewHistoryDialogProps) {
     const [open, setOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
 
-    const allItems = getAllItems(results);
+    const allItems = getAllItems(results, providedAllItems);
     const allGroupsTeams = getAllGroupsTeams(results);
     const organizedResults = organizeResults(results);
 
@@ -128,6 +136,7 @@ export function ViewHistoryDialog({
                     className={className}
                     generatedDate={generatedDate}
                     results={results}
+                    allItems={providedAllItems}
                 />
             );
 

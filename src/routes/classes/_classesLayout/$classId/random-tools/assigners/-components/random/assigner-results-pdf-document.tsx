@@ -9,6 +9,7 @@ import {
     Image,
 } from "@react-pdf/renderer";
 import type { AssignmentResult } from "@/lib/assigners/run-random-assigner";
+import { naturalSort } from "@/lib/natural-sort";
 import pdfLogo from "@/routes/classes/_classesLayout/$classId/class-management/groups-and-teams/assets/pdf-logo.png";
 
 // Define styles for the PDF
@@ -117,6 +118,7 @@ interface AssignerResultsPDFDocumentProps {
     className: string;
     generatedDate: string;
     results: AssignmentResult[];
+    allItems?: string[]; // Optional: all items from assigner (to show items with no assignments)
 }
 
 // Group results by group/team
@@ -137,13 +139,18 @@ function organizeResultsByGroupTeam(
     return organized;
 }
 
-// Get all unique items from results
-function getAllItems(results: AssignmentResult[]): string[] {
+// Get all unique items from results, or use provided allItems if available
+function getAllItems(results: AssignmentResult[], allItems?: string[]): string[] {
+    if (allItems && allItems.length > 0) {
+        // Use provided items list to ensure all items appear, even without assignments
+        return naturalSort(allItems);
+    }
+    // Fallback: extract from results
     const itemsSet = new Set<string>();
     for (const result of results) {
         itemsSet.add(result.item);
     }
-    return Array.from(itemsSet).sort();
+    return naturalSort(Array.from(itemsSet));
 }
 
 // Get all unique groups/teams from results
@@ -180,8 +187,9 @@ export function AssignerResultsPDFDocument({
     className,
     generatedDate,
     results,
+    allItems: providedAllItems,
 }: AssignerResultsPDFDocumentProps) {
-    const allItems = getAllItems(results);
+    const allItems = getAllItems(results, providedAllItems);
     const allGroupsTeams = getAllGroupsTeams(results);
     const organizedResults = organizeResultsByGroupTeam(results);
 

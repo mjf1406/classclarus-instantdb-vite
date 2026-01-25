@@ -171,6 +171,8 @@ const _schema = i.schema({
             name: i.string().indexed(),
             items: i.string(), // JSON array of strings
             balanceGender: i.boolean().optional(),
+            direction: i.string().optional(), // "front-to-back" | "back-to-front" - defaults to "front-to-back"
+            currentRotation: i.number().optional(), // Tracks rotation position (defaults to 0)
             created: i.date(),
             updated: i.date(),
         }),

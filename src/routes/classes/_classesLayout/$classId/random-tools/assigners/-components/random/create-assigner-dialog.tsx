@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssignerForm } from "./assigner-form";
+import { naturalSort } from "@/lib/natural-sort";
 
 interface CreateAssignerDialogProps {
     children: React.ReactNode;
@@ -64,8 +65,8 @@ export function CreateAssignerDialog({
             const assignerId = id();
             const now = new Date();
 
-            // Store items as JSON string
-            const itemsJson = JSON.stringify(validItems);
+            // Store items as JSON string (sorted in natural order)
+            const itemsJson = JSON.stringify(naturalSort(validItems));
 
             const transactions = [
                 db.tx.random_assigners[assignerId].create({

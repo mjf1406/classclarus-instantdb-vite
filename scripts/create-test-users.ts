@@ -69,10 +69,10 @@ async function createTestUsers() {
 
         const now = new Date();
 
-        // Create 4 test students
+        // Create 8 test students
         const studentIds: string[] = [];
-        const studentTxs = [];
-        for (let i = 1; i <= 4; i++) {
+        const studentTxs: ReturnType<typeof adminDb.tx.$users[string]["create"]>[] = [];
+        for (let i = 1; i <= 8; i++) {
             const userId = id();
             studentIds.push(userId);
             studentTxs.push(
@@ -120,22 +120,6 @@ async function createTestUsers() {
             adminDb.tx.classes[classId].link({
                 classAssistantTeachers: assistantTeacherId,
             }),
-            // Link existing student to class
-            adminDb.tx.classes[classId].link({
-                classStudents: "6b09717e-c9be-49e2-b61e-4880a5fe9f7c",
-            }),
-            // Link existing parent to class as guardian
-            adminDb.tx.classes[classId].link({
-                classGuardians: "1261489c-3620-442e-b037-bf7617b5d538",
-            }),
-            // Link parent to student
-            adminDb.tx.$users["1261489c-3620-442e-b037-bf7617b5d538"].link({
-                children: "6b09717e-c9be-49e2-b61e-4880a5fe9f7c",
-            }),
-            // Link existing user as assistant teacher
-            adminDb.tx.classes[classId].link({
-                classAssistantTeachers: "45537f07-fb7a-479d-acd4-42defd38bf03",
-            }),
         ];
 
         // Execute all transactions
@@ -148,22 +132,10 @@ async function createTestUsers() {
         ]);
 
         console.log("✅ Successfully created test users:");
-        console.log(`   - 4 students (TestStudent 1-4)`);
+        console.log(`   - 8 students (TestStudent 1-8)`);
         console.log(`   - 1 teacher (TestTeacher 1)`);
         console.log(`   - 1 assistant teacher (TestAssistantTeacher 1)`);
         console.log(`   All linked to class: ${classId}`);
-        console.log(
-            `   - Added student (6b09717e-c9be-49e2-b61e-4880a5fe9f7c) to class as student`
-        );
-        console.log(
-            `   - Added parent (1261489c-3620-442e-b037-bf7617b5d538) to class as guardian`
-        );
-        console.log(
-            `   - Linked parent (1261489c-3620-442e-b037-bf7617b5d538) to student (6b09717e-c9be-49e2-b61e-4880a5fe9f7c)`
-        );
-        console.log(
-            `   - Added user (45537f07-fb7a-479d-acd4-42defd38bf03) to class as assistant teacher`
-        );
     } catch (error) {
         console.error("❌ Error creating test users:", error);
         if (error instanceof Error) {

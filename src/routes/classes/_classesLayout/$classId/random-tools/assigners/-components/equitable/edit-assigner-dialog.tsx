@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssignerForm } from "./assigner-form";
+import { naturalSort } from "@/lib/natural-sort";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 
@@ -89,8 +90,8 @@ export function EditAssignerDialog({
         try {
             const now = new Date();
 
-            // Store items as JSON string
-            const itemsJson = JSON.stringify(validItems);
+            // Store items as JSON string (sorted in natural order)
+            const itemsJson = JSON.stringify(naturalSort(validItems));
 
             db.transact([
                 db.tx.equitable_assigners[assigner.id].update({

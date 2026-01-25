@@ -9,6 +9,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export type AssignerType = "random" | "rotating" | "equitable";
 
@@ -17,9 +24,11 @@ interface AssignerFormProps {
     name: string;
     itemsText: string;
     balanceGender: boolean;
+    direction?: "front-to-back" | "back-to-front";
     onNameChange: (name: string) => void;
     onItemsTextChange: (text: string) => void;
     onBalanceGenderChange: (checked: boolean) => void;
+    onDirectionChange?: (direction: "front-to-back" | "back-to-front") => void;
     disabled?: boolean;
     error?: string | null;
 }
@@ -29,13 +38,16 @@ export function AssignerForm({
     name,
     itemsText,
     balanceGender,
+    direction = "front-to-back",
     onNameChange,
     onItemsTextChange,
     onBalanceGenderChange,
+    onDirectionChange,
     disabled = false,
     error,
 }: AssignerFormProps) {
     const showBalanceGender = assignerType === "rotating" || assignerType === "equitable";
+    const showDirection = assignerType === "rotating";
 
     return (
         <div className="space-y-4">
@@ -69,6 +81,35 @@ export function AssignerForm({
                     </p>
                 </FieldContent>
             </Field>
+
+            {showDirection && onDirectionChange && (
+                <Field>
+                    <FieldLabel>Rotation Direction *</FieldLabel>
+                    <FieldContent>
+                        <Select
+                            value={direction}
+                            onValueChange={(value) => {
+                                if (value === "front-to-back" || value === "back-to-front") {
+                                    onDirectionChange(value);
+                                }
+                            }}
+                            disabled={disabled}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select direction" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="front-to-back">Front-to-back</SelectItem>
+                                <SelectItem value="back-to-front">Back-to-front</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-2">
+                            <strong>Back-to-front:</strong> Last item moves to the front after being last.<br />
+                            <strong>Front-to-back:</strong> First item moves to the back after being first.
+                        </p>
+                    </FieldContent>
+                </Field>
+            )}
 
             {showBalanceGender && (
                 <Field>
