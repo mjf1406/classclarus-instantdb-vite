@@ -262,6 +262,15 @@ const termsAcceptanceBinds = {
     isMyself: "auth.id in data.ref('user.id')",
 };
 
+const assignmentBinds = {
+    isAssignmentClassOwner: "auth.id in data.ref('class.owner.id')",
+    isAssignmentClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isAssignmentClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isAssignmentClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isAssignmentClassStudent: "auth.id in data.ref('class.classStudents.id')",
+    isAssignmentClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
+};
+
 // ============================================================
 //                  COMBINED BIND OBJECTS
 // ============================================================
@@ -285,6 +294,7 @@ const allDataBinds = {
     ...groupTeamBinds,
     ...expectationBinds,
     ...studentExpectationBinds,
+    ...assignmentBinds,
 };
 
 const allBinds = {
@@ -600,6 +610,31 @@ const rules = {
         }),
     },
 
+    random_events: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...dashboardSettingsBinds,
+        }),
+    },
+
+    random_event_rolls: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...dashboardSettingsBinds,
+        }),
+    },
+
     behavior_logs: {
         allow: {
             view: "isAuthenticated && isAllowedEmail && (isGroupClassOwner || isGroupClassAdmin || isGroupClassTeacher || isGroupClassAssistantTeacher || isBehaviorLogForMyself || isGuardianOfBehaviorLogStudent)",
@@ -661,6 +696,18 @@ const rules = {
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...termsAcceptanceBinds,
+        }),
+    },
+    assignments: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isAssignmentClassOwner || isAssignmentClassAdmin || isAssignmentClassTeacher || isAssignmentClassAssistantTeacher || isAssignmentClassStudent || isAssignmentClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isAssignmentClassOwner || isAssignmentClassAdmin || isAssignmentClassTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isAssignmentClassOwner || isAssignmentClassAdmin || isAssignmentClassTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isAssignmentClassOwner || isAssignmentClassAdmin || isAssignmentClassTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...assignmentBinds,
         }),
     },
 } satisfies InstantRules;

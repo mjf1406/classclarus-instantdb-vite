@@ -198,6 +198,40 @@ const _schema = i.schema({
             runDate: i.date().indexed(),
             results: i.string(), // JSON placeholder for future implementation
         }),
+        random_events: i.entity({
+            name: i.string().indexed(),
+            description: i.string().optional(),
+            imageUrl: i.string().optional(),
+            audioUrl: i.string().optional(),
+            created: i.date().indexed(),
+            updated: i.date(),
+        }),
+        random_event_rolls: i.entity({
+            rolledAt: i.date().indexed(),
+        }),
+        shuffler_runs: i.entity({
+            runDate: i.date().indexed(),
+            scopeType: i.string().indexed(), // 'class' | 'group' | 'team'
+            scopeId: i.string().indexed(), // ID of the scope
+            scopeName: i.string(), // Name for display (e.g., "All Students", "Group A")
+            results: i.string(), // JSON: Array of { studentId, studentName, position }
+            firstStudentId: i.string().indexed(),
+            lastStudentId: i.string().indexed(),
+        }),
+        picker_rounds: i.entity({
+            startedAt: i.date().indexed(),
+            completedAt: i.date().indexed().optional(), // Set when all students picked
+            scopeType: i.string().indexed(), // 'class' | 'group' | 'team'
+            scopeId: i.string().indexed(), // ID of the scope
+            scopeName: i.string(), // Name for display
+            isActive: i.boolean().indexed(), // true = current round, false = completed
+        }),
+        picker_picks: i.entity({
+            pickedAt: i.date().indexed(),
+            position: i.number().indexed(), // 1st pick, 2nd pick, etc.
+            studentId: i.string().indexed(),
+            studentName: i.string(), // Denormalized for history display
+        }),
         group_membership_history: i.entity({
             addedAt: i.date().indexed(),
             action: i.string().indexed(), // "added" | "removed"
@@ -866,6 +900,57 @@ const _schema = i.schema({
                 onDelete: "cascade",
             },
         },
+        classShufflerRuns: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "shufflerRuns",
+            },
+            reverse: {
+                on: "shuffler_runs",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        classPickerRounds: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "pickerRounds",
+            },
+            reverse: {
+                on: "picker_rounds",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        roundPickerPicks: {
+            forward: {
+                on: "picker_rounds",
+                has: "many",
+                label: "picks",
+            },
+            reverse: {
+                on: "picker_picks",
+                has: "one",
+                label: "round",
+                onDelete: "cascade",
+            },
+        },
+        studentPickerPicks: {
+            forward: {
+                on: "$users",
+                has: "many",
+                label: "pickerPicks",
+            },
+            reverse: {
+                on: "picker_picks",
+                has: "one",
+                label: "student",
+            },
+        },
         userTermsAcceptances: {
             forward: {
                 on: "terms_acceptances",
@@ -953,6 +1038,45 @@ const _schema = i.schema({
                 on: "classes",
                 has: "many",
                 label: "teamMembershipHistory",
+            },
+        },
+        classRandomEvents: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "randomEvents",
+            },
+            reverse: {
+                on: "random_events",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        eventRolls: {
+            forward: {
+                on: "random_event_rolls",
+                has: "one",
+                label: "event",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "random_events",
+                has: "many",
+                label: "rolls",
+            },
+        },
+        classAssignments: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "assignments",
+            },
+            reverse: {
+                on: "assignments",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
             },
         },
     },
