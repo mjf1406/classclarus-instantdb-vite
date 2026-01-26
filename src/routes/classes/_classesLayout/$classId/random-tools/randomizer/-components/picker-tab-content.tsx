@@ -1,25 +1,26 @@
 /** @format */
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Hand, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { db } from "@/lib/db/db";
 import { useClassRoster } from "@/hooks/use-class-roster";
 import { ScopeFilterSelect, type ScopeSelection } from "./scope-filter-select";
 import {
-    getOrCreateActiveRound,
+    createActiveRound,
     pickRandomStudent,
     savePick,
     completeRound,
     startNewRound,
     calculatePickStats,
-    type StudentPickStats,
 } from "@/lib/randomizer/picker";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { PickerCaseStudy } from "./picker-case-study";
 import { PickAnimation } from "./pick-animation";
 
 interface PickerTabContentProps {
@@ -55,6 +56,8 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
     const [lastPicked, setLastPicked] = useState<InstaQLEntity<AppSchema, "$users"> | null>(null);
     const [showAnimation, setShowAnimation] = useState(false);
     const [statsOpen, setStatsOpen] = useState(false);
+    // Capture the students list at pick time so animation doesn't break when state updates
+    const [animationStudents, setAnimationStudents] = useState<InstaQLEntity<AppSchema, "$users">[]>([]);
 
     const { getRosterForStudent } = useClassRoster(classId);
 
@@ -122,70 +125,76 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
         }
     }, [classEntity?.classStudents, scope]);
 
-    // Get picked student IDs for current round
-    const pickedStudentIds = useMemo(() => {
-        if (!activeRound) return new Set<string>();
-        return new Set(
-            (activeRound.picks ?? []).map((pick: PickerPick) => pick.studentId)
-        );
-    }, [activeRound]);
-
     // Separate students into picked and unpicked
+    // IMPORTANT: Depend on allRounds to ensure re-run when InstantDB updates
+    // The picks array reference might be stable even when mutated, so we read
+    // activeRound?.picks inside the callback and depend on allRounds
     const { pickedStudents, unpickedStudents } = useMemo(() => {
+        // Read picks fresh from activeRound inside the callback
+        const currentPicks = activeRound?.picks ?? [];
+        const currentPickedIds = new Set(currentPicks.map((p: PickerPick) => p.studentId));
+        
         const picked: InstaQLEntity<AppSchema, "$users">[] = [];
         const unpicked: InstaQLEntity<AppSchema, "$users">[] = [];
 
         for (const student of filteredStudents) {
-            if (pickedStudentIds.has(student.id)) {
+            if (currentPickedIds.has(student.id)) {
                 picked.push(student);
             } else {
                 unpicked.push(student);
             }
         }
 
-        // Sort picked by position
-        if (activeRound) {
-            const picks = (activeRound.picks ?? []) as PickerPick[];
-            picked.sort((a, b) => {
-                const pickA = picks.find((p) => p.studentId === a.id);
-                const pickB = picks.find((p) => p.studentId === b.id);
-                return (pickA?.position ?? 0) - (pickB?.position ?? 0);
-            });
-        }
+        // Sort picked by position using the fresh picks array
+        picked.sort((a, b) => {
+            const pickA = currentPicks.find((p: PickerPick) => p.studentId === a.id);
+            const pickB = currentPicks.find((p: PickerPick) => p.studentId === b.id);
+            return (pickA?.position ?? 0) - (pickB?.position ?? 0);
+        });
 
         return { pickedStudents: picked, unpickedStudents: unpicked };
-    }, [filteredStudents, pickedStudentIds, activeRound]);
+    }, [filteredStudents, activeRound, allRounds]);
 
     // Calculate all-time stats
     const stats = useMemo(() => {
         return calculatePickStats(allRounds);
     }, [allRounds]);
 
-    // Ensure active round exists when scope changes
-    useEffect(() => {
-        if (!activeRound && filteredStudents.length > 0) {
-            getOrCreateActiveRound(classId, scope).catch((error) => {
-                console.error("Failed to create active round:", error);
-            });
-        }
-    }, [activeRound, classId, scope, filteredStudents.length]);
+    // Note: We don't create the round in useEffect anymore
+    // It will be created on-demand when the user clicks "Pick Random"
 
     const handlePick = async () => {
-        if (unpickedStudents.length === 0 || !activeRound) {
+        if (unpickedStudents.length === 0) {
             return;
         }
 
+        // Pick random student FIRST, before any state changes
+        const pickedStudent = pickRandomStudent(unpickedStudents);
+        if (!pickedStudent) {
+            return;
+        }
+
+        // Capture the current unpicked students for the animation BEFORE the DB update
+        // This ensures the animation can find the picked student even after InstantDB
+        // reactively updates unpickedStudents (which would no longer contain the pick)
+        setAnimationStudents([...unpickedStudents]);
+        setLastPicked(pickedStudent);
         setIsPicking(true);
         setShowAnimation(true);
 
         try {
-            // Pick random student
-            const pickedStudent = pickRandomStudent(unpickedStudents);
-            if (!pickedStudent) {
-                return;
+            // Ensure we have an active round
+            let roundId: string;
+            let currentPickCount = 0;
+            
+            if (activeRound) {
+                roundId = activeRound.id;
+                currentPickCount = activeRound.picks?.length ?? 0;
+            } else {
+                // Create round if it doesn't exist
+                roundId = await createActiveRound(classId, scope);
+                currentPickCount = 0;
             }
-
-            setLastPicked(pickedStudent);
 
             // Get student name
             const roster = getRosterForStudent(pickedStudent.id);
@@ -197,24 +206,25 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
                       "Unknown";
 
             // Calculate position (next in sequence)
-            const position = (activeRound.picks?.length ?? 0) + 1;
+            const position = currentPickCount + 1;
 
             // Save pick
-            await savePick(pickedStudent, activeRound.id, position, studentName);
+            await savePick(pickedStudent, roundId, position, studentName);
 
             // Check if all students are picked
             if (unpickedStudents.length === 1) {
                 // This was the last student
-                await completeRound(activeRound.id);
+                await completeRound(roundId);
             }
 
-            // Hide animation after a delay
-            setTimeout(() => {
-                setShowAnimation(false);
-                setLastPicked(null);
-            }, 2000);
+            // The query will update reactively, causing the UI to re-render
+            // and move the student from unpicked to picked automatically
+            // Animation stays open until user closes it
         } catch (error) {
             console.error("Failed to pick student:", error);
+            setShowAnimation(false);
+            setLastPicked(null);
+            setAnimationStudents([]);
         } finally {
             setIsPicking(false);
         }
@@ -243,6 +253,10 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
 
     return (
         <div className="space-y-6">
+            <div className="max-w-2xl mx-auto">
+                <PickerCaseStudy />
+            </div>
+
             <div className="flex items-center justify-between">
                 <ScopeFilterSelect
                     classId={classId}
@@ -252,7 +266,7 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
                 />
                 <Button
                     onClick={handlePick}
-                    disabled={isPicking || unpickedStudents.length === 0 || !activeRound}
+                    disabled={isPicking || unpickedStudents.length === 0}
                 >
                     {isPicking ? (
                         <>
@@ -335,7 +349,7 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
             </Collapsible>
 
             {/* Current Round */}
-            {activeRound && (
+            {activeRound ? (
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -436,15 +450,37 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
                         </div>
                     </CardContent>
                 </Card>
+            ) : (
+                <Card>
+                    <CardContent className="py-8 text-center">
+                        <p className="text-muted-foreground">
+                            {filteredStudents.length === 0
+                                ? "No students in the selected scope."
+                                : "Click 'Pick Random' to start a new picking round."}
+                        </p>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Pick Animation */}
             {showAnimation && lastPicked && (
                 <PickAnimation
                     student={lastPicked}
+                    availableStudents={animationStudents}
                     onClose={() => {
                         setShowAnimation(false);
                         setLastPicked(null);
+                        setAnimationStudents([]);
+                    }}
+                    getStudentName={(studentId) => {
+                        const student = filteredStudents.find((s) => s.id === studentId);
+                        if (!student) return "Unknown";
+                        const roster = getRosterForStudent(studentId);
+                        return roster && (roster.firstName || roster.lastName)
+                            ? `${roster.firstName || ""} ${roster.lastName || ""}`.trim()
+                            : `${student.firstName || ""} ${student.lastName || ""}`.trim() ||
+                              student.email ||
+                              "Unknown";
                     }}
                 />
             )}

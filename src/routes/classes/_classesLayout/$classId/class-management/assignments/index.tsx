@@ -1,5 +1,6 @@
 /** @format */
 
+import { useState, useMemo, useDeferredValue } from "react";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { FileText, Plus } from "lucide-react";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
@@ -8,6 +9,7 @@ import { useClassRole } from "@/hooks/use-class-role";
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/db/db";
 import { AssignmentsGrid } from "./-components/assignments-grid";
+import { AssignmentsFilters } from "./-components/assignments-filters";
 import { CreateAssignmentDialog } from "./-components/create-assignment-dialog";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -34,6 +36,16 @@ function RouteComponent() {
     const { class: classEntity, isLoading } = useClassById(classId);
     const roleInfo = useClassRole(classEntity);
 
+    // Filter state
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedSubjects, setSelectedSubjects] = useState<Set<string>>(
+        new Set()
+    );
+    const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
+
+    // Defer search query for performance
+    const deferredSearch = useDeferredValue(searchQuery);
+
     const assignmentsQuery = classId
         ? {
               assignments: {
@@ -49,6 +61,55 @@ function RouteComponent() {
     const typedAssignments =
         (data as AssignmentsQueryResult | undefined) ?? null;
     const assignments = typedAssignments?.assignments || [];
+
+    // Extract unique subjects and units (memoized)
+    const uniqueSubjects = useMemo(() => {
+        const subjects = new Set<string>();
+        assignments.forEach((a) => {
+            if (a.subject) subjects.add(a.subject);
+        });
+        return Array.from(subjects).sort();
+    }, [assignments]);
+
+    const uniqueUnits = useMemo(() => {
+        const units = new Set<string>();
+        assignments.forEach((a) => {
+            if (a.unit) units.add(a.unit);
+        });
+        return Array.from(units).sort();
+    }, [assignments]);
+
+    // Filter assignments (memoized, single-pass)
+    const filteredAssignments = useMemo(() => {
+        return assignments.filter((assignment) => {
+            // Search filter (case-insensitive)
+            if (
+                deferredSearch &&
+                !assignment.name.toLowerCase().includes(deferredSearch.toLowerCase())
+            ) {
+                return false;
+            }
+
+            // Subject filter
+            if (
+                selectedSubjects.size > 0 &&
+                (!assignment.subject ||
+                    !selectedSubjects.has(assignment.subject))
+            ) {
+                return false;
+            }
+
+            // Unit filter
+            if (
+                selectedUnits.size > 0 &&
+                (!assignment.unit || !selectedUnits.has(assignment.unit))
+            ) {
+                return false;
+            }
+
+            return true;
+        });
+    }, [assignments, deferredSearch, selectedSubjects, selectedUnits]);
 
     const canManage =
         roleInfo.isOwner || roleInfo.isAdmin || roleInfo.isTeacher;
@@ -86,12 +147,32 @@ function RouteComponent() {
                         )}
                     </div>
                 </div>
-                <div className="w-full">
+                <div className="w-full space-y-4">
+                    <AssignmentsFilters
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        uniqueSubjects={uniqueSubjects}
+                        selectedSubjects={selectedSubjects}
+                        onSubjectsChange={setSelectedSubjects}
+                        uniqueUnits={uniqueUnits}
+                        selectedUnits={selectedUnits}
+                        onUnitsChange={setSelectedUnits}
+                    />
                     <AssignmentsGrid
-                        assignments={assignments}
+                        assignments={filteredAssignments}
                         classId={classId ?? ""}
                         isLoading={assignmentsLoading}
                         canManage={canManage}
+                        hasActiveFilters={
+                            searchQuery.trim() !== "" ||
+                            selectedSubjects.size > 0 ||
+                            selectedUnits.size > 0
+                        }
+                        onClearFilters={() => {
+                            setSearchQuery("");
+                            setSelectedSubjects(new Set());
+                            setSelectedUnits(new Set());
+                        }}
                     />
                 </div>
             </div>

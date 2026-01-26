@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { createFileRoute, useParams } from '@tanstack/react-router'
-import { UnderConstruction } from '@/components/under-construction'
 import { RestrictedRoute } from '@/components/auth/restricted-route'
 import { useClassById } from '@/hooks/use-class-hooks'
 import { useClassRole } from '@/hooks/use-class-role'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Dice6, Shuffle, Hand } from 'lucide-react'
+import { ShufflerTabContent } from './-components/shuffler-tab-content'
+import { PickerTabContent } from './-components/picker-tab-content'
 
 export const Route = createFileRoute(
   '/classes/_classesLayout/$classId/random-tools/randomizer/',
@@ -53,11 +54,11 @@ function RouteComponent() {
           </TabsList>
 
           <TabsContent value="shuffler" className="mt-4">
-            <UnderConstruction />
+            {classId && <ShufflerTabContent classId={classId} />}
           </TabsContent>
 
           <TabsContent value="picker" className="mt-4">
-            <UnderConstruction />
+            {classId && <PickerTabContent classId={classId} />}
           </TabsContent>
         </Tabs>
       </div>

@@ -243,6 +243,15 @@ const _schema = i.schema({
         terms_acceptances: i.entity({
             acceptedAt: i.date().indexed(),
         }),
+        assignments: i.entity({
+            name: i.string().indexed(),
+            subject: i.string().indexed().optional(),
+            unit: i.string().indexed().optional(),
+            totalPoints: i.number().optional(),
+            sections: i.string().optional(), // JSON array: [{name: string, points: number}]
+            created: i.date(),
+            updated: i.date(),
+        }),
     },
     links: {
         userClasses: {
@@ -1064,6 +1073,19 @@ const _schema = i.schema({
                 on: "random_events",
                 has: "many",
                 label: "rolls",
+            },
+        },
+        classRandomEventRolls: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "randomEventRolls",
+            },
+            reverse: {
+                on: "random_event_rolls",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
             },
         },
         classAssignments: {

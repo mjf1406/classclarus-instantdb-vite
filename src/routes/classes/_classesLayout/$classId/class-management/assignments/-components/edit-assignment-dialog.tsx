@@ -32,7 +32,6 @@ interface EditAssignmentDialogProps {
 export function EditAssignmentDialog({
     children,
     assignment,
-    classId,
     asDropdownItem = false,
 }: EditAssignmentDialogProps) {
     const [open, setOpen] = useState(false);

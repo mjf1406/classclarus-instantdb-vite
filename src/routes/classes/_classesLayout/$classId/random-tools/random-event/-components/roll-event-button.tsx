@@ -14,7 +14,6 @@ type EventEntity = InstaQLEntity<
     "random_events",
     { rolls?: {} }
 >;
-type RollEntity = InstaQLEntity<AppSchema, "random_event_rolls">;
 
 interface RollEventButtonProps {
     events: EventEntity[];
@@ -29,6 +28,9 @@ export function RollEventButton({
 }: RollEventButtonProps) {
     const [isRolling, setIsRolling] = useState(false);
     const [rolledEvent, setRolledEvent] = useState<EventEntity | null>(null);
+    const [allEventsForAnimation, setAllEventsForAnimation] = useState<
+        EventEntity[]
+    >([]);
     const [showModal, setShowModal] = useState(false);
 
     const handleRoll = async () => {
@@ -54,13 +56,23 @@ export function RollEventButton({
             const eventsToChooseFrom =
                 unrolledEvents.length > 0 ? unrolledEvents : eventsWithRolls;
 
+            // Extract just the event entities for the animation
+            const eventsForAnimation = eventsToChooseFrom.map(
+                (item) => item.event
+            );
+
             // Randomly select one event
             const randomIndex = Math.floor(
                 Math.random() * eventsToChooseFrom.length
             );
             const selectedEvent = eventsToChooseFrom[randomIndex].event;
 
-            // Create a roll record for the selected event
+            // Open modal immediately with animation
+            setAllEventsForAnimation(eventsForAnimation);
+            setRolledEvent(selectedEvent);
+            setShowModal(true);
+
+            // Create a roll record for the selected event (after opening modal)
             const rollId = id();
             const now = new Date();
             db.transact([
@@ -70,11 +82,10 @@ export function RollEventButton({
                 db.tx.random_event_rolls[rollId].link({
                     event: selectedEvent.id,
                 }),
+                db.tx.random_event_rolls[rollId].link({
+                    class: classId,
+                }),
             ]);
-
-            // Show the modal with the selected event
-            setRolledEvent(selectedEvent);
-            setShowModal(true);
         } catch (err) {
             console.error("Failed to roll event:", err);
         } finally {
@@ -96,7 +107,8 @@ export function RollEventButton({
             <RollDisplayModal
                 open={showModal}
                 onOpenChange={setShowModal}
-                event={rolledEvent}
+                allEvents={allEventsForAnimation}
+                selectedEvent={rolledEvent}
             />
         </>
     );

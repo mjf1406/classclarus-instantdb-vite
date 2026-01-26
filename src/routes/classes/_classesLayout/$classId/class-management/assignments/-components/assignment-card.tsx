@@ -7,10 +7,8 @@ import {
     CardTitle,
     CardFooter,
 } from "@/components/ui/card";
-import { CardActionMenu } from "@/routes/classes/_classesLayout/$classId/behavior/-components/card-action-menu";
-import { EditAssignmentDialog } from "./edit-assignment-dialog";
-import { DeleteAssignmentDialog } from "./delete-assignment-dialog";
-import { Pencil, Trash2, FileText, Calendar } from "lucide-react";
+import { AssignmentActionMenu } from "./assignment-action-menu";
+import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import type { InstaQLEntity } from "@instantdb/react";
@@ -47,7 +45,7 @@ export function AssignmentCard({
         : assignment.totalPoints;
 
     return (
-        <Card className="relative">
+        <Card className="relative flex flex-col h-full">
             <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -68,25 +66,14 @@ export function AssignmentCard({
                         </div>
                     </div>
                     {canManage && (
-                        <CardActionMenu>
-                            <EditAssignmentDialog
-                                assignment={assignment}
-                                classId={classId}
-                                asDropdownItem
-                            >
-                                <Pencil className="size-4" /> Edit
-                            </EditAssignmentDialog>
-                            <DeleteAssignmentDialog
-                                assignment={assignment}
-                                asDropdownItem
-                            >
-                                <Trash2 className="size-4" /> Delete
-                            </DeleteAssignmentDialog>
-                        </CardActionMenu>
+                        <AssignmentActionMenu
+                            assignment={assignment}
+                            classId={classId}
+                        />
                     )}
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
                 <div className="space-y-3">
                     {sections && sections.length > 0 ? (
                         <div className="space-y-2">

@@ -3,7 +3,7 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Search } from "lucide-react";
 import { AssignmentCard } from "./assignment-card";
 import { CreateAssignmentDialog } from "./create-assignment-dialog";
 import type { InstaQLEntity } from "@instantdb/react";
@@ -16,6 +16,8 @@ interface AssignmentsGridProps {
     classId: string;
     isLoading?: boolean;
     canManage: boolean;
+    hasActiveFilters?: boolean;
+    onClearFilters?: () => void;
 }
 
 function AssignmentCardSkeleton() {
@@ -51,6 +53,8 @@ export function AssignmentsGrid({
     classId,
     isLoading = false,
     canManage,
+    hasActiveFilters = false,
+    onClearFilters,
 }: AssignmentsGridProps) {
     if (isLoading) {
         return (
@@ -63,6 +67,33 @@ export function AssignmentsGrid({
     }
 
     if (assignments.length === 0) {
+        // Show filtered empty state if filters are active
+        if (hasActiveFilters) {
+            return (
+                <div className="flex flex-col items-center justify-center py-12 px-4">
+                    <div className="flex flex-col items-center gap-4 text-center">
+                        <div className="rounded-full bg-muted p-4">
+                            <Search className="size-8 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-lg font-semibold">
+                                No assignments match your filters
+                            </h3>
+                            <p className="text-sm text-muted-foreground max-w-sm">
+                                Try adjusting your search or filter criteria.
+                            </p>
+                        </div>
+                        {onClearFilters && (
+                            <Button variant="outline" onClick={onClearFilters}>
+                                Clear Filters
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Show empty state when no assignments exist
         return (
             <div className="flex flex-col items-center justify-center py-12 px-4">
                 <div className="flex flex-col items-center gap-4 text-center">

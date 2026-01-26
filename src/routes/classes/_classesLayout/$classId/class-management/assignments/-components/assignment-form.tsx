@@ -52,23 +52,19 @@ export function AssignmentForm({
     disabled = false,
     error,
 }: AssignmentFormProps) {
-    const [localSections, setLocalSections] = useState<SectionForm[]>(sections);
-
-    const hasSections = localSections.length > 0;
-    const computedTotal = localSections.reduce(
+    const hasSections = sections.length > 0;
+    const computedTotal = sections.reduce(
         (sum, s) => sum + (s.points || 0),
         0
     );
 
     const handleAddSection = () => {
-        const newSections = [...localSections, { name: "", points: 0 }];
-        setLocalSections(newSections);
+        const newSections = [...sections, { name: "", points: 0 }];
         onSectionsChange(newSections);
     };
 
     const handleRemoveSection = (idx: number) => {
-        const newSections = localSections.filter((_, i) => i !== idx);
-        setLocalSections(newSections);
+        const newSections = sections.filter((_, i) => i !== idx);
         onSectionsChange(newSections);
     };
 
@@ -77,17 +73,15 @@ export function AssignmentForm({
         field: "name" | "points",
         value: string | number
     ) => {
-        const newSections = [...localSections];
+        const newSections = [...sections];
         newSections[idx] = {
             ...newSections[idx],
             [field]: field === "points" ? Number(value) : value,
         };
-        setLocalSections(newSections);
         onSectionsChange(newSections);
     };
 
     const handleAddSectionsInstead = () => {
-        setLocalSections([{ name: "", points: 0 }]);
         onSectionsChange([{ name: "", points: 0 }]);
         onTotalPointsChange(undefined);
     };

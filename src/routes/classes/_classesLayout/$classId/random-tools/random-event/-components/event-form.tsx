@@ -1,6 +1,6 @@
 /** @format */
 
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import {
     Field,
     FieldContent,
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useUploadedFile } from "@/hooks/files/use-uploaded-file";
-import { UploadIcon, XIcon, ImageIcon, MusicIcon } from "lucide-react";
+import { XIcon, ImageIcon, MusicIcon } from "lucide-react";
 
 interface EventFormProps {
     name: string;

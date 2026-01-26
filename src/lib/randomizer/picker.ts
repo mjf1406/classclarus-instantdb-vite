@@ -49,33 +49,13 @@ export function calculatePickStats(
 }
 
 /**
- * Get or create an active round for the current scope
+ * Create a new active round for the current scope
+ * Returns the round ID so it can be used immediately
  */
-export async function getOrCreateActiveRound(
+export async function createActiveRound(
     classId: string,
     scope: ScopeSelection
-): Promise<
-    InstaQLEntity<AppSchema, "picker_rounds", { picks: {} }> | null
-> {
-    const { picker_rounds } = await db.query({
-        picker_rounds: {
-            $: {
-                where: {
-                    "class.id": classId,
-                    scopeType: scope.type,
-                    scopeId: scope.id,
-                    isActive: true,
-                },
-            },
-            picks: {},
-        },
-    });
-
-    if (picker_rounds.length > 0) {
-        return picker_rounds[0];
-    }
-
-    // Create new round
+): Promise<string> {
     const roundId = id();
     await db.transact([
         db.tx.picker_rounds[roundId]
@@ -88,18 +68,7 @@ export async function getOrCreateActiveRound(
             })
             .link({ class: classId }),
     ]);
-
-    // Query the newly created round
-    const { picker_rounds: newRounds } = await db.query({
-        picker_rounds: {
-            $: {
-                where: { id: roundId },
-            },
-            picks: {},
-        },
-    });
-
-    return newRounds[0] || null;
+    return roundId;
 }
 
 /**
@@ -159,9 +128,7 @@ export async function startNewRound(
     classId: string,
     scope: ScopeSelection,
     currentRoundId?: string
-): Promise<
-    InstaQLEntity<AppSchema, "picker_rounds", { picks: {} }> | null
-> {
+): Promise<void> {
     const transactions = [];
 
     // Mark current round as inactive if provided
@@ -188,16 +155,4 @@ export async function startNewRound(
     );
 
     await db.transact(transactions);
-
-    // Query the newly created round
-    const { picker_rounds: newRounds } = await db.query({
-        picker_rounds: {
-            $: {
-                where: { id: roundId },
-            },
-            picks: {},
-        },
-    });
-
-    return newRounds[0] || null;
 }

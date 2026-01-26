@@ -13,11 +13,11 @@ import {
     shuffleWithConstraints,
     calculateShuffleStats,
     saveShuffleRun,
-    type StudentShuffleStats,
     type ShuffleResult,
 } from "@/lib/randomizer/shuffler";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+import { ShufflerCaseStudy } from "./shuffler-case-study";
 import { ShuffleResultDialog } from "./shuffle-result-dialog";
 
 interface ShufflerTabContentProps {
@@ -185,6 +185,10 @@ export function ShufflerTabContent({ classId }: ShufflerTabContentProps) {
 
     return (
         <div className="space-y-6">
+            <div className="max-w-2xl mx-auto">
+                <ShufflerCaseStudy />
+            </div>
+
             <div className="flex items-center justify-between">
                 <ScopeFilterSelect
                     classId={classId}

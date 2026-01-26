@@ -14,7 +14,7 @@ export function RandomCaseStudy() {
                 <CollapsibleTrigger className="w-full">
                     <CardContent className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-3">
-                            <span className="font-medium">Case Study</span>
+                            <span className="font-medium">Case Study</span> 
                         </div>
                         <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </CardContent>

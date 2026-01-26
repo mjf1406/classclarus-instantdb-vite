@@ -271,6 +271,15 @@ const assignmentBinds = {
     isAssignmentClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
 };
 
+const pickerPicksBinds = {
+    isPickerPicksClassOwner: "auth.id in data.ref('round.class.owner.id')",
+    isPickerPicksClassAdmin: "auth.id in data.ref('round.class.classAdmins.id')",
+    isPickerPicksClassTeacher: "auth.id in data.ref('round.class.classTeachers.id')",
+    isPickerPicksClassAssistantTeacher: "auth.id in data.ref('round.class.classAssistantTeachers.id')",
+    isPickerPicksClassMember: "auth.id in data.ref('round.class.classStudents.id') || auth.id in data.ref('round.class.classTeachers.id') || auth.id in data.ref('round.class.classAssistantTeachers.id') || auth.id in data.ref('round.class.classGuardians.id')",
+    isPickerPicksClassGuardian: "auth.id in data.ref('round.class.classGuardians.id')",
+};
+
 // ============================================================
 //                  COMBINED BIND OBJECTS
 // ============================================================
@@ -295,6 +304,7 @@ const allDataBinds = {
     ...expectationBinds,
     ...studentExpectationBinds,
     ...assignmentBinds,
+    ...pickerPicksBinds,
 };
 
 const allBinds = {
@@ -632,6 +642,45 @@ const rules = {
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...dashboardSettingsBinds,
+        }),
+    },
+
+    shuffler_runs: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            update: "false", // Immutable history
+            delete: "false", // Cannot delete history
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...dashboardSettingsBinds,
+        }),
+    },
+
+    picker_rounds: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "false", // Cannot delete history
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...dashboardSettingsBinds,
+        }),
+    },
+
+    picker_picks: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isPickerPicksClassOwner || isPickerPicksClassAdmin || isPickerPicksClassTeacher || isPickerPicksClassAssistantTeacher || isPickerPicksClassMember || isPickerPicksClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isPickerPicksClassOwner || isPickerPicksClassAdmin || isPickerPicksClassTeacher || isPickerPicksClassAssistantTeacher)",
+            update: "false", // Immutable history
+            delete: "false", // Cannot delete history
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...pickerPicksBinds,
         }),
     },
 
