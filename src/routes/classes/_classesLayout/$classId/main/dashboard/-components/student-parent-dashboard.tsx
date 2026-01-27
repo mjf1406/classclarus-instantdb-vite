@@ -16,6 +16,7 @@ import { GroupsTeamsWidget } from "./groups-teams-widget";
 import { ShufflerHistoryWidget } from "./shuffler-history-widget";
 import { PickerHistoryWidget } from "./picker-history-widget";
 import { AttendanceWidget } from "./attendance-widget";
+import { RazAssessmentsWidget } from "./raz-assessments-widget";
 
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
@@ -148,6 +149,7 @@ export function StudentParentDashboard({
     const showShufflerHistoryWidget = existingSettings?.showShufflerHistoryWidget ?? false;
     const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
     const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
+    const showRazAssessmentsWidget = existingSettings?.showRazAssessmentsWidget ?? false;
 
     // Parse selected assigner IDs - return empty array if empty, null if not set
     const selectedRandomAssignerIds = useMemo(() => {
@@ -277,6 +279,9 @@ export function StudentParentDashboard({
                 )}
                 {showAttendanceWidget && studentIdForWidget && classId && (
                     <AttendanceWidget classId={classId} studentId={studentIdForWidget} />
+                )}
+                {showRazAssessmentsWidget && studentIdForWidget && classId && (
+                    <RazAssessmentsWidget classId={classId} studentId={studentIdForWidget} />
                 )}
             </div>
         </div>

@@ -1,8 +1,9 @@
 import * as React from "react";
-import { Minus, Plus } from "lucide-react";
+import { Info, Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { Input } from "./input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 
 interface NumberInputProps
     extends Omit<React.ComponentProps<"input">, "type" | "step" | "onChange"> {
@@ -49,6 +50,18 @@ export function NumberInput({
         onChange(String(finalValue));
     };
 
+    const tooltipContent = (
+        <div className="space-y-1">
+            <div className="font-medium">Hotkeys:</div>
+            <div className="text-xs space-y-0.5">
+                <div>Click: ±{step}</div>
+                <div>Shift + Click: ±{step * 10}</div>
+                <div>Ctrl + Click: ±{step * 5}</div>
+                <div>Ctrl + Shift + Click: ±{step * 25}</div>
+            </div>
+        </div>
+    );
+
     return (
         <div className={cn("flex items-center gap-1", className)}>
             <Button
@@ -84,6 +97,23 @@ export function NumberInput({
                 <Plus className="size-4" />
                 <span className="sr-only">Increase</span>
             </Button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        disabled={disabled}
+                        className="shrink-0 h-6 w-6"
+                    >
+                        <Info className="size-3.5" />
+                        <span className="sr-only">Show hotkeys</span>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    {tooltipContent}
+                </TooltipContent>
+            </Tooltip>
         </div>
     );
 }

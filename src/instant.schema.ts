@@ -85,6 +85,7 @@ const _schema = i.schema({
             showShufflerHistoryWidget: i.boolean().optional(),
             showPickerHistoryWidget: i.boolean().optional(),
             showAttendanceWidget: i.boolean().optional(),
+            showRazAssessmentsWidget: i.boolean().optional(),
             created: i.date(),
             updated: i.date(),
         }),
@@ -260,6 +261,16 @@ const _schema = i.schema({
             sections: i.string().optional(), // JSON array: [{name: string, points: number}]
             created: i.date(),
             updated: i.date(),
+        }),
+        raz_assessments: i.entity({
+            date: i.date().indexed(),
+            level: i.string().indexed(), // A-Z reading level (e.g., "A", "B", "C", ... "Z")
+            result: i.string().indexed(), // "level up" | "stay" | "level down"
+            accuracy: i.number().optional(), // percentage (0-100)
+            quizScore: i.number().optional(), // percentage (0-100)
+            retellingScore: i.number().optional(), // percentage (0-100)
+            note: i.string().optional(),
+            createdAt: i.date().indexed(),
         }),
     },
     links: {
@@ -1108,6 +1119,43 @@ const _schema = i.schema({
                 has: "one",
                 label: "class",
                 onDelete: "cascade",
+            },
+        },
+        classRazAssessments: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "razAssessments",
+            },
+            reverse: {
+                on: "raz_assessments",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        razAssessmentStudent: {
+            forward: {
+                on: "raz_assessments",
+                has: "one",
+                label: "student",
+            },
+            reverse: {
+                on: "class_roster",
+                has: "many",
+                label: "razAssessments",
+            },
+        },
+        razAssessmentCreatedBy: {
+            forward: {
+                on: "raz_assessments",
+                has: "one",
+                label: "createdBy",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "razAssessmentsAsCreatedBy",
             },
         },
         classAttendanceRecords: {

@@ -29,6 +29,7 @@ import { GroupsTeamsWidget } from "../../main/dashboard/-components/groups-teams
 import { ShufflerHistoryWidget } from "../../main/dashboard/-components/shuffler-history-widget";
 import { PickerHistoryWidget } from "../../main/dashboard/-components/picker-history-widget";
 import { AttendanceWidget } from "../../main/dashboard/-components/attendance-widget";
+import { RazAssessmentsWidget } from "../../main/dashboard/-components/raz-assessments-widget";
 import { useMemo } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -201,6 +202,7 @@ function SettingsPanel() {
     const showShufflerHistoryWidget = existingSettings?.showShufflerHistoryWidget ?? false;
     const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
     const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
+    const showRazAssessmentsWidget = existingSettings?.showRazAssessmentsWidget ?? false;
 
     const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
     const randomAssigners = typedRandomAssignersData?.random_assigners || [];
@@ -499,6 +501,35 @@ function SettingsPanel() {
                     .create({
                         groupsTeamsDisplay: "groups", // Default value
                         showAttendanceWidget: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleToggleRazAssessmentsWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showRazAssessmentsWidget: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showRazAssessmentsWidget: enabled,
                         created: now,
                         updated: now,
                     })
@@ -824,6 +855,25 @@ function SettingsPanel() {
                             </p>
                         </div>
                     </div>
+                    <div className="flex items-start space-x-3 space-y-0">
+                        <Checkbox
+                            id="raz-assessments-widget-toggle"
+                            checked={showRazAssessmentsWidget}
+                            onCheckedChange={handleToggleRazAssessmentsWidget}
+                            className="mt-1"
+                        />
+                        <div className="space-y-1 leading-none">
+                            <Label
+                                htmlFor="raz-assessments-widget-toggle"
+                                className="text-base font-medium cursor-pointer"
+                            >
+                                RAZ Assessments Widget
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Show RAZ reading assessment history and progress on student dashboards
+                            </p>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -898,6 +948,7 @@ function PreviewPanel({
     const showShufflerHistoryWidget = existingSettings?.showShufflerHistoryWidget ?? false;
     const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
     const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
+    const showRazAssessmentsWidget = existingSettings?.showRazAssessmentsWidget ?? false;
 
     const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
     const randomAssigners = typedRandomAssignersData?.random_assigners || [];
@@ -1053,6 +1104,12 @@ function PreviewPanel({
                                     ) : null}
                                     {showAttendanceWidget && classId ? (
                                         <AttendanceWidget
+                                            classId={classId}
+                                            studentId={selectedStudentId}
+                                        />
+                                    ) : null}
+                                    {showRazAssessmentsWidget && classId ? (
+                                        <RazAssessmentsWidget
                                             classId={classId}
                                             studentId={selectedStudentId}
                                         />
