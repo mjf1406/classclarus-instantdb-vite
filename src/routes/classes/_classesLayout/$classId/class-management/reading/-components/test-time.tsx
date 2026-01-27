@@ -13,7 +13,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ChevronDown, ChevronRight, AlertTriangle, Clock, CalendarClock, CheckCircle, Info, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, AlertTriangle, Clock, CalendarClock, CheckCircle, Info, AlertCircle, ExternalLink } from "lucide-react";
 import { StudentAssessmentCard } from "./student-assessment-card";
 import { CreateAssessmentDialog } from "./create-assessment-dialog";
 import {
@@ -111,6 +111,7 @@ export function TestTime({ classId, roster, userId }: TestTimeProps) {
         null
     );
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [razGuidelinesOpen, setRazGuidelinesOpen] = useState(false);
 
     // Process roster data to get assessment status for each student
     const processedStudents = useMemo(() => {
@@ -242,6 +243,41 @@ export function TestTime({ classId, roster, userId }: TestTimeProps) {
                     total={counts.total}
                 />
                 <RtiSummaryCard count={counts.needsRti} total={counts.total} />
+            </div>
+
+            {/* RAZ Guidelines Info */}
+            <div className="flex justify-center">
+                <Collapsible className="group/collapsible w-full max-w-2xl" open={razGuidelinesOpen} onOpenChange={setRazGuidelinesOpen}>
+                    <Card className="w-full">
+                        <CollapsibleTrigger className="w-full">
+                            <CardContent className="flex items-center justify-between py-2">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium">
+                                        Assessment Status Guidelines
+                                    </span>
+                                </div>
+                                <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                            </CardContent>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                            <CardContent className="pt-0">
+                                <p className="text-sm text-muted-foreground">
+                                    All of the above assessment statuses (overdue, due now, coming soon, up to date, and RTI review) are based on{" "}
+                                    <a
+                                        href="https://www.raz-plus.com/learninga-z-levels/assessing-a-students-level/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline inline-flex items-center gap-1"
+                                    >
+                                        RAZ Guidelines
+                                        <ExternalLink className="size-3" />
+                                    </a>
+                                    .
+                                </p>
+                            </CardContent>
+                        </CollapsibleContent>
+                    </Card>
+                </Collapsible>
             </div>
 
             {/* Assessment needed banner */}
