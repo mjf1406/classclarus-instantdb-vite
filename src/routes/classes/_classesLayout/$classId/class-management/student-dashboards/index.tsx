@@ -26,6 +26,9 @@ import { ExpectationsWidget } from "../../main/dashboard/-components/expectation
 import { RandomAssignersWidget } from "../../main/dashboard/-components/random-assigners-widget";
 import { RotatingAssignersWidget } from "../../main/dashboard/-components/rotating-assigners-widget";
 import { GroupsTeamsWidget } from "../../main/dashboard/-components/groups-teams-widget";
+import { ShufflerHistoryWidget } from "../../main/dashboard/-components/shuffler-history-widget";
+import { PickerHistoryWidget } from "../../main/dashboard/-components/picker-history-widget";
+import { AttendanceWidget } from "../../main/dashboard/-components/attendance-widget";
 import { useMemo } from "react";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
@@ -195,6 +198,9 @@ function SettingsPanel() {
     const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
     const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
     const showGroupsTeamsWidget = existingSettings?.showGroupsTeamsWidget ?? false;
+    const showShufflerHistoryWidget = existingSettings?.showShufflerHistoryWidget ?? false;
+    const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
+    const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
 
     const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
     const randomAssigners = typedRandomAssignersData?.random_assigners || [];
@@ -406,6 +412,93 @@ function SettingsPanel() {
                     .create({
                         groupsTeamsDisplay: "groups", // Default value
                         showGroupsTeamsWidget: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleToggleShufflerHistoryWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showShufflerHistoryWidget: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showShufflerHistoryWidget: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleTogglePickerHistoryWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showPickerHistoryWidget: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showPickerHistoryWidget: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleToggleAttendanceWidget = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            // Update existing settings
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showAttendanceWidget: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            // Create new settings
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups", // Default value
+                        showAttendanceWidget: enabled,
                         created: now,
                         updated: now,
                     })
@@ -673,6 +766,64 @@ function SettingsPanel() {
                             </div>
                         )}
                     </div>
+                    <Separator />
+                    <div className="flex items-start space-x-3 space-y-0">
+                        <Checkbox
+                            id="shuffler-history-widget-toggle"
+                            checked={showShufflerHistoryWidget}
+                            onCheckedChange={handleToggleShufflerHistoryWidget}
+                            className="mt-1"
+                        />
+                        <div className="space-y-1 leading-none">
+                            <Label
+                                htmlFor="shuffler-history-widget-toggle"
+                                className="text-base font-medium cursor-pointer"
+                            >
+                                Shuffler History Widget
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Show shuffle history on student dashboards
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-start space-x-3 space-y-0">
+                        <Checkbox
+                            id="picker-history-widget-toggle"
+                            checked={showPickerHistoryWidget}
+                            onCheckedChange={handleTogglePickerHistoryWidget}
+                            className="mt-1"
+                        />
+                        <div className="space-y-1 leading-none">
+                            <Label
+                                htmlFor="picker-history-widget-toggle"
+                                className="text-base font-medium cursor-pointer"
+                            >
+                                Picker History Widget
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Show pick history on student dashboards
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-start space-x-3 space-y-0">
+                        <Checkbox
+                            id="attendance-widget-toggle"
+                            checked={showAttendanceWidget}
+                            onCheckedChange={handleToggleAttendanceWidget}
+                            className="mt-1"
+                        />
+                        <div className="space-y-1 leading-none">
+                            <Label
+                                htmlFor="attendance-widget-toggle"
+                                className="text-base font-medium cursor-pointer"
+                            >
+                                Attendance Widget
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                                Show attendance statistics and history on student dashboards
+                            </p>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -744,6 +895,9 @@ function PreviewPanel({
     const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
     const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
     const showGroupsTeamsWidget = existingSettings?.showGroupsTeamsWidget ?? false;
+    const showShufflerHistoryWidget = existingSettings?.showShufflerHistoryWidget ?? false;
+    const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
+    const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
 
     const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
     const randomAssigners = typedRandomAssignersData?.random_assigners || [];
@@ -881,6 +1035,24 @@ function PreviewPanel({
                                     ) : null}
                                     {showGroupsTeamsWidget && classId ? (
                                         <GroupsTeamsWidget
+                                            classId={classId}
+                                            studentId={selectedStudentId}
+                                        />
+                                    ) : null}
+                                    {showShufflerHistoryWidget && classId ? (
+                                        <ShufflerHistoryWidget
+                                            classId={classId}
+                                            studentId={selectedStudentId}
+                                        />
+                                    ) : null}
+                                    {showPickerHistoryWidget && classId ? (
+                                        <PickerHistoryWidget
+                                            classId={classId}
+                                            studentId={selectedStudentId}
+                                        />
+                                    ) : null}
+                                    {showAttendanceWidget && classId ? (
+                                        <AttendanceWidget
                                             classId={classId}
                                             studentId={selectedStudentId}
                                         />

@@ -82,6 +82,9 @@ const _schema = i.schema({
             showRotatingAssignersWidget: i.boolean().optional(),
             selectedRotatingAssignerIds: i.string().optional(), // JSON array of assigner IDs, empty/null = all
             showGroupsTeamsWidget: i.boolean().optional(),
+            showShufflerHistoryWidget: i.boolean().optional(),
+            showPickerHistoryWidget: i.boolean().optional(),
+            showAttendanceWidget: i.boolean().optional(),
             created: i.date(),
             updated: i.date(),
         }),
@@ -123,6 +126,12 @@ const _schema = i.schema({
         reward_redemptions: i.entity({
             createdAt: i.date().indexed(),
             quantity: i.number().optional(),
+        }),
+        attendance_records: i.entity({
+            date: i.string().indexed(), // ISO date string (YYYY-MM-DD)
+            status: i.string().indexed(), // "present" | "late" | "absent"
+            createdAt: i.date().indexed(),
+            updatedAt: i.date(),
         }),
         folders: i.entity({
             name: i.string().indexed(),
@@ -1099,6 +1108,43 @@ const _schema = i.schema({
                 has: "one",
                 label: "class",
                 onDelete: "cascade",
+            },
+        },
+        classAttendanceRecords: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "attendanceRecords",
+            },
+            reverse: {
+                on: "attendance_records",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        attendanceRecordStudent: {
+            forward: {
+                on: "attendance_records",
+                has: "one",
+                label: "student",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "attendanceRecordsAsStudent",
+            },
+        },
+        attendanceRecordCreatedBy: {
+            forward: {
+                on: "attendance_records",
+                has: "one",
+                label: "createdBy",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "attendanceRecordsAsCreatedBy",
             },
         },
     },

@@ -18,6 +18,7 @@ interface StudentPointsCardProps {
     canManage: boolean;
     lastAction: LastAction | null;
     lastBehavior: LastBehavior | null;
+    attendanceStatus?: "present" | "late" | "absent";
 }
 
 export function StudentPointsCard({
@@ -28,6 +29,7 @@ export function StudentPointsCard({
     canManage,
     lastAction,
     lastBehavior,
+    attendanceStatus,
 }: StudentPointsCardProps) {
     const rosterNumber = existingRoster?.number;
     const firstName =
@@ -35,11 +37,14 @@ export function StudentPointsCard({
     const gender =
         (existingRoster?.gender ?? student.gender)?.trim() || "—";
 
+    const isAbsent = attendanceStatus === "absent";
+    const isLate = attendanceStatus === "late";
+
     return (
         <Card
             className={`relative min-h-[80px] lg:min-h-[120px] py-1 ${
                 canManage ? "cursor-pointer" : ""
-            }`}
+            } ${isAbsent ? "opacity-50" : ""}`}
         >
             <CardContent className="flex flex-col p-1 lg:p-2">
                 {/* Upper row: number (left), points + action menu (right) */}
@@ -50,6 +55,17 @@ export function StudentPointsCard({
                             : "—"}
                     </span>
                     <div className="flex shrink-0 items-center gap-0.5">
+                        {(isAbsent || isLate) && (
+                            <span
+                                className={`rounded px-1 py-0.5 text-[8px] font-medium leading-tight lg:px-1.5 lg:text-[10px] ${
+                                    isAbsent
+                                        ? "bg-red-500 text-white"
+                                        : "bg-amber-500 text-white"
+                                }`}
+                            >
+                                {isAbsent ? "Absent" : "Late"}
+                            </span>
+                        )}
                         <span className="rounded bg-primary px-1 py-0.5 text-[10px] font-medium leading-tight text-primary-foreground lg:px-2 lg:text-sm">
                             {totalPoints}
                         </span>

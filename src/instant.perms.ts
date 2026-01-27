@@ -271,6 +271,15 @@ const assignmentBinds = {
     isAssignmentClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
 };
 
+const attendanceRecordBinds = {
+    isAttendanceRecordClassOwner: "auth.id in data.ref('class.owner.id')",
+    isAttendanceRecordClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isAttendanceRecordClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isAttendanceRecordClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isAttendanceRecordForMyself: "auth.id in data.ref('student.id')",
+    isGuardianOfAttendanceRecordStudent: "auth.id in data.ref('student.guardians.id')",
+};
+
 const pickerPicksBinds = {
     isPickerPicksClassOwner: "auth.id in data.ref('round.class.owner.id')",
     isPickerPicksClassAdmin: "auth.id in data.ref('round.class.classAdmins.id')",
@@ -757,6 +766,18 @@ const rules = {
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...assignmentBinds,
+        }),
+    },
+    attendance_records: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isAttendanceRecordClassOwner || isAttendanceRecordClassAdmin || isAttendanceRecordClassTeacher || isAttendanceRecordClassAssistantTeacher || isAttendanceRecordForMyself || isGuardianOfAttendanceRecordStudent)",
+            create: "isAuthenticated && isAllowedEmail && (isAttendanceRecordClassOwner || isAttendanceRecordClassAdmin || isAttendanceRecordClassTeacher || isAttendanceRecordClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isAttendanceRecordClassOwner || isAttendanceRecordClassAdmin || isAttendanceRecordClassTeacher || isAttendanceRecordClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isAttendanceRecordClassOwner || isAttendanceRecordClassAdmin || isAttendanceRecordClassTeacher || isAttendanceRecordClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...attendanceRecordBinds,
         }),
     },
 } satisfies InstantRules;

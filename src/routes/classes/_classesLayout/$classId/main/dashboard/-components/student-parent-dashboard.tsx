@@ -13,6 +13,9 @@ import { ExpectationsWidget } from "./expectations-widget";
 import { RandomAssignersWidget } from "./random-assigners-widget";
 import { RotatingAssignersWidget } from "./rotating-assigners-widget";
 import { GroupsTeamsWidget } from "./groups-teams-widget";
+import { ShufflerHistoryWidget } from "./shuffler-history-widget";
+import { PickerHistoryWidget } from "./picker-history-widget";
+import { AttendanceWidget } from "./attendance-widget";
 
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
@@ -142,6 +145,9 @@ export function StudentParentDashboard({
     const showRandomAssignersWidget = existingSettings?.showRandomAssignersWidget ?? false;
     const showRotatingAssignersWidget = existingSettings?.showRotatingAssignersWidget ?? false;
     const showGroupsTeamsWidget = existingSettings?.showGroupsTeamsWidget ?? false;
+    const showShufflerHistoryWidget = existingSettings?.showShufflerHistoryWidget ?? false;
+    const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
+    const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
 
     // Parse selected assigner IDs - return empty array if empty, null if not set
     const selectedRandomAssignerIds = useMemo(() => {
@@ -262,6 +268,15 @@ export function StudentParentDashboard({
                 )}
                 {showGroupsTeamsWidget && studentIdForWidget && classId && (
                     <GroupsTeamsWidget classId={classId} studentId={studentIdForWidget} />
+                )}
+                {showShufflerHistoryWidget && studentIdForWidget && classId && (
+                    <ShufflerHistoryWidget classId={classId} studentId={studentIdForWidget} />
+                )}
+                {showPickerHistoryWidget && studentIdForWidget && classId && (
+                    <PickerHistoryWidget classId={classId} studentId={studentIdForWidget} />
+                )}
+                {showAttendanceWidget && studentIdForWidget && classId && (
+                    <AttendanceWidget classId={classId} studentId={studentIdForWidget} />
                 )}
             </div>
         </div>

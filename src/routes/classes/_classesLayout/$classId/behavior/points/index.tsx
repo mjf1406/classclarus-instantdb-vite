@@ -6,6 +6,7 @@ import { Coins, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
 import { useClassRole } from "@/hooks/use-class-role";
 import { useClassRoster } from "@/hooks/use-class-roster";
@@ -40,6 +41,7 @@ type ClassForPoints = InstaQLEntity<
         groups?: { groupTeams?: {} };
         behaviorLogs?: { behavior: {}; student: {} };
         rewardRedemptions?: { rewardItem: {}; student: {} };
+        attendanceRecords?: { student: {}; createdBy: {} };
     }
 >;
 
@@ -50,6 +52,14 @@ function RouteComponent() {
     const classId = params.classId;
 
     const { class: classEntity } = useClassById(classId);
+    
+    // Get today's date in YYYY-MM-DD format
+    const getTodayDateString = () => {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+    };
+    const todayDateString = getTodayDateString();
+    
     const { data, isLoading: dataLoading } = db.useQuery(
         classId && classId.trim() !== ""
             ? {
@@ -66,6 +76,11 @@ function RouteComponent() {
                           studentTeams: {},
                       },
                       groups: { groupTeams: {} },
+                      attendanceRecords: {
+                          $: { where: { date: todayDateString } },
+                          student: {},
+                          createdBy: {},
+                      },
                   },
               }
             : null
@@ -112,8 +127,28 @@ function PointsPageContent({
 }: PointsPageContentProps) {
     const [selectedGroupId, setSelectedGroupId] = useState<string>(ALL_VALUE);
     const [selectedTeamId, setSelectedTeamId] = useState<string>(ALL_VALUE);
+    const [hideAbsent, setHideAbsent] = useState<boolean>(false);
     const { getRosterForStudent } = useClassRoster(classId);
     const { behaviorLogs, rewardRedemptions } = useClassBehaviorLogs(classId);
+    
+    // Get today's date for attendance query
+    const getTodayDateString = () => {
+        const today = new Date();
+        return today.toISOString().split("T")[0];
+    };
+    const todayDateString = getTodayDateString();
+    const attendanceRecords = classEntity?.attendanceRecords ?? [];
+    
+    // Create a map of student ID to attendance status
+    const attendanceMap = useMemo(() => {
+        const map = new Map<string, "present" | "late" | "absent">();
+        for (const record of attendanceRecords) {
+            if (record.student?.id && record.status && record.date === todayDateString) {
+                map.set(record.student.id, record.status as "present" | "late" | "absent");
+            }
+        }
+        return map;
+    }, [attendanceRecords, todayDateString]);
 
     const groups = classEntity?.groups ?? [];
     const selectedGroup = groups.find((g) => g.id === selectedGroupId);
@@ -186,20 +221,36 @@ function PointsPageContent({
     };
 
     const filteredStudents = useMemo(() => {
-        const list = classEntity?.classStudents ?? [];
-        if (selectedGroupId === ALL_VALUE) return list;
-        if (selectedTeamId === ALL_VALUE) {
-            return list.filter((s) =>
-                (s.studentGroups ?? []).some((g) => g.id === selectedGroupId)
-            );
+        let list = classEntity?.classStudents ?? [];
+        
+        // Apply group/team filters
+        if (selectedGroupId !== ALL_VALUE) {
+            if (selectedTeamId === ALL_VALUE) {
+                list = list.filter((s) =>
+                    (s.studentGroups ?? []).some((g) => g.id === selectedGroupId)
+                );
+            } else {
+                list = list.filter((s) =>
+                    (s.studentTeams ?? []).some((t) => t.id === selectedTeamId)
+                );
+            }
         }
-        return list.filter((s) =>
-            (s.studentTeams ?? []).some((t) => t.id === selectedTeamId)
-        );
+        
+        // Apply hide absent filter
+        if (hideAbsent) {
+            list = list.filter((s) => {
+                const status = attendanceMap.get(s.id);
+                return status !== "absent";
+            });
+        }
+        
+        return list;
     }, [
         classEntity?.classStudents,
         selectedGroupId,
         selectedTeamId,
+        hideAbsent,
+        attendanceMap,
     ]);
 
     type LastAction = {
@@ -273,7 +324,7 @@ function PointsPageContent({
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap gap-6">
+                <div className="flex flex-wrap gap-6 items-end">
                     <div className="space-y-2">
                         <Label>Group</Label>
                         <RadioGroup
@@ -325,6 +376,22 @@ function PointsPageContent({
                             </RadioGroup>
                         </div>
                     )}
+                    
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            id="hide-absent"
+                            checked={hideAbsent}
+                            onCheckedChange={(checked) =>
+                                setHideAbsent(checked === true)
+                            }
+                        />
+                        <Label
+                            htmlFor="hide-absent"
+                            className="text-sm font-normal cursor-pointer"
+                        >
+                            Hide absent students
+                        </Label>
+                    </div>
                 </div>
 
                 {/* Cards */}
@@ -343,6 +410,7 @@ function PointsPageContent({
                     <div className="grid grid-cols-4 gap-2 md:gap-4">
                         {filteredStudents.map((student) => {
                             const aggregates = getStudentAggregates(student.id);
+                            const attendanceStatus = attendanceMap.get(student.id);
                             const card = (
                                 <StudentPointsCard
                                     key={student.id}
@@ -355,6 +423,7 @@ function PointsPageContent({
                                     lastBehavior={getLastBehaviorForStudent(
                                         student.id
                                     )}
+                                    attendanceStatus={attendanceStatus}
                                 />
                             );
 
