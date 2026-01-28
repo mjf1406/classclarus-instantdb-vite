@@ -1,15 +1,23 @@
 /** @format */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Hand, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { Hand, ChevronDown, ChevronUp, RotateCcw, MoreVertical } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { db } from "@/lib/db/db";
 import { useClassRoster } from "@/hooks/use-class-roster";
-import { ScopeFilterSelect, type ScopeSelection } from "./scope-filter-select";
+import { PickerInstanceSelector } from "./picker-instance-selector";
+import { CreatePickerInstanceDialog } from "./create-picker-instance-dialog";
+import { EditPickerInstanceDialog } from "./edit-picker-instance-dialog";
+import { DeletePickerInstanceDialog } from "./delete-picker-instance-dialog";
 import {
     createActiveRound,
     pickRandomStudent,
@@ -42,16 +50,16 @@ type PickerRoundsQueryResult = {
     picker_rounds: PickerRound[];
 };
 
+type PickerInstancesQueryResult = {
+    picker_instances: InstaQLEntity<AppSchema, "picker_instances", {}>[];
+};
+
 type ClassQueryResult = {
     classes: ClassEntity[];
 };
 
 export function PickerTabContent({ classId }: PickerTabContentProps) {
-    const [scope, setScope] = useState<ScopeSelection>({
-        type: "class",
-        id: classId,
-        name: "All Students",
-    });
+    const [selectedInstanceId, setSelectedInstanceId] = useState<string | null>(null);
     const [isPicking, setIsPicking] = useState(false);
     const [lastPicked, setLastPicked] = useState<InstaQLEntity<AppSchema, "$users"> | null>(null);
     const [showAnimation, setShowAnimation] = useState(false);
@@ -80,13 +88,39 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
     const typedClassData = (classData as ClassQueryResult | undefined) ?? null;
     const classEntity = typedClassData?.classes?.[0];
 
-    // Query all picker rounds for the class
-    const { data: roundsData } = db.useQuery(
+    // Query all picker instances for the class
+    const { data: instancesData } = db.useQuery(
         classId
+            ? {
+                  picker_instances: {
+                      $: {
+                          where: { "class.id": classId },
+                          order: { created: "desc" as const },
+                      },
+                  },
+              }
+            : null
+    );
+
+    const typedInstancesData = (instancesData as PickerInstancesQueryResult | undefined) ?? null;
+    const allInstances = typedInstancesData?.picker_instances ?? [];
+
+    // Auto-select first instance if none selected and instances exist
+    useEffect(() => {
+        if (selectedInstanceId === null && allInstances.length > 0) {
+            setSelectedInstanceId(allInstances[0].id);
+        }
+    }, [selectedInstanceId, allInstances]);
+
+    const selectedInstance = allInstances.find((i) => i.id === selectedInstanceId);
+
+    // Query all picker rounds for the selected instance
+    const { data: roundsData } = db.useQuery(
+        selectedInstanceId
             ? {
                   picker_rounds: {
                       $: {
-                          where: { "class.id": classId },
+                          where: { "instance.id": selectedInstanceId },
                           order: { startedAt: "desc" as const },
                       },
                       picks: {},
@@ -98,32 +132,29 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
     const typedRoundsData = (roundsData as PickerRoundsQueryResult | undefined) ?? null;
     const allRounds = typedRoundsData?.picker_rounds ?? [];
 
-    // Find active round for current scope
+    // Find active round for current instance
     const activeRound = useMemo(() => {
-        return allRounds.find(
-            (r) =>
-                r.isActive &&
-                r.scopeType === scope.type &&
-                r.scopeId === scope.id
-        );
-    }, [allRounds, scope.type, scope.id]);
+        if (!selectedInstanceId) return undefined;
+        return allRounds.find((r) => r.isActive);
+    }, [allRounds, selectedInstanceId]);
 
-    // Filter students by scope
+    // Filter students by instance scope
     const filteredStudents = useMemo(() => {
+        if (!selectedInstance) return [];
         const students = classEntity?.classStudents ?? [];
-        if (scope.type === "class") {
+        if (selectedInstance.scopeType === "class") {
             return students;
-        } else if (scope.type === "group") {
+        } else if (selectedInstance.scopeType === "group") {
             return students.filter((s) =>
-                (s.studentGroups ?? []).some((g) => g.id === scope.id)
+                (s.studentGroups ?? []).some((g) => g.id === selectedInstance.scopeId)
             );
         } else {
-            // scope.type === "team"
+            // scopeType === "team"
             return students.filter((s) =>
-                (s.studentTeams ?? []).some((t) => t.id === scope.id)
+                (s.studentTeams ?? []).some((t) => t.id === selectedInstance.scopeId)
             );
         }
-    }, [classEntity?.classStudents, scope]);
+    }, [classEntity?.classStudents, selectedInstance]);
 
     // Separate students into picked and unpicked
     // IMPORTANT: Depend on allRounds to ensure re-run when InstantDB updates
@@ -155,7 +186,7 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
         return { pickedStudents: picked, unpickedStudents: unpicked };
     }, [filteredStudents, activeRound, allRounds]);
 
-    // Calculate all-time stats
+    // Calculate all-time stats for the selected instance
     const stats = useMemo(() => {
         return calculatePickStats(allRounds);
     }, [allRounds]);
@@ -182,6 +213,11 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
         setIsPicking(true);
         setShowAnimation(true);
 
+        if (!selectedInstance) {
+            console.error("No picker instance selected");
+            return;
+        }
+
         try {
             // Ensure we have an active round
             let roundId: string;
@@ -192,7 +228,13 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
                 currentPickCount = activeRound.picks?.length ?? 0;
             } else {
                 // Create round if it doesn't exist
-                roundId = await createActiveRound(classId, scope);
+                roundId = await createActiveRound(
+                    selectedInstance.id,
+                    classId,
+                    selectedInstance.scopeType,
+                    selectedInstance.scopeId,
+                    selectedInstance.scopeName
+                );
                 currentPickCount = 0;
             }
 
@@ -231,10 +273,17 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
     };
 
     const handleNewRound = async () => {
-        if (!activeRound) return;
+        if (!activeRound || !selectedInstance) return;
 
         try {
-            await startNewRound(classId, scope, activeRound.id);
+            await startNewRound(
+                selectedInstance.id,
+                classId,
+                selectedInstance.scopeType,
+                selectedInstance.scopeId,
+                selectedInstance.scopeName,
+                activeRound.id
+            );
         } catch (error) {
             console.error("Failed to start new round:", error);
         }
@@ -251,6 +300,31 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
         return max;
     }, [stats]);
 
+    // Show empty state if no instances exist
+    if (allInstances.length === 0) {
+        return (
+            <div className="space-y-6">
+                <div className="max-w-2xl mx-auto">
+                    <PickerCaseStudy />
+                </div>
+                <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                        <Hand className="size-12 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No Pickers Created</h3>
+                        <p className="text-sm text-muted-foreground text-center mb-4">
+                            Create your first picker instance to start picking students.
+                        </p>
+                        <CreatePickerInstanceDialog classId={classId} groups={classEntity?.groups ?? []}>
+                            <Button>
+                                Create First Picker
+                            </Button>
+                        </CreatePickerInstanceDialog>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="max-w-2xl mx-auto">
@@ -258,15 +332,49 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
             </div>
 
             <div className="flex items-center justify-between">
-                <ScopeFilterSelect
-                    classId={classId}
-                    selectedScope={scope}
-                    onScopeChange={setScope}
-                    groups={classEntity?.groups ?? []}
-                />
+                <div className="flex items-center gap-2">
+                    <PickerInstanceSelector
+                        classId={classId}
+                        instances={allInstances}
+                        selectedInstanceId={selectedInstanceId}
+                        onInstanceChange={setSelectedInstanceId}
+                        groups={classEntity?.groups ?? []}
+                    />
+                    {selectedInstance && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon-sm">
+                                    <MoreVertical className="size-4" />
+                                    <span className="sr-only">More options</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <EditPickerInstanceDialog
+                                    instance={selectedInstance}
+                                    classId={classId}
+                                    groups={classEntity?.groups ?? []}
+                                    asDropdownItem
+                                >
+                                    Edit
+                                </EditPickerInstanceDialog>
+                                <DeletePickerInstanceDialog
+                                    instance={selectedInstance}
+                                    asDropdownItem
+                                    onDelete={() => {
+                                        // Select another instance if available
+                                        const remaining = allInstances.filter((i) => i.id !== selectedInstance.id);
+                                        setSelectedInstanceId(remaining.length > 0 ? remaining[0].id : null);
+                                    }}
+                                >
+                                    Delete
+                                </DeletePickerInstanceDialog>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
                 <Button
                     onClick={handlePick}
-                    disabled={isPicking || unpickedStudents.length === 0}
+                    disabled={isPicking || unpickedStudents.length === 0 || !selectedInstance}
                 >
                     {isPicking ? (
                         <>
@@ -450,7 +558,7 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
                         </div>
                     </CardContent>
                 </Card>
-            ) : (
+            ) : selectedInstance ? (
                 <Card>
                     <CardContent className="py-8 text-center">
                         <p className="text-muted-foreground">
@@ -460,7 +568,7 @@ export function PickerTabContent({ classId }: PickerTabContentProps) {
                         </p>
                     </CardContent>
                 </Card>
-            )}
+            ) : null}
 
             {/* Pick Animation */}
             {showAnimation && lastPicked && (

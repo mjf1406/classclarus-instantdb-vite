@@ -220,6 +220,7 @@ const _schema = i.schema({
             rolledAt: i.date().indexed(),
         }),
         shuffler_runs: i.entity({
+            name: i.string().optional(), // User-defined name
             runDate: i.date().indexed(),
             scopeType: i.string().indexed(), // 'class' | 'group' | 'team'
             scopeId: i.string().indexed(), // ID of the scope
@@ -227,6 +228,15 @@ const _schema = i.schema({
             results: i.string(), // JSON: Array of { studentId, studentName, position }
             firstStudentId: i.string().indexed(),
             lastStudentId: i.string().indexed(),
+            completedStudentIds: i.string().optional(), // JSON array of completed student IDs
+        }),
+        picker_instances: i.entity({
+            name: i.string().indexed(),
+            scopeType: i.string().indexed(), // 'class' | 'group' | 'team'
+            scopeId: i.string().indexed(), // ID of the scope
+            scopeName: i.string(), // Display name (e.g., "All Students", "Group A")
+            created: i.date().indexed(),
+            updated: i.date(),
         }),
         picker_rounds: i.entity({
             startedAt: i.date().indexed(),
@@ -942,6 +952,19 @@ const _schema = i.schema({
                 onDelete: "cascade",
             },
         },
+        classPickerInstances: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "pickerInstances",
+            },
+            reverse: {
+                on: "picker_instances",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
         classPickerRounds: {
             forward: {
                 on: "classes",
@@ -952,6 +975,19 @@ const _schema = i.schema({
                 on: "picker_rounds",
                 has: "one",
                 label: "class",
+                onDelete: "cascade",
+            },
+        },
+        instancePickerRounds: {
+            forward: {
+                on: "picker_instances",
+                has: "many",
+                label: "rounds",
+            },
+            reverse: {
+                on: "picker_rounds",
+                has: "one",
+                label: "instance",
                 onDelete: "cascade",
             },
         },

@@ -4,7 +4,6 @@ import { id } from "@instantdb/react";
 import { db } from "@/lib/db/db";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
-import type { ScopeSelection } from "@/routes/classes/_classesLayout/$classId/random-tools/randomizer/-components/scope-filter-select";
 
 export type StudentPickStats = {
     studentId: string;
@@ -49,23 +48,27 @@ export function calculatePickStats(
 }
 
 /**
- * Create a new active round for the current scope
+ * Create a new active round for the picker instance
  * Returns the round ID so it can be used immediately
  */
 export async function createActiveRound(
+    instanceId: string,
     classId: string,
-    scope: ScopeSelection
+    scopeType: string,
+    scopeId: string,
+    scopeName: string
 ): Promise<string> {
     const roundId = id();
     await db.transact([
         db.tx.picker_rounds[roundId]
             .create({
                 startedAt: new Date(),
-                scopeType: scope.type,
-                scopeId: scope.id,
-                scopeName: scope.name,
+                scopeType,
+                scopeId,
+                scopeName,
                 isActive: true,
             })
+            .link({ instance: instanceId })
             .link({ class: classId }),
     ]);
     return roundId;
@@ -125,8 +128,11 @@ export async function completeRound(roundId: string): Promise<void> {
  * Start a new round (mark current as inactive, create new active)
  */
 export async function startNewRound(
+    instanceId: string,
     classId: string,
-    scope: ScopeSelection,
+    scopeType: string,
+    scopeId: string,
+    scopeName: string,
     currentRoundId?: string
 ): Promise<void> {
     const transactions = [];
@@ -146,11 +152,12 @@ export async function startNewRound(
         db.tx.picker_rounds[roundId]
             .create({
                 startedAt: new Date(),
-                scopeType: scope.type,
-                scopeId: scope.id,
-                scopeName: scope.name,
+                scopeType,
+                scopeId,
+                scopeName,
                 isActive: true,
             })
+            .link({ instance: instanceId })
             .link({ class: classId })
     );
 

@@ -158,7 +158,8 @@ export function shuffleWithConstraints(
 export async function saveShuffleRun(
     results: ShuffleResult[],
     scope: ScopeSelection,
-    classId: string
+    classId: string,
+    name?: string
 ): Promise<void> {
     const runId = id();
     const runDate = new Date();
@@ -175,6 +176,7 @@ export async function saveShuffleRun(
     await db.transact([
         db.tx.shuffler_runs[runId]
             .create({
+                name: name || undefined,
                 runDate,
                 scopeType: scope.type,
                 scopeId: scope.id,
@@ -184,5 +186,25 @@ export async function saveShuffleRun(
                 lastStudentId: lastStudent.studentId,
             })
             .link({ class: classId }),
+    ]);
+}
+
+/**
+ * Toggle student completion status for a shuffle run
+ */
+export async function toggleStudentCompletion(
+    runId: string,
+    studentId: string,
+    currentCompletedIds: string[]
+): Promise<void> {
+    const isCompleted = currentCompletedIds.includes(studentId);
+    const updatedIds = isCompleted
+        ? currentCompletedIds.filter((id) => id !== studentId)
+        : [...currentCompletedIds, studentId];
+
+    await db.transact([
+        db.tx.shuffler_runs[runId].update({
+            completedStudentIds: JSON.stringify(updatedIds),
+        }),
     ]);
 }

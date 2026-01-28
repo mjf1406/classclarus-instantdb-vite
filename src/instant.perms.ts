@@ -658,8 +658,21 @@ const rules = {
         allow: {
             view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
             create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
-            update: "false", // Immutable history
-            delete: "false", // Cannot delete history
+            update: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...dashboardSettingsBinds,
+        }),
+    },
+
+    picker_instances: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -672,7 +685,7 @@ const rules = {
             view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
             create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
             update: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
-            delete: "false", // Cannot delete history
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)", // Allow deletion for cascade delete from picker_instances
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -685,7 +698,7 @@ const rules = {
             view: "isAuthenticated && isAllowedEmail && (isPickerPicksClassOwner || isPickerPicksClassAdmin || isPickerPicksClassTeacher || isPickerPicksClassAssistantTeacher || isPickerPicksClassMember || isPickerPicksClassGuardian)",
             create: "isAuthenticated && isAllowedEmail && (isPickerPicksClassOwner || isPickerPicksClassAdmin || isPickerPicksClassTeacher || isPickerPicksClassAssistantTeacher)",
             update: "false", // Immutable history
-            delete: "false", // Cannot delete history
+            delete: "isAuthenticated && isAllowedEmail && (isPickerPicksClassOwner || isPickerPicksClassAdmin || isPickerPicksClassTeacher || isPickerPicksClassAssistantTeacher)", // Allow deletion for cascade delete from picker_instances/picker_rounds
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
