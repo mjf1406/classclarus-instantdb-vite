@@ -55,7 +55,10 @@ function HistoryEntryCard({ entry }: { entry: HistoryEntry }) {
         : "Unknown date";
 
     return (
-        <Card className="mb-2">
+        <Card
+            className="mb-2"
+            style={{ backgroundColor: "var(--student-card-bg)" }}
+        >
             <CardContent className="flex items-start gap-3 p-3">
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -218,7 +221,7 @@ export function RandomAssignersWidget({
     }, [historyEntries]);
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Shuffle className="size-5 text-primary" />

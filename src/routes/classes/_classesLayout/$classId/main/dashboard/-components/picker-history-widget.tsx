@@ -94,7 +94,7 @@ export function PickerHistoryWidget({
     };
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Hand className="size-5 text-primary" />
@@ -143,7 +143,11 @@ export function PickerHistoryWidget({
                             </div>
                         ) : (
                             studentPicks.map((entry) => (
-                                <Card key={entry.pickId} className="p-3">
+                                <Card
+                                    key={entry.pickId}
+                                    className="p-3"
+                                    style={{ backgroundColor: "var(--student-card-bg)" }}
+                                >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">

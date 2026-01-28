@@ -93,6 +93,8 @@ const _schema = i.schema({
             icon: i.string().optional(),
             color: i.string().optional(),
             background: i.string().optional(),
+            buttonColor: i.string().optional(),
+            cardBackgroundColor: i.string().optional(),
             created: i.date(),
             updated: i.date(),
         }),

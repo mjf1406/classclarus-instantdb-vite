@@ -248,7 +248,7 @@ export function GroupsTeamsWidget({ classId, studentId }: GroupsTeamsWidgetProps
     }, [groups, studentId, groupHistory, teamHistory]);
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Users className="size-5 text-primary" />

@@ -95,7 +95,7 @@ export function ShufflerHistoryWidget({
     }, [studentShuffles]);
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Shuffle className="size-5 text-primary" />
@@ -141,7 +141,11 @@ export function ShufflerHistoryWidget({
                             </div>
                         ) : (
                             studentShuffles.map((entry) => (
-                                <Card key={entry.runId} className="p-3">
+                                <Card
+                                    key={entry.runId}
+                                    className="p-3"
+                                    style={{ backgroundColor: "var(--student-card-bg)" }}
+                                >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">

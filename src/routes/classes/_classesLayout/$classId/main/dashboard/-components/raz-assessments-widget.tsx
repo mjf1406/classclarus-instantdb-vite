@@ -118,20 +118,20 @@ export function RazAssessmentsWidget({
     };
 
     // Get status badge styling
-    const getStatusBadgeStyle = (status: UrgencyStatus | "rti") => {
-        switch (status) {
-            case "overdue":
-                return "bg-red-100 border-red-300 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200";
-            case "due-now":
-                return "bg-orange-100 border-orange-300 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-200";
-            case "coming-soon":
-                return "bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200";
-            case "up-to-date":
-                return "bg-green-100 border-green-300 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200";
-            case "rti":
-                return "bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-950 dark:border-purple-800 dark:text-purple-200";
-        }
-    };
+    // const getStatusBadgeStyle = (status: UrgencyStatus | "rti") => {
+    //     switch (status) {
+    //         case "overdue":
+    //             return "bg-red-100 border-red-300 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200";
+    //         case "due-now":
+    //             return "bg-orange-100 border-orange-300 text-orange-800 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-200";
+    //         case "coming-soon":
+    //             return "bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200";
+    //         case "up-to-date":
+    //             return "bg-green-100 border-green-300 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200";
+    //         case "rti":
+    //             return "bg-purple-100 border-purple-300 text-purple-800 dark:bg-purple-950 dark:border-purple-800 dark:text-purple-200";
+    //     }
+    // };
 
     const getDisplayStatusLabel = (status: UrgencyStatus | "rti"): string => {
         if (status === "rti") return "RTI Review";
@@ -158,7 +158,7 @@ export function RazAssessmentsWidget({
     }, [lastTestDate, displayStatus, assessmentStatus.scheduleInfo]);
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <BookOpen className="size-5 text-primary" />
@@ -178,7 +178,11 @@ export function RazAssessmentsWidget({
 
                 {/* Assessment Status Banner */}
                 <div
-                    className={`rounded-lg border p-3 ${getStatusBadgeStyle(displayStatus)}`}
+                    className="rounded-lg border p-3"
+                    style={{
+                        backgroundColor: "var(--student-bg-color)",
+                        color: "var(--student-bg-text-color, inherit)",
+                    }}
                 >
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -285,7 +289,11 @@ export function RazAssessmentsWidget({
                                               : "text-red-700 dark:text-red-400";
 
                                     return (
-                                        <Card key={assessment.id} className="p-3">
+                                        <Card
+                                            key={assessment.id}
+                                            className="p-3"
+                                            style={{ backgroundColor: "var(--student-card-bg)" }}
+                                        >
                                             <div className="space-y-2">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex-1 min-w-0">

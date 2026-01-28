@@ -40,7 +40,7 @@ function HistoryEntry({ date, name, points, quantity, createdBy, icon }: History
             : createdBy?.email ?? "Unknown";
 
     return (
-        <Card className="mb-2">
+        <Card className="mb-2" style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardContent className="flex items-center gap-3 p-3">
                 {icon && (
                     <div className="shrink-0">
@@ -122,7 +122,7 @@ export function PointsWidget({ classId, studentId }: PointsWidgetProps) {
     }, [rewardRedemptions]);
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Trophy className="size-5 text-yellow-500" />

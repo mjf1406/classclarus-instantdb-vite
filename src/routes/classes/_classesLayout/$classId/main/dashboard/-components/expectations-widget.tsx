@@ -33,7 +33,7 @@ export function ExpectationsWidget({
 
     if (isLoading) {
         return (
-            <Card>
+            <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Target className="size-5 text-primary" />
@@ -49,7 +49,7 @@ export function ExpectationsWidget({
 
     if (expectations.length === 0) {
         return (
-            <Card>
+            <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Target className="size-5 text-primary" />
@@ -67,7 +67,7 @@ export function ExpectationsWidget({
     }
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Target className="size-5 text-primary" />

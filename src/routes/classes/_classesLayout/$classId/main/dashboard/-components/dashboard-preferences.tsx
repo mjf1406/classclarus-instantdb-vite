@@ -16,8 +16,27 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
+
+// Utility to determine if text should be white or black based on background color
+function getContrastColor(hexColor: string): "white" | "black" {
+    if (!hexColor) return "black";
+    // Remove # if present
+    const hex = hexColor.replace("#", "");
+    // Validate hex color format (should be 6 characters)
+    if (hex.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
+        return "black";
+    }
+    // Convert to RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? "black" : "white";
+}
 
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
@@ -42,6 +61,8 @@ export function DashboardPreferences({
     const [icon, setIcon] = useState<string>("");
     const [color, setColor] = useState<string>("");
     const [background, setBackground] = useState<string>("");
+    const [buttonColor, setButtonColor] = useState<string>("");
+    const [cardBackgroundColor, setCardBackgroundColor] = useState<string>("");
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +95,8 @@ export function DashboardPreferences({
             setIcon(existingPrefs.icon || "");
             setColor(existingPrefs.color || "");
             setBackground(existingPrefs.background || "");
+            setButtonColor(existingPrefs.buttonColor || "");
+            setCardBackgroundColor(existingPrefs.cardBackgroundColor || "");
         }
     }, [existingPrefs]);
 
@@ -91,6 +114,8 @@ export function DashboardPreferences({
                         icon: icon || undefined,
                         color: color || undefined,
                         background: background || undefined,
+                        buttonColor: buttonColor || undefined,
+                        cardBackgroundColor: cardBackgroundColor || undefined,
                         updated: now,
                     }),
                 ]);
@@ -103,6 +128,8 @@ export function DashboardPreferences({
                             icon: icon || undefined,
                             color: color || undefined,
                             background: background || undefined,
+                            buttonColor: buttonColor || undefined,
+                            cardBackgroundColor: cardBackgroundColor || undefined,
                             created: now,
                             updated: now,
                         })
@@ -177,20 +204,109 @@ export function DashboardPreferences({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="background">Background</Label>
+                        <Label htmlFor="background">Background Color</Label>
                         <div className="flex items-center gap-2">
                             <Image className="size-4 text-muted-foreground" />
                             <Input
                                 id="background"
-                                placeholder="Background URL or CSS value"
+                                type="color"
+                                value={background || "#ffffff"}
+                                onChange={(e) => setBackground(e.target.value)}
+                                className="h-10 w-20 cursor-pointer"
+                            />
+                            <Input
+                                placeholder="#ffffff"
                                 value={background}
                                 onChange={(e) => setBackground(e.target.value)}
+                                className="flex-1"
                             />
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Enter a background image URL or CSS value (e.g., "linear-gradient(...)")
+                            Choose a background color for your dashboard
                         </p>
                     </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="buttonColor">Button Color</Label>
+                        <div className="flex items-center gap-2">
+                            <Palette className="size-4 text-muted-foreground" />
+                            <Input
+                                id="buttonColor"
+                                type="color"
+                                value={buttonColor || "#000000"}
+                                onChange={(e) => setButtonColor(e.target.value)}
+                                className="h-10 w-20 cursor-pointer"
+                            />
+                            <Input
+                                placeholder="#000000"
+                                value={buttonColor}
+                                onChange={(e) => setButtonColor(e.target.value)}
+                                className="flex-1"
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Choose a color for buttons and interactive elements
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="cardBackgroundColor">Card Background Color</Label>
+                        <div className="flex items-center gap-2">
+                            <Palette className="size-4 text-muted-foreground" />
+                            <Input
+                                id="cardBackgroundColor"
+                                type="color"
+                                value={cardBackgroundColor || "#ffffff"}
+                                onChange={(e) => setCardBackgroundColor(e.target.value)}
+                                className="h-10 w-20 cursor-pointer"
+                            />
+                            <Input
+                                placeholder="#ffffff"
+                                value={cardBackgroundColor}
+                                onChange={(e) => setCardBackgroundColor(e.target.value)}
+                                className="flex-1"
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Choose a background color for dashboard cards
+                        </p>
+                    </div>
+
+                    {/* Live Preview */}
+                    {(background || buttonColor || cardBackgroundColor || color) && (
+                        <div className="space-y-2 pt-2 border-t">
+                            <Label>Preview</Label>
+                            <Card
+                                style={{
+                                    backgroundColor: cardBackgroundColor || undefined,
+                                    background: background || undefined,
+                                }}
+                            >
+                                <CardContent className="p-4 space-y-2">
+                                    <div
+                                        className="text-sm font-medium"
+                                        style={{ color: color || undefined }}
+                                    >
+                                        Sample Card Title
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        This is how your cards will look
+                                    </p>
+                                    <Button
+                                        size="sm"
+                                        style={{
+                                            backgroundColor: buttonColor || undefined,
+                                            color: buttonColor
+                                                ? getContrastColor(buttonColor)
+                                                : undefined,
+                                        }}
+                                    >
+                                        Sample Button
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    )}
 
                     {error && (
                         <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">

@@ -96,7 +96,7 @@ export function AttendanceWidget({ classId, studentId }: AttendanceWidgetProps) 
     };
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: "var(--student-card-bg)" }}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <CalendarDays className="size-5 text-primary" />
@@ -146,7 +146,11 @@ export function AttendanceWidget({ classId, studentId }: AttendanceWidgetProps) 
                                 </div>
                             ) : (
                                 lateAbsentRecords.map((entry) => (
-                                    <Card key={entry.recordId} className="p-3">
+                                    <Card
+                                        key={entry.recordId}
+                                        className="p-3"
+                                        style={{ backgroundColor: "var(--student-card-bg)" }}
+                                    >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex-1 min-w-0">
                                                 <span className="font-medium text-sm">

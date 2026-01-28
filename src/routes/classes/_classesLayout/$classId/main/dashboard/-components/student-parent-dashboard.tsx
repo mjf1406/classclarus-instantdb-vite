@@ -18,6 +18,24 @@ import { PickerHistoryWidget } from "./picker-history-widget";
 import { AttendanceWidget } from "./attendance-widget";
 import { RazAssessmentsWidget } from "./raz-assessments-widget";
 
+// Utility to determine button text color based on button background color
+function getButtonTextColor(hexColor: string): string {
+    if (!hexColor) return "#ffffff";
+    // Remove # if present
+    const hex = hexColor.replace("#", "");
+    // Validate hex color format (should be 6 characters)
+    if (hex.length !== 6 || !/^[0-9A-Fa-f]{6}$/.test(hex)) {
+        return "#ffffff";
+    }
+    // Convert to RGB
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? "#000000" : "#ffffff";
+}
+
 type StudentDashboardPreferences = InstaQLEntity<
     AppSchema,
     "studentDashboardPreferences",
@@ -172,11 +190,27 @@ export function StudentParentDashboard({
         }
     }, [existingSettings?.selectedRotatingAssignerIds]);
 
-    // Apply personalization styles
-    const dashboardStyle: React.CSSProperties = {};
-    if (preferences?.color) {
-        dashboardStyle.color = preferences.color;
-    }
+    // Apply personalization styles using CSS custom properties
+    const dashboardStyle: React.CSSProperties = {
+        "--student-text-color": preferences?.color || undefined,
+        "--student-bg-color": preferences?.background || undefined,
+        "--student-button-color": preferences?.buttonColor || undefined,
+        "--student-card-bg": preferences?.cardBackgroundColor || undefined,
+        // Calculate button text color for contrast (white for dark buttons, black for light)
+        "--student-button-text-color": preferences?.buttonColor
+            ? getButtonTextColor(preferences.buttonColor)
+            : undefined,
+        // Calculate background text color for contrast
+        "--student-bg-text-color": preferences?.background
+            ? getButtonTextColor(preferences.background)
+            : undefined,
+        // Calculate card text color for contrast
+        "--student-card-text-color": preferences?.cardBackgroundColor
+            ? getButtonTextColor(preferences.cardBackgroundColor)
+            : undefined,
+    } as React.CSSProperties;
+
+    // Also apply background color directly to container
     if (preferences?.background) {
         dashboardStyle.background = preferences.background;
     }
@@ -208,7 +242,25 @@ export function StudentParentDashboard({
     }
 
     return (
-        <div className="space-y-6" style={dashboardStyle}>
+        <div className="space-y-6 student-dashboard" style={dashboardStyle}>
+            {(preferences?.buttonColor || preferences?.background) && (
+                <style>
+                    {`
+                        .student-dashboard [data-slot="tabs-list"] {
+                            background-color: var(--student-bg-color) !important;
+                        }
+                        .student-dashboard [data-slot="tabs-trigger"] {
+                            background-color: var(--student-bg-color) !important;
+                            color: var(--student-bg-text-color, inherit) !important;
+                        }
+                        .student-dashboard [data-slot="tabs-trigger"][data-state="active"],
+                        .student-dashboard [data-slot="tabs-trigger"][data-active] {
+                            background-color: var(--student-button-color) !important;
+                            color: var(--student-button-text-color, #ffffff) !important;
+                        }
+                    `}
+                </style>
+            )}
             {isGuardian && childrenInClass.length > 0 && (
                 <div className="space-y-3">
                     <Label>View Dashboard For</Label>
@@ -246,8 +298,9 @@ export function StudentParentDashboard({
                     </RadioGroup>
                 </div>
             )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div className="w-full mx-auto p-6">
+    
+            <div className="max-w-lg lg:max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {showPointsWidget && studentIdForWidget && classId && (
                     <PointsWidget classId={classId} studentId={studentIdForWidget} />
                 )}
@@ -256,16 +309,16 @@ export function StudentParentDashboard({
                 )}
                 {showRandomAssignersWidget && studentIdForWidget && classId && (
                     <RandomAssignersWidget
-                        classId={classId}
-                        studentId={studentIdForWidget}
-                        selectedAssignerIds={selectedRandomAssignerIds || undefined}
+                    classId={classId}
+                    studentId={studentIdForWidget}
+                    selectedAssignerIds={selectedRandomAssignerIds || undefined}
                     />
                 )}
                 {showRotatingAssignersWidget && studentIdForWidget && classId && (
                     <RotatingAssignersWidget
-                        classId={classId}
-                        studentId={studentIdForWidget}
-                        selectedAssignerIds={selectedRotatingAssignerIds || undefined}
+                    classId={classId}
+                    studentId={studentIdForWidget}
+                    selectedAssignerIds={selectedRotatingAssignerIds || undefined}
                     />
                 )}
                 {showGroupsTeamsWidget && studentIdForWidget && classId && (
@@ -285,5 +338,6 @@ export function StudentParentDashboard({
                 )}
             </div>
         </div>
+                </div>
     );
 }
