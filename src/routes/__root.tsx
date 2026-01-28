@@ -15,7 +15,7 @@ const RootLayout = () => {
         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
             <ThemeProvider
                 storageKey="vite-ui-theme"
-                defaultTheme="classclarus"
+                defaultTheme="light"
             >
                 <Outlet />
             </ThemeProvider>

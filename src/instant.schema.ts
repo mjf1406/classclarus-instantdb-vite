@@ -98,6 +98,8 @@ const _schema = i.schema({
             background: i.string().optional(),
             buttonColor: i.string().optional(),
             cardBackgroundColor: i.string().optional(),
+            decorativeIcon: i.string().optional(),
+            decorativeIconColor: i.string().optional(),
             created: i.date(),
             updated: i.date(),
         }),

@@ -19,6 +19,7 @@ import { ShufflerHistoryWidget } from "./shuffler-history-widget";
 import { PickerHistoryWidget } from "./picker-history-widget";
 import { AttendanceWidget } from "./attendance-widget";
 import { RazAssessmentsWidget } from "./raz-assessments-widget";
+import { DecorativeIcons, DecorativeCardWrapper } from "./decorative-icons";
 
 // Utility to determine button text color based on button background color
 function getButtonTextColor(hexColor: string): string {
@@ -327,123 +328,220 @@ export function StudentParentDashboard({
                 </div>
             )}
 
-            <div className="w-full mx-auto p-6 space-y-6">
+            <div id="dashboard-wrapper" className="w-full mx-auto p-6 space-y-6 relative">
+            {/* Background Decorative Icons */}
+            {preferences?.decorativeIcon && preferences?.decorativeIconColor && (
+                <DecorativeIcons
+                    iconId={preferences.decorativeIcon}
+                    color={preferences.decorativeIconColor}
+                    seed={`${studentIdForWidget}-${classId}`}
+                />
+            )}
+            
+            {/* Content wrapper with higher z-index to appear above background icons */}
+            <div className="relative" style={{ zIndex: 2 }}>
+            
             {/* Top row with two cards: Mascot, Greeting */}
             {(showMascotCard || showGreetingCard) && (
-                <div className="max-w-lg lg:max-w-5xl mx-auto flex gap-4 items-stretch">
+                <div className="max-w-lg lg:max-w-5xl mx-auto flex gap-4 items-stretch mb-6">
                     {/* Mascot Image Card */}
                     {showMascotCard && (
-                        <Card 
-                            className="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center p-2 shrink-0"
-                            style={preferences?.cardBackgroundColor ? { backgroundColor: preferences.cardBackgroundColor } : undefined}
+                        <DecorativeCardWrapper
+                            iconId={preferences?.decorativeIcon}
+                            color={preferences?.decorativeIconColor}
+                            seed={`${studentIdForWidget}-${classId}`}
+                            cardIndex={0}
                         >
-                            <img
-                                src={preferences?.icon || "/brand/icon-removebg.webp"}
-                                alt="Dashboard mascot"
-                                className="w-full h-full object-contain"
-                            />
-                        </Card>
+                            <Card 
+                                className="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center p-2 shrink-0"
+                                style={preferences?.cardBackgroundColor ? { backgroundColor: preferences.cardBackgroundColor } : undefined}
+                            >
+                                <img
+                                    src={preferences?.icon || "/brand/icon-removebg.webp"}
+                                    alt="Dashboard mascot"
+                                    className="w-full h-full object-contain"
+                                />
+                            </Card>
+                        </DecorativeCardWrapper>
                     )}
 
                     {/* Greeting Card */}
                     {showGreetingCard && (
-                        <Card 
-                            className="flex-1"
-                            style={preferences?.cardBackgroundColor ? { backgroundColor: preferences.cardBackgroundColor } : undefined}
+                        <DecorativeCardWrapper
+                            iconId={preferences?.decorativeIcon}
+                            color={preferences?.decorativeIconColor}
+                            seed={`${studentIdForWidget}-${classId}`}
+                            cardIndex={1}
                         >
-                            <CardContent 
-                                className="p-6"
-                                style={preferences?.color ? { color: preferences.color } : undefined}
+                            <Card 
+                                className="flex-1"
+                                style={preferences?.cardBackgroundColor ? { backgroundColor: preferences.cardBackgroundColor } : undefined}
                             >
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                        <h2 className="text-2xl font-bold mb-2">
-                                            Hey there, {studentFirstName || "there"}!
-                                        </h2>
-                                        <p className="text-muted-foreground">
-                                            Welcome to your ClassClarus Dashboard! Check out all the cards below to see what's going on.
-                                        </p>
+                                <CardContent 
+                                    className="p-6"
+                                    style={preferences?.color ? { color: preferences.color } : undefined}
+                                >
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <h2 className="text-2xl font-bold mb-2">
+                                                Hey there, {studentFirstName || "there"}!
+                                            </h2>
+                                            <p className="text-muted-foreground">
+                                                Welcome to your ClassClarus Dashboard! Check out all the cards below to see what's going on.
+                                            </p>
+                                        </div>
+                                        {showCustomizeCard && isStudent && studentIdForWidget && classId && (
+                                            <DashboardPreferences 
+                                                classId={classId} 
+                                                studentId={studentIdForWidget}
+                                                customButtonColor={preferences?.buttonColor}
+                                            />
+                                        )}
                                     </div>
-                                    {showCustomizeCard && isStudent && studentIdForWidget && classId && (
-                                        <DashboardPreferences 
-                                            classId={classId} 
-                                            studentId={studentIdForWidget}
-                                            customButtonColor={preferences?.buttonColor}
-                                        />
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
+                        </DecorativeCardWrapper>
                     )}
                 </div>
             )}
 
             <div className="max-w-lg lg:max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {showPointsWidget && studentIdForWidget && classId && (
-                    <PointsWidget 
-                    classId={classId} 
-                    studentId={studentIdForWidget}
-                        itemBackground={lighterItemBackground}
-                        />
-                    )}
-                {showExpectationsWidget && studentIdForWidget && classId && (
-                    <ExpectationsWidget 
-                        classId={classId} 
-                        studentId={studentIdForWidget}
-                        itemBackground={lighterItemBackground}
-                        />
-                    )}
-                {showRandomAssignersWidget && studentIdForWidget && classId && (
-                    <RandomAssignersWidget
-                        classId={classId}
-                        studentId={studentIdForWidget}
-                        selectedAssignerIds={selectedRandomAssignerIds || undefined}
-                        itemBackground={lighterItemBackground}
-                        />
-                    )}
-                {showRotatingAssignersWidget && studentIdForWidget && classId && (
-                    <RotatingAssignersWidget
-                    classId={classId}
-                    studentId={studentIdForWidget}
-                        selectedAssignerIds={selectedRotatingAssignerIds || undefined}
-                        itemBackground={lighterItemBackground}
-                    />
-                )}
-                {showGroupsTeamsWidget && studentIdForWidget && classId && (
-                    <GroupsTeamsWidget 
-                    classId={classId} 
-                    studentId={studentIdForWidget}
-                    itemBackground={lighterItemBackground}
-                    />
-                )}
-                {showShufflerHistoryWidget && studentIdForWidget && classId && (
-                    <ShufflerHistoryWidget 
-                        classId={classId} 
-                        studentId={studentIdForWidget}
-                        itemBackground={lighterItemBackground}
-                        />
-                    )}
-                {showPickerHistoryWidget && studentIdForWidget && classId && (
-                    <PickerHistoryWidget 
-                    classId={classId} 
-                    studentId={studentIdForWidget}
-                    itemBackground={lighterItemBackground}
-                    />
-                )}
-                {showAttendanceWidget && studentIdForWidget && classId && (
-                    <AttendanceWidget 
-                        classId={classId} 
-                        studentId={studentIdForWidget}
-                        itemBackground={lighterItemBackground}
-                    />
-                )}
-                {showRazAssessmentsWidget && studentIdForWidget && classId && (
-                    <RazAssessmentsWidget 
-                    classId={classId} 
-                        studentId={studentIdForWidget}
-                        itemBackground={lighterItemBackground}
-                        />
-                    )}
+                {(() => {
+                    let cardIndex = 2; // Start from 2 since 0 and 1 are mascot and greeting cards
+                    return (
+                        <>
+                            {showPointsWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <PointsWidget 
+                                        classId={classId} 
+                                        studentId={studentIdForWidget}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showExpectationsWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <ExpectationsWidget 
+                                        classId={classId} 
+                                        studentId={studentIdForWidget}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showRandomAssignersWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <RandomAssignersWidget
+                                        classId={classId}
+                                        studentId={studentIdForWidget}
+                                        selectedAssignerIds={selectedRandomAssignerIds || undefined}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showRotatingAssignersWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <RotatingAssignersWidget
+                                        classId={classId}
+                                        studentId={studentIdForWidget}
+                                        selectedAssignerIds={selectedRotatingAssignerIds || undefined}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showGroupsTeamsWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <GroupsTeamsWidget 
+                                        classId={classId} 
+                                        studentId={studentIdForWidget}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showShufflerHistoryWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <ShufflerHistoryWidget 
+                                        classId={classId} 
+                                        studentId={studentIdForWidget}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showPickerHistoryWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <PickerHistoryWidget 
+                                        classId={classId} 
+                                        studentId={studentIdForWidget}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showAttendanceWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <AttendanceWidget 
+                                        classId={classId} 
+                                        studentId={studentIdForWidget}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                            {showRazAssessmentsWidget && studentIdForWidget && classId && (
+                                <DecorativeCardWrapper
+                                    iconId={preferences?.decorativeIcon}
+                                    color={preferences?.decorativeIconColor}
+                                    seed={`${studentIdForWidget}-${classId}`}
+                                    cardIndex={cardIndex++}
+                                >
+                                    <RazAssessmentsWidget 
+                                        classId={classId} 
+                                        studentId={studentIdForWidget}
+                                        itemBackground={lighterItemBackground}
+                                    />
+                                </DecorativeCardWrapper>
+                            )}
+                        </>
+                    );
+                })()}
+            </div>
             </div>
             </div>
         </div>

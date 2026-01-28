@@ -349,7 +349,7 @@ function RouteComponent() {
                                     })()}
                                 </div>
                             </div>
-                            {!roleInfo.isOwner && classEntity && (
+                            {!roleInfo.isOwner && !roleInfo.isStudent && classEntity && (
                                 <LeaveClassDialog classEntity={classEntity} />
                             )}
                         </div>

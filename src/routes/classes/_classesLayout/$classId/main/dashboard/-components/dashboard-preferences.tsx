@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { id } from "@instantdb/react";
 import { Palette, Image, Upload, X } from "lucide-react";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { db } from "@/lib/db/db";
 import { useUploadedFile } from "@/hooks/files/use-uploaded-file";
+import { FontAwesomeIconPicker } from "@/components/icons/FontAwesomeIconPicker";
+import { resolveIconId } from "@/lib/fontawesome-icon-catalog";
 import { Button } from "@/components/ui/button";
 import {
     Credenza,
@@ -67,6 +71,8 @@ export function DashboardPreferences({
     const [background, setBackground] = useState<string>("");
     const [buttonColor, setButtonColor] = useState<string>("");
     const [cardBackgroundColor, setCardBackgroundColor] = useState<string>("");
+    const [decorativeIcon, setDecorativeIcon] = useState<IconDefinition | null>(null);
+    const [decorativeIconColor, setDecorativeIconColor] = useState<string>("");
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -109,6 +115,20 @@ export function DashboardPreferences({
             setBackground(existingPrefs.background || "");
             setButtonColor(existingPrefs.buttonColor || "");
             setCardBackgroundColor(existingPrefs.cardBackgroundColor || "");
+            setDecorativeIconColor(existingPrefs.decorativeIconColor || "");
+            
+            // Load decorative icon if ID exists
+            if (existingPrefs.decorativeIcon) {
+                resolveIconId(existingPrefs.decorativeIcon)
+                    .then((iconDef) => {
+                        if (iconDef) {
+                            setDecorativeIcon(iconDef);
+                        }
+                    })
+                    .catch(() => {
+                        // Icon ID invalid or not found, ignore
+                    });
+            }
         }
     }, [existingPrefs]);
 
@@ -168,6 +188,11 @@ export function DashboardPreferences({
         try {
             const now = new Date();
 
+            // Convert IconDefinition to icon ID string
+            const decorativeIconId = decorativeIcon 
+                ? `${decorativeIcon.prefix}:${decorativeIcon.iconName}` 
+                : undefined;
+
             if (existingPrefs) {
                 // Update existing preferences
                 db.transact([
@@ -177,6 +202,8 @@ export function DashboardPreferences({
                         background: background || undefined,
                         buttonColor: buttonColor || undefined,
                         cardBackgroundColor: cardBackgroundColor || undefined,
+                        decorativeIcon: decorativeIconId,
+                        decorativeIconColor: decorativeIconColor || undefined,
                         updated: now,
                     }),
                 ]);
@@ -191,6 +218,8 @@ export function DashboardPreferences({
                             background: background || undefined,
                             buttonColor: buttonColor || undefined,
                             cardBackgroundColor: cardBackgroundColor || undefined,
+                            decorativeIcon: decorativeIconId,
+                            decorativeIconColor: decorativeIconColor || undefined,
                             created: now,
                             updated: now,
                         })
@@ -405,6 +434,54 @@ export function DashboardPreferences({
                         <p className="text-xs text-muted-foreground">
                             Choose a background color for dashboard cards
                         </p>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t">
+                        <Label>Decorative Icon</Label>
+                        <p className="text-xs text-muted-foreground mb-2">
+                            Choose an icon to appear as decorative elements on your dashboard
+                        </p>
+                        <FontAwesomeIconPicker
+                            value={decorativeIcon}
+                            onChange={setDecorativeIcon}
+                            placeholder="Pick a decorative icon"
+                        />
+                        
+                        {decorativeIcon && (
+                            <div className="space-y-2 mt-3">
+                                <Label htmlFor="decorativeIconColor">Icon Color</Label>
+                                <div className="flex items-center gap-2">
+                                    <Palette className="size-4 text-muted-foreground" />
+                                    <Input
+                                        id="decorativeIconColor"
+                                        type="color"
+                                        value={decorativeIconColor || "#000000"}
+                                        onChange={(e) => setDecorativeIconColor(e.target.value)}
+                                        className="h-10 w-20 cursor-pointer"
+                                    />
+                                    <Input
+                                        placeholder="#000000"
+                                        value={decorativeIconColor}
+                                        onChange={(e) => setDecorativeIconColor(e.target.value)}
+                                        className="flex-1"
+                                    />
+                                </div>
+                                
+                                {/* Preview */}
+                                <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/30">
+                                    <FontAwesomeIcon
+                                        icon={decorativeIcon}
+                                        style={{
+                                            color: decorativeIconColor || "#000000",
+                                            fontSize: "24px",
+                                        }}
+                                    />
+                                    <span className="text-xs text-muted-foreground">
+                                        Preview: This icon will appear randomly on your dashboard
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Live Preview */}
