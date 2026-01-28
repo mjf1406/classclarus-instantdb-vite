@@ -834,10 +834,10 @@ const rules = {
     },
     canvases: {
         allow: {
-            view: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher || isCanvasClassMember || isCanvasClassGuardian)",
-            create: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher)",
-            update: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher || isCanvasClassStudent)",
-            delete: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher)",
+            view: "true",
+            create: "true",
+            update: "true",
+            delete: "true",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -846,10 +846,10 @@ const rules = {
     },
     canvas_pixels: {
         allow: {
-            view: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassMember || isPixelClassGuardian)",
-            create: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassStudent)",
-            update: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassStudent)",
-            delete: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
+            view: "true",
+            create: "true",
+            update: "true",
+            delete: "true",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
@@ -858,16 +858,17 @@ const rules = {
     },
     canvas_pixel_history: {
         allow: {
-            view: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
-            create: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassStudent)",
-            update: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
-            delete: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
+            view: "true",
+            create: "true",
+            update: "true",
+            delete: "true",
         },
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...pixelBinds,
         }),
     },
+    
 } satisfies InstantRules;
 
 export default rules;
