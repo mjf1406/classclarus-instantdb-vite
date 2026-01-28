@@ -280,6 +280,32 @@ const attendanceRecordBinds = {
     isGuardianOfAttendanceRecordStudent: "auth.id in data.ref('student.guardians.id')",
 };
 
+// Canvas binds - for entities that link directly to class (canvas_configs, canvases)
+const canvasBinds = {
+    isCanvasClassOwner: "auth.id in data.ref('class.owner.id')",
+    isStillCanvasClassOwner: "auth.id in newData.ref('class.owner.id')",
+    isCanvasClassAdmin: "auth.id in data.ref('class.classAdmins.id')",
+    isStillCanvasClassAdmin: "auth.id in newData.ref('class.classAdmins.id')",
+    isCanvasClassTeacher: "auth.id in data.ref('class.classTeachers.id')",
+    isStillCanvasClassTeacher: "auth.id in newData.ref('class.classTeachers.id')",
+    isCanvasClassAssistantTeacher: "auth.id in data.ref('class.classAssistantTeachers.id')",
+    isStillCanvasClassAssistantTeacher: "auth.id in newData.ref('class.classAssistantTeachers.id')",
+    isCanvasClassStudent: "auth.id in data.ref('class.classStudents.id')",
+    isCanvasClassGuardian: "auth.id in data.ref('class.classGuardians.id')",
+    isCanvasClassMember: "auth.id in data.ref('class.classStudents.id') || auth.id in data.ref('class.classTeachers.id') || auth.id in data.ref('class.classAssistantTeachers.id') || auth.id in data.ref('class.classGuardians.id')",
+};
+
+// Pixel binds - for entities that link through canvas (canvas_pixels, canvas_pixel_history)
+const pixelBinds = {
+    isPixelClassOwner: "auth.id in data.ref('canvas.class.owner.id')",
+    isPixelClassAdmin: "auth.id in data.ref('canvas.class.classAdmins.id')",
+    isPixelClassTeacher: "auth.id in data.ref('canvas.class.classTeachers.id')",
+    isPixelClassAssistantTeacher: "auth.id in data.ref('canvas.class.classAssistantTeachers.id')",
+    isPixelClassStudent: "auth.id in data.ref('canvas.class.classStudents.id')",
+    isPixelClassGuardian: "auth.id in data.ref('canvas.class.classGuardians.id')",
+    isPixelClassMember: "auth.id in data.ref('canvas.class.classStudents.id') || auth.id in data.ref('canvas.class.classTeachers.id') || auth.id in data.ref('canvas.class.classAssistantTeachers.id') || auth.id in data.ref('canvas.class.classGuardians.id')",
+};
+
 const pickerPicksBinds = {
     isPickerPicksClassOwner: "auth.id in data.ref('round.class.owner.id')",
     isPickerPicksClassAdmin: "auth.id in data.ref('round.class.classAdmins.id')",
@@ -314,6 +340,7 @@ const allDataBinds = {
     ...studentExpectationBinds,
     ...assignmentBinds,
     ...pickerPicksBinds,
+    ...canvasBinds,
 };
 
 const allBinds = {
@@ -791,6 +818,54 @@ const rules = {
         bind: bindObjectToArray({
             ...authenticationBinds,
             ...attendanceRecordBinds,
+        }),
+    },
+    canvas_configs: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher || isClassMember || isClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isClassOwner || isClassAdmin || isClassTeacher || isClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...dashboardSettingsBinds,
+        }),
+    },
+    canvases: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher || isCanvasClassMember || isCanvasClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher)",
+            update: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher || isCanvasClassStudent)",
+            delete: "isAuthenticated && isAllowedEmail && (isCanvasClassOwner || isCanvasClassAdmin || isCanvasClassTeacher || isCanvasClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...canvasBinds,
+        }),
+    },
+    canvas_pixels: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassMember || isPixelClassGuardian)",
+            create: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassStudent)",
+            update: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassStudent)",
+            delete: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...pixelBinds,
+        }),
+    },
+    canvas_pixel_history: {
+        allow: {
+            view: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
+            create: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher || isPixelClassStudent)",
+            update: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
+            delete: "isAuthenticated && isAllowedEmail && (isPixelClassOwner || isPixelClassAdmin || isPixelClassTeacher || isPixelClassAssistantTeacher)",
+        },
+        bind: bindObjectToArray({
+            ...authenticationBinds,
+            ...pixelBinds,
         }),
     },
 } satisfies InstantRules;

@@ -53,6 +53,7 @@ import { Route as ClassesClassesLayoutClassIdMainSettingsIndexRouteImport } from
 import { Route as ClassesClassesLayoutClassIdMainNoiseMonitorIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/noise-monitor/index'
 import { Route as ClassesClassesLayoutClassIdMainDashboardIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/dashboard/index'
 import { Route as ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/classroom-screen/index'
+import { Route as ClassesClassesLayoutClassIdMainCanvasIndexRouteImport } from './routes/classes/_classesLayout/$classId/main/canvas/index'
 import { Route as ClassesClassesLayoutClassIdClassManagementTasksIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/tasks/index'
 import { Route as ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/student-dashboards/index'
 import { Route as ClassesClassesLayoutClassIdClassManagementReadingIndexRouteImport } from './routes/classes/_classesLayout/$classId/class-management/reading/index'
@@ -315,6 +316,12 @@ const ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute =
     path: '/$classId/main/classroom-screen/',
     getParentRoute: () => ClassesClassesLayoutRoute,
   } as any)
+const ClassesClassesLayoutClassIdMainCanvasIndexRoute =
+  ClassesClassesLayoutClassIdMainCanvasIndexRouteImport.update({
+    id: '/$classId/main/canvas/',
+    path: '/$classId/main/canvas/',
+    getParentRoute: () => ClassesClassesLayoutRoute,
+  } as any)
 const ClassesClassesLayoutClassIdClassManagementTasksIndexRoute =
   ClassesClassesLayoutClassIdClassManagementTasksIndexRouteImport.update({
     id: '/$classId/class-management/tasks/',
@@ -422,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/classes/$classId/class-management/reading': typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
   '/classes/$classId/class-management/student-dashboards': typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
   '/classes/$classId/class-management/tasks': typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
+  '/classes/$classId/main/canvas': typeof ClassesClassesLayoutClassIdMainCanvasIndexRoute
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
@@ -477,6 +485,7 @@ export interface FileRoutesByTo {
   '/classes/$classId/class-management/reading': typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
   '/classes/$classId/class-management/student-dashboards': typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
   '/classes/$classId/class-management/tasks': typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
+  '/classes/$classId/main/canvas': typeof ClassesClassesLayoutClassIdMainCanvasIndexRoute
   '/classes/$classId/main/classroom-screen': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/$classId/main/dashboard': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/$classId/main/noise-monitor': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
@@ -535,6 +544,7 @@ export interface FileRoutesById {
   '/classes/_classesLayout/$classId/class-management/reading/': typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
   '/classes/_classesLayout/$classId/class-management/student-dashboards/': typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
   '/classes/_classesLayout/$classId/class-management/tasks/': typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
+  '/classes/_classesLayout/$classId/main/canvas/': typeof ClassesClassesLayoutClassIdMainCanvasIndexRoute
   '/classes/_classesLayout/$classId/main/classroom-screen/': typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   '/classes/_classesLayout/$classId/main/dashboard/': typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   '/classes/_classesLayout/$classId/main/noise-monitor/': typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
@@ -594,6 +604,7 @@ export interface FileRouteTypes {
     | '/classes/$classId/class-management/reading'
     | '/classes/$classId/class-management/student-dashboards'
     | '/classes/$classId/class-management/tasks'
+    | '/classes/$classId/main/canvas'
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
     | '/classes/$classId/main/noise-monitor'
@@ -649,6 +660,7 @@ export interface FileRouteTypes {
     | '/classes/$classId/class-management/reading'
     | '/classes/$classId/class-management/student-dashboards'
     | '/classes/$classId/class-management/tasks'
+    | '/classes/$classId/main/canvas'
     | '/classes/$classId/main/classroom-screen'
     | '/classes/$classId/main/dashboard'
     | '/classes/$classId/main/noise-monitor'
@@ -706,6 +718,7 @@ export interface FileRouteTypes {
     | '/classes/_classesLayout/$classId/class-management/reading/'
     | '/classes/_classesLayout/$classId/class-management/student-dashboards/'
     | '/classes/_classesLayout/$classId/class-management/tasks/'
+    | '/classes/_classesLayout/$classId/main/canvas/'
     | '/classes/_classesLayout/$classId/main/classroom-screen/'
     | '/classes/_classesLayout/$classId/main/dashboard/'
     | '/classes/_classesLayout/$classId/main/noise-monitor/'
@@ -1054,6 +1067,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRouteImport
       parentRoute: typeof ClassesClassesLayoutRoute
     }
+    '/classes/_classesLayout/$classId/main/canvas/': {
+      id: '/classes/_classesLayout/$classId/main/canvas/'
+      path: '/$classId/main/canvas'
+      fullPath: '/classes/$classId/main/canvas'
+      preLoaderRoute: typeof ClassesClassesLayoutClassIdMainCanvasIndexRouteImport
+      parentRoute: typeof ClassesClassesLayoutRoute
+    }
     '/classes/_classesLayout/$classId/class-management/tasks/': {
       id: '/classes/_classesLayout/$classId/class-management/tasks/'
       path: '/$classId/class-management/tasks'
@@ -1151,6 +1171,7 @@ interface ClassesClassesLayoutRouteChildren {
   ClassesClassesLayoutClassIdClassManagementReadingIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementReadingIndexRoute
   ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute
   ClassesClassesLayoutClassIdClassManagementTasksIndexRoute: typeof ClassesClassesLayoutClassIdClassManagementTasksIndexRoute
+  ClassesClassesLayoutClassIdMainCanvasIndexRoute: typeof ClassesClassesLayoutClassIdMainCanvasIndexRoute
   ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute: typeof ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute
   ClassesClassesLayoutClassIdMainDashboardIndexRoute: typeof ClassesClassesLayoutClassIdMainDashboardIndexRoute
   ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute: typeof ClassesClassesLayoutClassIdMainNoiseMonitorIndexRoute
@@ -1196,6 +1217,8 @@ const ClassesClassesLayoutRouteChildren: ClassesClassesLayoutRouteChildren = {
     ClassesClassesLayoutClassIdClassManagementStudentDashboardsIndexRoute,
   ClassesClassesLayoutClassIdClassManagementTasksIndexRoute:
     ClassesClassesLayoutClassIdClassManagementTasksIndexRoute,
+  ClassesClassesLayoutClassIdMainCanvasIndexRoute:
+    ClassesClassesLayoutClassIdMainCanvasIndexRoute,
   ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute:
     ClassesClassesLayoutClassIdMainClassroomScreenIndexRoute,
   ClassesClassesLayoutClassIdMainDashboardIndexRoute:

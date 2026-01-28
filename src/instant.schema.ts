@@ -289,6 +289,34 @@ const _schema = i.schema({
             note: i.string().optional(),
             createdAt: i.date().indexed(),
         }),
+        canvas_configs: i.entity({
+            width: i.number().indexed(),
+            height: i.number().indexed(),
+            cooldownSeconds: i.number(),
+            isEnabled: i.boolean().indexed(),
+            created: i.date(),
+            updated: i.date(),
+        }),
+        canvases: i.entity({
+            name: i.string().indexed(),
+            isActive: i.boolean().indexed(),
+            archivedAt: i.date().indexed().optional(),
+            created: i.date(),
+            pixelData: i.string().optional(),
+        }),
+        canvas_pixels: i.entity({
+            x: i.number().indexed(),
+            y: i.number().indexed(),
+            color: i.string(),
+            updatedAt: i.date().indexed(),
+        }),
+        canvas_pixel_history: i.entity({
+            x: i.number().indexed(),
+            y: i.number().indexed(),
+            color: i.string(),
+            placedAt: i.date().indexed(),
+            sequenceNumber: i.number().indexed(),
+        }),
     },
     links: {
         userClasses: {
@@ -1238,8 +1266,94 @@ const _schema = i.schema({
                 label: "attendanceRecordsAsCreatedBy",
             },
         },
+        classCanvasConfigs: {
+            forward: {
+                on: "classes",
+                has: "one",
+                label: "canvasConfig",
+                onDelete: "cascade",
+            },
+            reverse: {
+                on: "canvas_configs",
+                has: "one",
+                label: "class",
+            },
+        },
+        classCanvases: {
+            forward: {
+                on: "classes",
+                has: "many",
+                label: "canvases",
+            },
+            reverse: {
+                on: "canvases",
+                has: "one",
+                label: "class",
+                onDelete: "cascade",
+            },
+        },
+        canvasPixels: {
+            forward: {
+                on: "canvases",
+                has: "many",
+                label: "pixels",
+            },
+            reverse: {
+                on: "canvas_pixels",
+                has: "one",
+                label: "canvas",
+                onDelete: "cascade",
+            },
+        },
+        pixelUpdatedBy: {
+            forward: {
+                on: "canvas_pixels",
+                has: "one",
+                label: "updatedBy",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "canvasPixelsAsUpdatedBy",
+            },
+        },
+        canvasPixelHistory: {
+            forward: {
+                on: "canvases",
+                has: "many",
+                label: "pixelHistory",
+            },
+            reverse: {
+                on: "canvas_pixel_history",
+                has: "one",
+                label: "canvas",
+                onDelete: "cascade",
+            },
+        },
+        pixelHistoryPlacedBy: {
+            forward: {
+                on: "canvas_pixel_history",
+                has: "one",
+                label: "placedBy",
+            },
+            reverse: {
+                on: "$users",
+                has: "many",
+                label: "canvasPixelHistoryAsPlacedBy",
+            },
+        },
     },
-    rooms: {},
+    rooms: {
+        classCanvas: {
+            presence: i.entity({
+                userName: i.string(),
+                userColor: i.string(),
+                cursorX: i.number(),
+                cursorY: i.number(),
+                selectedColor: i.string(),
+            }),
+        },
+    },
 });
 
 // This helps Typescript display nicer intellisense

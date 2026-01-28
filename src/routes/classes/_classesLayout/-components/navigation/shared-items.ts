@@ -1,6 +1,6 @@
 /** @format */
 
-import { Home, LayoutDashboard, UserPlus, Settings, Monitor, Volume2 } from "lucide-react";
+import { Home, LayoutDashboard, UserPlus, Settings, Monitor, Volume2, Palette } from "lucide-react";
 import {
     AdminIcon,
     TeacherIcon,
@@ -40,6 +40,12 @@ export function getMainItems(classId: string): NavigationItem[] {
             url: `/classes/${classId}/main/noise-monitor`,
             icon: Volume2,
         },
+        {
+            title: "Place",
+            description: "Collaborative pixel art canvas",
+            url: `/classes/${classId}/main/canvas`,
+            icon: Palette,
+        },
     ];
 }
 
@@ -60,6 +66,12 @@ export function getRestrictedMainItems(classId: string): NavigationItem[] {
                 "Access analytics, insights, and key metrics for your class",
             url: `/classes/${classId}/main/dashboard`,
             icon: LayoutDashboard,
+        },
+        {
+            title: "Place",
+            description: "Collaborative pixel art canvas",
+            url: `/classes/${classId}/main/canvas`,
+            icon: Palette,
         },
     ];
 }

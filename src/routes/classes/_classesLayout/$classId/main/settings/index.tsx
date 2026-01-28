@@ -2,10 +2,10 @@
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
-import { UnderConstruction } from "@/components/under-construction";
 import { useClassById } from "@/hooks/use-class-hooks";
 import { useClassRole } from "@/hooks/use-class-role";
 import { RestrictedRoute } from "@/components/auth/restricted-route";
+import { PlaceSettings } from "./-components/place-settings";
 
 export const Route = createFileRoute(
     "/classes/_classesLayout/$classId/main/settings/"
@@ -39,8 +39,8 @@ function RouteComponent() {
                         </div>
                     </div>
                 </div>
-                <div className="h-[calc(100vh-12rem)]">
-                    <UnderConstruction />
+                <div className="space-y-6">
+                    <PlaceSettings classId={classId || ""} />
                 </div>
             </div>
         </RestrictedRoute>
