@@ -12,6 +12,7 @@ import type { AppSchema } from "@/instant.schema";
 interface AttendanceWidgetProps {
     classId: string;
     studentId: string;
+    itemBackground?: string;
 }
 
 type AttendanceRecord = InstaQLEntity<
@@ -27,7 +28,7 @@ type AttendanceRecordsQueryResult = {
     attendance_records: AttendanceRecord[];
 };
 
-export function AttendanceWidget({ classId, studentId }: AttendanceWidgetProps) {
+export function AttendanceWidget({ classId, studentId, itemBackground }: AttendanceWidgetProps) {
     // Query all attendance records for the student in this class
     const { data: attendanceData } = db.useQuery(
         studentId && classId
@@ -149,7 +150,7 @@ export function AttendanceWidget({ classId, studentId }: AttendanceWidgetProps) 
                                     <Card
                                         key={entry.recordId}
                                         className="p-3"
-                                        style={{ backgroundColor: "var(--student-card-bg)" }}
+                                        style={itemBackground ? { backgroundColor: itemBackground } : undefined}
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex-1 min-w-0">

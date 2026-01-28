@@ -13,6 +13,7 @@ import type { AppSchema } from "@/instant.schema";
 interface PickerHistoryWidgetProps {
     classId: string;
     studentId: string;
+    itemBackground?: string;
 }
 
 type PickerPick = InstaQLEntity<
@@ -32,6 +33,7 @@ type PickerPicksQueryResult = {
 export function PickerHistoryWidget({
     classId,
     studentId,
+    itemBackground,
 }: PickerHistoryWidgetProps) {
     // Query all picker picks for the student
     const { data: picksData } = db.useQuery(
@@ -146,7 +148,7 @@ export function PickerHistoryWidget({
                                 <Card
                                     key={entry.pickId}
                                     className="p-3"
-                                    style={{ backgroundColor: "var(--student-card-bg)" }}
+                                    style={itemBackground ? { backgroundColor: itemBackground } : undefined}
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex-1 min-w-0">

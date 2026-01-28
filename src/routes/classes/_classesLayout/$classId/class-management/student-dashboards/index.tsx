@@ -203,6 +203,9 @@ function SettingsPanel() {
     const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
     const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
     const showRazAssessmentsWidget = existingSettings?.showRazAssessmentsWidget ?? false;
+    const showMascotCard = existingSettings?.showMascotCard ?? true;
+    const showGreetingCard = existingSettings?.showGreetingCard ?? true;
+    const showCustomizeCard = existingSettings?.showCustomizeCard ?? true;
 
     const typedRandomAssignersData = (randomAssignersData as RandomAssignersQueryResult | undefined) ?? null;
     const randomAssigners = typedRandomAssignersData?.random_assigners || [];
@@ -568,6 +571,87 @@ function SettingsPanel() {
         ]);
     };
 
+    const handleToggleMascotCard = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showMascotCard: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups",
+                        showMascotCard: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleToggleGreetingCard = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showGreetingCard: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups",
+                        showGreetingCard: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
+    const handleToggleCustomizeCard = (enabled: boolean) => {
+        if (!classId) return;
+
+        const now = new Date();
+
+        if (existingSettings) {
+            db.transact([
+                db.tx.classDashboardSettings[existingSettings.id].update({
+                    showCustomizeCard: enabled,
+                    updated: now,
+                }),
+            ]);
+        } else {
+            const settingsId = id();
+            db.transact([
+                db.tx.classDashboardSettings[settingsId]
+                    .create({
+                        groupsTeamsDisplay: "groups",
+                        showCustomizeCard: enabled,
+                        created: now,
+                        updated: now,
+                    })
+                    .link({ class: classId }),
+            ]);
+        }
+    };
+
     return (
         <div className="space-y-4">
             <Card>
@@ -578,25 +662,92 @@ function SettingsPanel() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-start space-x-3 space-y-0">
-                        <Checkbox
-                            id="points-widget-toggle"
-                            checked={showPointsWidget}
-                            onCheckedChange={handleTogglePointsWidget}
-                            className="mt-1"
-                        />
-                        <div className="space-y-1 leading-none">
-                            <Label
-                                htmlFor="points-widget-toggle"
-                                className="text-base font-medium cursor-pointer"
-                            >
-                                Points Widget
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                                Show points widget on student dashboards
-                            </p>
+                    <div className="space-y-3">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                            Dashboard Header Cards
+                        </h3>
+                        <div className="flex items-start space-x-3 space-y-0">
+                            <Checkbox
+                                id="mascot-card-toggle"
+                                checked={showMascotCard}
+                                onCheckedChange={handleToggleMascotCard}
+                                className="mt-1"
+                            />
+                            <div className="space-y-1 leading-none">
+                                <Label
+                                    htmlFor="mascot-card-toggle"
+                                    className="text-base font-medium cursor-pointer"
+                                >
+                                    Mascot Image Card
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Show mascot image card on student dashboards
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start space-x-3 space-y-0">
+                            <Checkbox
+                                id="greeting-card-toggle"
+                                checked={showGreetingCard}
+                                onCheckedChange={handleToggleGreetingCard}
+                                className="mt-1"
+                            />
+                            <div className="space-y-1 leading-none">
+                                <Label
+                                    htmlFor="greeting-card-toggle"
+                                    className="text-base font-medium cursor-pointer"
+                                >
+                                    Greeting Card
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Show greeting card on student dashboards
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start space-x-3 space-y-0">
+                            <Checkbox
+                                id="customize-card-toggle"
+                                checked={showCustomizeCard}
+                                onCheckedChange={handleToggleCustomizeCard}
+                                className="mt-1"
+                            />
+                            <div className="space-y-1 leading-none">
+                                <Label
+                                    htmlFor="customize-card-toggle"
+                                    className="text-base font-medium cursor-pointer"
+                                >
+                                    Customize Card
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Show customize card on student dashboards
+                                </p>
+                            </div>
                         </div>
                     </div>
+                    <Separator />
+                    <div className="space-y-3">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                            Dashboard Widgets
+                        </h3>
+                        <div className="flex items-start space-x-3 space-y-0">
+                            <Checkbox
+                                id="points-widget-toggle"
+                                checked={showPointsWidget}
+                                onCheckedChange={handleTogglePointsWidget}
+                                className="mt-1"
+                            />
+                            <div className="space-y-1 leading-none">
+                                <Label
+                                    htmlFor="points-widget-toggle"
+                                    className="text-base font-medium cursor-pointer"
+                                >
+                                    Points Widget
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Show points widget on student dashboards
+                                </p>
+                            </div>
+                        </div>
                     <div className="flex items-start space-x-3 space-y-0">
                         <Checkbox
                             id="expectations-widget-toggle"
@@ -873,6 +1024,7 @@ function SettingsPanel() {
                                 Show RAZ reading assessment history and progress on student dashboards
                             </p>
                         </div>
+                    </div>
                     </div>
                 </CardContent>
             </Card>

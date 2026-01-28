@@ -18,6 +18,7 @@ import type { AppSchema } from "@/instant.schema";
 interface PointsWidgetProps {
     classId: string;
     studentId: string;
+    itemBackground?: string;
 }
 
 interface HistoryEntryProps {
@@ -27,9 +28,10 @@ interface HistoryEntryProps {
     quantity: number;
     createdBy?: InstaQLEntity<AppSchema, "$users"> | null;
     icon?: string | null;
+    itemBackground?: string;
 }
 
-function HistoryEntry({ date, name, points, quantity, createdBy, icon }: HistoryEntryProps) {
+function HistoryEntry({ date, name, points, quantity, createdBy, icon, itemBackground }: HistoryEntryProps) {
     const formattedDate = date
         ? format(new Date(date), "MMM d, yyyy 'at' h:mm a")
         : "Unknown date";
@@ -40,7 +42,10 @@ function HistoryEntry({ date, name, points, quantity, createdBy, icon }: History
             : createdBy?.email ?? "Unknown";
 
     return (
-        <Card className="mb-2" style={{ backgroundColor: "var(--student-card-bg)" }}>
+        <Card 
+            className="mb-2"
+            style={itemBackground ? { backgroundColor: itemBackground } : undefined}
+        >
             <CardContent className="flex items-center gap-3 p-3">
                 {icon && (
                     <div className="shrink-0">
@@ -73,7 +78,7 @@ function HistoryEntry({ date, name, points, quantity, createdBy, icon }: History
     );
 }
 
-export function PointsWidget({ classId, studentId }: PointsWidgetProps) {
+export function PointsWidget({ classId, studentId, itemBackground }: PointsWidgetProps) {
     const { totalPoints, awardedPoints, removedPoints, redeemedPoints } =
         useStudentPoints(classId, studentId);
 
@@ -183,6 +188,7 @@ export function PointsWidget({ classId, studentId }: PointsWidgetProps) {
                                             quantity={entry.quantity}
                                             createdBy={entry.createdBy}
                                             icon={entry.icon}
+                                            itemBackground={itemBackground}
                                         />
                                     ))
                                 )}
@@ -207,6 +213,7 @@ export function PointsWidget({ classId, studentId }: PointsWidgetProps) {
                                             quantity={entry.quantity}
                                             createdBy={entry.createdBy}
                                             icon={entry.icon}
+                                            itemBackground={itemBackground}
                                         />
                                     ))
                                 )}
@@ -231,6 +238,7 @@ export function PointsWidget({ classId, studentId }: PointsWidgetProps) {
                                             quantity={entry.quantity}
                                             createdBy={entry.createdBy}
                                             icon={entry.icon}
+                                            itemBackground={itemBackground}
                                         />
                                     ))
                                 )}

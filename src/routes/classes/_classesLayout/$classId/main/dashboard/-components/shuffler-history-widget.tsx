@@ -14,6 +14,7 @@ import type { ShuffleResult } from "@/lib/randomizer/shuffler";
 interface ShufflerHistoryWidgetProps {
     classId: string;
     studentId: string;
+    itemBackground?: string;
 }
 
 type ShufflerRun = InstaQLEntity<AppSchema, "shuffler_runs", {}>;
@@ -35,6 +36,7 @@ interface StudentShuffleEntry {
 export function ShufflerHistoryWidget({
     classId,
     studentId,
+    itemBackground,
 }: ShufflerHistoryWidgetProps) {
     // Query all shuffler runs for the class
     const { data: runsData } = db.useQuery(
@@ -144,7 +146,7 @@ export function ShufflerHistoryWidget({
                                 <Card
                                     key={entry.runId}
                                     className="p-3"
-                                    style={{ backgroundColor: "var(--student-card-bg)" }}
+                                    style={itemBackground ? { backgroundColor: itemBackground } : undefined}
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex-1 min-w-0">

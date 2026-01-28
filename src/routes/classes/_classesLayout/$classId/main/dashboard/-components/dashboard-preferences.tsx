@@ -1,19 +1,21 @@
 /** @format */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { id } from "@instantdb/react";
-import { Palette, Image, Sparkles } from "lucide-react";
+import { Palette, Image, Upload, X } from "lucide-react";
 import { db } from "@/lib/db/db";
+import { useUploadedFile } from "@/hooks/files/use-uploaded-file";
 import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+    Credenza,
+    CredenzaTrigger,
+    CredenzaContent,
+    CredenzaDescription,
+    CredenzaFooter,
+    CredenzaHeader,
+    CredenzaTitle,
+    CredenzaBody,
+} from "@/components/ui/credenza";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,11 +53,13 @@ type PreferencesQueryResult = {
 interface DashboardPreferencesProps {
     classId: string;
     studentId: string;
+    customButtonColor?: string;
 }
 
 export function DashboardPreferences({
     classId,
     studentId,
+    customButtonColor,
 }: DashboardPreferencesProps) {
     const [open, setOpen] = useState(false);
     const [icon, setIcon] = useState<string>("");
@@ -65,6 +69,14 @@ export function DashboardPreferences({
     const [cardBackgroundColor, setCardBackgroundColor] = useState<string>("");
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // File upload hook
+    const {
+        uploadFile,
+        isLoading: isUploading,
+        error: uploadError,
+    } = useUploadedFile();
 
     // Query existing preferences
     const { data: prefsData } = db.useQuery(
@@ -99,6 +111,55 @@ export function DashboardPreferences({
             setCardBackgroundColor(existingPrefs.cardBackgroundColor || "");
         }
     }, [existingPrefs]);
+
+    const handleImageUpload = async (file: File) => {
+        if (!file.type.startsWith("image/")) {
+            alert("Please select an image file");
+            return;
+        }
+
+        try {
+            const path = `student-mascots/${classId}/${studentId}/${Date.now()}-${file.name}`;
+            const uploadedFile = await uploadFile(file, path, {
+                contentType: file.type,
+            });
+
+            if (uploadedFile?.url) {
+                setIcon(uploadedFile.url);
+            } else {
+                throw new Error("Upload failed: No URL returned");
+            }
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            alert(uploadError || "Failed to upload image. Please try again.");
+        }
+    };
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            handleImageUpload(file);
+        }
+        // Reset input so same file can be selected again
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setIcon("");
+    };
+
+    // Check if icon is a valid URL (for preview)
+    const isValidImageUrl = (url: string): boolean => {
+        if (!url) return false;
+        try {
+            // Check if it's a valid URL or a path starting with /
+            return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/");
+        } catch {
+            return false;
+        }
+    };
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -149,34 +210,108 @@ export function DashboardPreferences({
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
+        <Credenza open={open} onOpenChange={setOpen}>
+            <CredenzaTrigger asChild>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    style={
+                        customButtonColor
+                            ? {
+                                  backgroundColor: customButtonColor,
+                                  color: getContrastColor(customButtonColor) === "white" ? "#ffffff" : "#000000",
+                              }
+                            : undefined
+                    }
+                >
                     <Palette className="size-4" />
-                    Customize
+                    <span className="hidden sm:inline">Customize</span>
+                    <span className="sr-only">Customize</span>
                 </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                    <DialogTitle>Customize Dashboard</DialogTitle>
-                    <DialogDescription>
+            </CredenzaTrigger>
+            <CredenzaContent className="sm:max-w-[500px]">
+                <CredenzaHeader>
+                    <CredenzaTitle>Customize Dashboard</CredenzaTitle>
+                    <CredenzaDescription>
                         Personalize your dashboard appearance
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
+                    </CredenzaDescription>
+                </CredenzaHeader>
+                <CredenzaBody className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
                     <div className="space-y-2">
-                        <Label htmlFor="icon">Icon</Label>
+                        <Label htmlFor="icon">Mascot Image</Label>
+                        
+                        {/* Image Preview */}
+                        {icon && isValidImageUrl(icon) && (
+                            <div className="relative inline-block mb-2">
+                                <img
+                                    src={icon}
+                                    alt="Mascot preview"
+                                    className="size-16 rounded-lg object-cover border"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute -top-2 -right-2 size-5 rounded-full"
+                                    onClick={handleRemoveImage}
+                                    disabled={isUploading}
+                                >
+                                    <X className="size-3" />
+                                    <span className="sr-only">Remove image</span>
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* File Upload Button */}
                         <div className="flex items-center gap-2">
-                            <Sparkles className="size-4 text-muted-foreground" />
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileInputChange}
+                                disabled={isUploading}
+                                className="hidden"
+                                id="mascot-upload"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                                className="gap-2"
+                            >
+                                <Upload className="size-4" />
+                                {isUploading ? "Uploading..." : "Upload Image"}
+                            </Button>
+                        </div>
+
+                        {uploadError && (
+                            <p className="text-xs text-destructive">
+                                {uploadError}
+                            </p>
+                        )}
+
+                        {/* Divider */}
+                        <div className="flex items-center gap-2 my-2">
+                            <div className="flex-1 border-t"></div>
+                            <span className="text-xs text-muted-foreground">OR</span>
+                            <div className="flex-1 border-t"></div>
+                        </div>
+
+                        {/* Manual URL Input */}
+                        <div className="flex items-center gap-2">
+                            <Image className="size-4 text-muted-foreground" />
                             <Input
                                 id="icon"
-                                placeholder="Icon name or emoji"
+                                placeholder="/brand/icon-removebg.webp"
                                 value={icon}
                                 onChange={(e) => setIcon(e.target.value)}
+                                disabled={isUploading}
                             />
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Enter an icon name or emoji (e.g., "star", "⭐")
+                            Upload an image or enter a URL/path to your mascot image (defaults to /brand/icon-removebg.webp)
                         </p>
                     </div>
 
@@ -313,8 +448,8 @@ export function DashboardPreferences({
                             {error}
                         </div>
                     )}
-                </div>
-                <DialogFooter>
+                </CredenzaBody>
+                <CredenzaFooter>
                     <Button
                         variant="outline"
                         onClick={() => setOpen(false)}
@@ -325,8 +460,8 @@ export function DashboardPreferences({
                     <Button onClick={handleSave} disabled={isSaving}>
                         {isSaving ? "Saving..." : "Save Preferences"}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </CredenzaFooter>
+            </CredenzaContent>
+        </Credenza>
     );
 }

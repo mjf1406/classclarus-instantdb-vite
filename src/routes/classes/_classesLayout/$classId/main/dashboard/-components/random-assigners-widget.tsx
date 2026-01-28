@@ -16,6 +16,7 @@ interface RandomAssignersWidgetProps {
     classId: string;
     studentId: string;
     selectedAssignerIds?: string[] | null; // If null/undefined/empty, show all assigners
+    itemBackground?: string;
 }
 
 type RandomAssignerRun = InstaQLEntity<
@@ -49,7 +50,7 @@ interface HistoryEntry {
     parentGroupName?: string;
 }
 
-function HistoryEntryCard({ entry }: { entry: HistoryEntry }) {
+function HistoryEntryCard({ entry, itemBackground }: { entry: HistoryEntry; itemBackground?: string }) {
     const formattedDate = entry.runDate
         ? format(new Date(entry.runDate), "MMM d, yyyy 'at' h:mm a")
         : "Unknown date";
@@ -57,7 +58,7 @@ function HistoryEntryCard({ entry }: { entry: HistoryEntry }) {
     return (
         <Card
             className="mb-2"
-            style={{ backgroundColor: "var(--student-card-bg)" }}
+            style={itemBackground ? { backgroundColor: itemBackground } : undefined}
         >
             <CardContent className="flex items-start gap-3 p-3">
                 <div className="flex-1 min-w-0">
@@ -90,6 +91,7 @@ export function RandomAssignersWidget({
     classId,
     studentId,
     selectedAssignerIds,
+    itemBackground,
 }: RandomAssignersWidgetProps) {
     // Query all random assigner runs for this class
     const { data: runsData } = db.useQuery(
@@ -244,7 +246,7 @@ export function RandomAssignersWidget({
                                     </div>
                                 ) : (
                                     historyEntries.map((entry) => (
-                                        <HistoryEntryCard key={entry.id} entry={entry} />
+                                        <HistoryEntryCard key={entry.id} entry={entry} itemBackground={itemBackground} />
                                     ))
                                 )}
                             </div>

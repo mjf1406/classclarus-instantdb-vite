@@ -18,6 +18,7 @@ import {
 interface RazAssessmentsWidgetProps {
     classId: string;
     studentId: string;
+    itemBackground?: string;
 }
 
 type ClassRosterWithAssessments = InstaQLEntity<
@@ -37,6 +38,7 @@ type ClassRosterQueryResult = {
 export function RazAssessmentsWidget({
     classId,
     studentId,
+    itemBackground,
 }: RazAssessmentsWidgetProps) {
     // Query class_roster entry for this student with assessments
     const { data: rosterData } = db.useQuery(
@@ -167,13 +169,87 @@ export function RazAssessmentsWidget({
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Current Level Display */}
-                <div className="flex items-center justify-center pt-2 border-t">
-                    <div className="flex flex-col items-center gap-1">
+                <div className="pt-2 border-t">
+                    <div className="flex flex-col items-center gap-1 mb-4">
                         <span className="text-xs text-muted-foreground">Current Level</span>
-                        <span className="text-4xl md:text-5xl font-bold">
-                            {currentLevel ?? "—"}
-                        </span>
                     </div>
+                    {currentLevel ? (() => {
+                        // Helper functions to convert between letter levels (A-Z) and numbers
+                        const letterToNumber = (letter: string): number => {
+                            return letter.charCodeAt(0) - 64; // A=1, B=2, ..., Z=26
+                        };
+                        const numberToLetter = (num: number): string | null => {
+                            if (num < 1 || num > 26) return null;
+                            return String.fromCharCode(64 + num); // 1=A, 2=B, ..., 26=Z
+                        };
+                        
+                        const currentLevelNum = letterToNumber(currentLevel);
+                        
+                        // Show up to 5 levels on each side (adjust based on available space)
+                        const maxLevelsPerSide = 5;
+                        
+                        // Get left and right levels with gradual fade
+                        const leftLevels = Array.from({ length: maxLevelsPerSide }, (_, i) => {
+                            const levelNum = currentLevelNum - (i + 1);
+                            const levelLetter = numberToLetter(levelNum);
+                            if (!levelLetter) return null;
+                            // More gradual fade: 0.85, 0.7, 0.55, 0.4, 0.25
+                            const opacity = 1 - (i + 1) * 0.15;
+                            return { letter: levelLetter, opacity: Math.max(0.15, opacity) };
+                        }).reverse().filter(Boolean) as Array<{ letter: string; opacity: number }>;
+                        
+                        const rightLevels = Array.from({ length: maxLevelsPerSide }, (_, i) => {
+                            const levelNum = currentLevelNum + (i + 1);
+                            const levelLetter = numberToLetter(levelNum);
+                            if (!levelLetter) return null;
+                            // More gradual fade: 0.85, 0.7, 0.55, 0.4, 0.25
+                            const opacity = 1 - (i + 1) * 0.15;
+                            return { letter: levelLetter, opacity: Math.max(0.15, opacity) };
+                        }).filter(Boolean) as Array<{ letter: string; opacity: number }>;
+                        
+                        return (
+                            <div className="relative flex items-center justify-center gap-2 md:gap-3 lg:gap-4 overflow-hidden px-2">
+                                {/* Gradient masks for fade effect */}
+                                <div className="absolute left-0 top-0 bottom-0 w-16 md:w-20 bg-gradient-to-r from-[var(--student-card-bg)] to-transparent z-10 pointer-events-none" />
+                                <div className="absolute right-0 top-0 bottom-0 w-16 md:w-20 bg-gradient-to-l from-[var(--student-card-bg)] to-transparent z-10 pointer-events-none" />
+                                
+                                {/* Next levels to the left (lower letters) */}
+                                <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-1 justify-end">
+                                    {leftLevels.map(({ letter, opacity }) => (
+                                        <div
+                                            key={`left-${letter}`}
+                                            className="text-xl md:text-2xl lg:text-3xl font-semibold text-muted-foreground transition-opacity duration-300"
+                                            style={{ opacity }}
+                                        >
+                                            {letter}
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {/* Current level (center, fully visible) */}
+                                <div className="text-4xl md:text-5xl font-bold shrink-0">
+                                    {currentLevel}
+                                </div>
+                                
+                                {/* Next levels to the right (higher letters) */}
+                                <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-1 justify-start">
+                                    {rightLevels.map(({ letter, opacity }) => (
+                                        <div
+                                            key={`right-${letter}`}
+                                            className="text-xl md:text-2xl lg:text-3xl font-semibold text-muted-foreground transition-opacity duration-300"
+                                            style={{ opacity }}
+                                        >
+                                            {letter}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })() : (
+                        <div className="flex items-center justify-center">
+                            <span className="text-4xl md:text-5xl font-bold">—</span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Assessment Status Banner */}
@@ -292,7 +368,7 @@ export function RazAssessmentsWidget({
                                         <Card
                                             key={assessment.id}
                                             className="p-3"
-                                            style={{ backgroundColor: "var(--student-card-bg)" }}
+                                            style={{ backgroundColor: itemBackground || "var(--student-card-bg)" }}
                                         >
                                             <div className="space-y-2">
                                                 <div className="flex items-start justify-between gap-2">

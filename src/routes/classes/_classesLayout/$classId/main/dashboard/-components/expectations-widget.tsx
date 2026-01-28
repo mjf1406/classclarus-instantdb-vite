@@ -9,11 +9,13 @@ import { Badge } from "@/components/ui/badge";
 interface ExpectationsWidgetProps {
     classId: string;
     studentId: string;
+    itemBackground?: string;
 }
 
 export function ExpectationsWidget({
     classId,
     studentId,
+    itemBackground,
 }: ExpectationsWidgetProps) {
     const { expectations, studentExpectationMap, isLoading } = useExpectations(
         classId,
@@ -106,6 +108,7 @@ export function ExpectationsWidget({
                         <div
                             key={expectation.id}
                             className="flex items-start justify-between gap-4 p-3 rounded-lg border"
+                            style={itemBackground ? { backgroundColor: itemBackground } : undefined}
                         >
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">

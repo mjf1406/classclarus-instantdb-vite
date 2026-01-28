@@ -14,6 +14,7 @@ import type { AppSchema } from "@/instant.schema";
 interface GroupsTeamsWidgetProps {
     classId: string;
     studentId: string;
+    itemBackground?: string;
 }
 
 type Group = InstaQLEntity<
@@ -67,7 +68,7 @@ interface StudentGroupTeam {
     teamJoinedAts: (Date | string | number | null)[];
 }
 
-export function GroupsTeamsWidget({ classId, studentId }: GroupsTeamsWidgetProps) {
+export function GroupsTeamsWidget({ classId, studentId, itemBackground }: GroupsTeamsWidgetProps) {
     // Query all groups for this class with their students and teams
     const { data: groupsData } = db.useQuery(
         classId
@@ -275,6 +276,7 @@ export function GroupsTeamsWidget({ classId, studentId }: GroupsTeamsWidgetProps
                                             <div
                                                 key={item.groupId}
                                                 className="space-y-2 border-b pb-4 last:border-b-0"
+                                                style={itemBackground ? { backgroundColor: itemBackground } : undefined}
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <h4 className="font-medium text-sm">{item.groupName}</h4>
@@ -328,6 +330,7 @@ export function GroupsTeamsWidget({ classId, studentId }: GroupsTeamsWidgetProps
                                             <div
                                                 key={event.id}
                                                 className="flex items-start gap-3 p-3 rounded-md border bg-card"
+                                                style={itemBackground ? { backgroundColor: itemBackground } : undefined}
                                             >
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-1">

@@ -8,6 +8,8 @@ import type { InstaQLEntity } from "@instantdb/react";
 import type { AppSchema } from "@/instant.schema";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent } from "@/components/ui/card";
+import { DashboardPreferences } from "./dashboard-preferences";
 import { PointsWidget } from "./points-widget";
 import { ExpectationsWidget } from "./expectations-widget";
 import { RandomAssignersWidget } from "./random-assigners-widget";
@@ -120,6 +122,20 @@ export function StudentParentDashboard({
     // Determine which student ID to use for widget display
     const studentIdForWidget = isGuardian ? selectedChildId : userId || "";
 
+    // Query student user data to get firstName for greeting
+    const { data: studentUserData } = db.useQuery(
+        studentIdForWidget
+            ? {
+                  $users: {
+                      $: { where: { id: studentIdForWidget } },
+                  },
+              }
+            : null
+    );
+
+    const studentUser = (studentUserData as { $users?: Array<InstaQLEntity<AppSchema, "$users">> } | undefined)?.$users?.[0];
+    const studentFirstName = studentUser?.firstName || "";
+
     // Query student preferences for the selected student
     const { data: prefsData } = db.useQuery(
         studentIdForWidget && classId
@@ -168,6 +184,9 @@ export function StudentParentDashboard({
     const showPickerHistoryWidget = existingSettings?.showPickerHistoryWidget ?? false;
     const showAttendanceWidget = existingSettings?.showAttendanceWidget ?? false;
     const showRazAssessmentsWidget = existingSettings?.showRazAssessmentsWidget ?? false;
+    const showMascotCard = existingSettings?.showMascotCard ?? true;
+    const showGreetingCard = existingSettings?.showGreetingCard ?? true;
+    const showCustomizeCard = existingSettings?.showCustomizeCard ?? true;
 
     // Parse selected assigner IDs - return empty array if empty, null if not set
     const selectedRandomAssignerIds = useMemo(() => {
@@ -214,6 +233,15 @@ export function StudentParentDashboard({
     if (preferences?.background) {
         dashboardStyle.background = preferences.background;
     }
+
+    // Calculate lighter background for widget items
+    const itemBackground = preferences?.cardBackgroundColor || preferences?.background;
+    const lighterItemBackground = itemBackground
+        ? `color-mix(in srgb, ${itemBackground} 20%, transparent)`
+        : undefined;
+
+    // Determine if current user is a student (not guardian)
+    const isStudent = !isGuardian && userId === studentIdForWidget;
 
     if (isGuardian && childrenInClass.length === 0) {
         return (
@@ -298,46 +326,126 @@ export function StudentParentDashboard({
                     </RadioGroup>
                 </div>
             )}
-<div className="w-full mx-auto p-6">
-    
+
+            <div className="w-full mx-auto p-6 space-y-6">
+            {/* Top row with two cards: Mascot, Greeting */}
+            {(showMascotCard || showGreetingCard) && (
+                <div className="max-w-lg lg:max-w-5xl mx-auto flex gap-4 items-stretch">
+                    {/* Mascot Image Card */}
+                    {showMascotCard && (
+                        <Card 
+                            className="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center p-2 shrink-0"
+                            style={preferences?.cardBackgroundColor ? { backgroundColor: preferences.cardBackgroundColor } : undefined}
+                        >
+                            <img
+                                src={preferences?.icon || "/brand/icon-removebg.webp"}
+                                alt="Dashboard mascot"
+                                className="w-full h-full object-contain"
+                            />
+                        </Card>
+                    )}
+
+                    {/* Greeting Card */}
+                    {showGreetingCard && (
+                        <Card 
+                            className="flex-1"
+                            style={preferences?.cardBackgroundColor ? { backgroundColor: preferences.cardBackgroundColor } : undefined}
+                        >
+                            <CardContent 
+                                className="p-6"
+                                style={preferences?.color ? { color: preferences.color } : undefined}
+                            >
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1">
+                                        <h2 className="text-2xl font-bold mb-2">
+                                            Hey there, {studentFirstName || "there"}!
+                                        </h2>
+                                        <p className="text-muted-foreground">
+                                            Welcome to your ClassClarus Dashboard! Check out all the cards below to see what's going on.
+                                        </p>
+                                    </div>
+                                    {showCustomizeCard && isStudent && studentIdForWidget && classId && (
+                                        <DashboardPreferences 
+                                            classId={classId} 
+                                            studentId={studentIdForWidget}
+                                            customButtonColor={preferences?.buttonColor}
+                                        />
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            )}
+
             <div className="max-w-lg lg:max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {showPointsWidget && studentIdForWidget && classId && (
-                    <PointsWidget classId={classId} studentId={studentIdForWidget} />
-                )}
+                    <PointsWidget 
+                    classId={classId} 
+                    studentId={studentIdForWidget}
+                        itemBackground={lighterItemBackground}
+                        />
+                    )}
                 {showExpectationsWidget && studentIdForWidget && classId && (
-                    <ExpectationsWidget classId={classId} studentId={studentIdForWidget} />
-                )}
+                    <ExpectationsWidget 
+                        classId={classId} 
+                        studentId={studentIdForWidget}
+                        itemBackground={lighterItemBackground}
+                        />
+                    )}
                 {showRandomAssignersWidget && studentIdForWidget && classId && (
                     <RandomAssignersWidget
-                    classId={classId}
-                    studentId={studentIdForWidget}
-                    selectedAssignerIds={selectedRandomAssignerIds || undefined}
-                    />
-                )}
+                        classId={classId}
+                        studentId={studentIdForWidget}
+                        selectedAssignerIds={selectedRandomAssignerIds || undefined}
+                        itemBackground={lighterItemBackground}
+                        />
+                    )}
                 {showRotatingAssignersWidget && studentIdForWidget && classId && (
                     <RotatingAssignersWidget
                     classId={classId}
                     studentId={studentIdForWidget}
-                    selectedAssignerIds={selectedRotatingAssignerIds || undefined}
+                        selectedAssignerIds={selectedRotatingAssignerIds || undefined}
+                        itemBackground={lighterItemBackground}
                     />
                 )}
                 {showGroupsTeamsWidget && studentIdForWidget && classId && (
-                    <GroupsTeamsWidget classId={classId} studentId={studentIdForWidget} />
+                    <GroupsTeamsWidget 
+                    classId={classId} 
+                    studentId={studentIdForWidget}
+                    itemBackground={lighterItemBackground}
+                    />
                 )}
                 {showShufflerHistoryWidget && studentIdForWidget && classId && (
-                    <ShufflerHistoryWidget classId={classId} studentId={studentIdForWidget} />
-                )}
+                    <ShufflerHistoryWidget 
+                        classId={classId} 
+                        studentId={studentIdForWidget}
+                        itemBackground={lighterItemBackground}
+                        />
+                    )}
                 {showPickerHistoryWidget && studentIdForWidget && classId && (
-                    <PickerHistoryWidget classId={classId} studentId={studentIdForWidget} />
+                    <PickerHistoryWidget 
+                    classId={classId} 
+                    studentId={studentIdForWidget}
+                    itemBackground={lighterItemBackground}
+                    />
                 )}
                 {showAttendanceWidget && studentIdForWidget && classId && (
-                    <AttendanceWidget classId={classId} studentId={studentIdForWidget} />
+                    <AttendanceWidget 
+                        classId={classId} 
+                        studentId={studentIdForWidget}
+                        itemBackground={lighterItemBackground}
+                    />
                 )}
                 {showRazAssessmentsWidget && studentIdForWidget && classId && (
-                    <RazAssessmentsWidget classId={classId} studentId={studentIdForWidget} />
-                )}
+                    <RazAssessmentsWidget 
+                    classId={classId} 
+                        studentId={studentIdForWidget}
+                        itemBackground={lighterItemBackground}
+                        />
+                    )}
+            </div>
             </div>
         </div>
-                </div>
     );
 }
